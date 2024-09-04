@@ -1,22 +1,20 @@
-import { Button, Col, Form, Input, Row, Image } from "antd"
+import { Button, Col, Form, Input, Row } from "antd"
+import Image from "next/image"
 
 const LoginComponent = () => {
   return (
     <Row
-      justify="center"
-      align="middle"
+      justify="center" align="middle"
       className="login-container">
       <Col
-        xs={24}
-        sm={18}
-        md={12}
-        lg={8}>
+        xs={24} sm={18}
+        md={12} lg={8}>
         <Row justify="center">
-          {/* eslint-disable-next-line jsx-a11y/alt-text */}
           <Image
             width={450}
+            height={450}
             src="/1.png"
-            preview={false} />
+            alt="logo" />
         </Row>
         <Form layout="vertical">
           <Form.Item

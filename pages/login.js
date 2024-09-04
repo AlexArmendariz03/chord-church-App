@@ -1,4 +1,4 @@
-import LoginComponent from "@/components/auth/login-component";
+import LoginComponent from "@/components/auth/login-component"
 
 
 function Login() {
@@ -9,4 +9,4 @@ function Login() {
   )
 }
 
-export default Login;
+export default Login
