@@ -1,90 +1,48 @@
-.modal-update-password {
-  .ant-modal-content {
-    padding: 0;
-    .title-modal {
-      width: 100% ;
-      border-bottom: 1px solid $primary-black ;
-      padding-bottom: 8px;
-      padding: 1rem;
+.login-container {
+  min-height: 100vh;
+  padding: 0 20px;
+  background: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .ant-col {
+    width: 100%;
+
+    @media (max-width: 575px) {
+      padding: 0 10px;
+    }
+
+    @media (min-width: 576px) and (max-width: 767px) {
+      padding: 0 15px;
     }
   }
-  .form-recovery {
-    padding: 1rem;
+
+  .ant-image {
+    max-width: 100%;
+    height: auto;
   }
-  .content-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+
+  .ant-form {
+    width: 100%;
+    margin: 0 auto 16px;
+
+    .ant-form-item {
+      max-width: 100%;
+      margin: 0 auto 16px;
+      text-align: center;
+
+      .ant-input, .ant-input-password {
+        max-width: 400px;
+        width: 100%;
+      }
+    }
+
+    .ant-btn {
+      max-width: 400px;
+      width: 100%;
+    }
   }
 }
 
-.login {
-  height: 100vh;
 
-  .logo {
-    position: relative;
-    max-width: 414px;
-    height: 113px;
-    margin: 0 auto;
-    margin-bottom: 2%;
-  }
-  .button {
-    width: 100%;
-    background-color: #2F333C;
-    border-radius: 20px;
-    color: white;
-  }
-
-  .link {
-    text-align: right;
-    color: #000000;
-  }
-  .column-triangles {
-    position: relative;
-    height: 100%;
-    overflow: hidden;
-  }
-
-  .black-triangle {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    background-color: $primary-black;
-    clip-path: polygon(78% 0, 100% 0, 99% 100%, 23% 100%);
-  }
-
-  .yellow-triangle {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    background-color: $primary-yellow;
-    clip-path: polygon(100% 0%, 100% 43%, 61% 100%, 33% 100%, 90% 0);
-  }
-
-  .green-triangle {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    background-color: $primary-green;
-    clip-path: polygon(100% 27%, 59% 100%, 100% 100%);
-  }
-  .form {
-    max-width: 360px;
-    height: 282px;
-    margin: 0 auto;
-  }
-
-  .item-password {
-    text-align: end;
-  }
-
-  .button-password {
-    color: $primary-black;
-  }
-}
