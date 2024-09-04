@@ -1,16 +1,13 @@
 import { Button, Col, Form, Input, Row, Image } from "antd"
 
 const LoginComponent = () => {
-  return(
+  return (
     <Row
-      justify="center"
-      align="middle"
+      justify="center" align="middle"
       className="login-container">
       <Col
-        xs={24}
-        sm={18}
-        md={12}
-        lg={8}>
+        xs={24} sm={18}
+        md={12} lg={8}>
         <Row justify="center">
           {/* eslint-disable-next-line jsx-a11y/alt-text */}
           <Image
@@ -23,19 +20,16 @@ const LoginComponent = () => {
           <Form.Item
             name="username"
             rules={[{ required: true, message: "Please input your username!" }]}>
-            <Input
-              placeholder="Nombre de usuario" />
+            <Input placeholder="Nombre de usuario" />
           </Form.Item>
           <Form.Item
             name="password"
             rules={[{ required: true, message: "Please input your password!" }]}>
-            <Input.Password
-              placeholder="Introduce tu contraseña" />
+            <Input.Password placeholder="Introduce tu contraseña" />
           </Form.Item>
           <Form.Item>
             <Button
-              type="primary"
-              htmlType="submit"
+              type="primary" htmlType="submit"
               block>
               Login
             </Button>
