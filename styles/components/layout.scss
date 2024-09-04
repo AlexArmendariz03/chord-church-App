@@ -1,0 +1,122 @@
+.layout {
+  min-height: 100vh;
+
+  .header {
+    background-color: $primary-black;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+    height: 55px;
+  }
+
+  .image {
+    display: block;
+  }
+
+  .sider {
+    box-shadow: 0 2px 10px #424A5C;
+    position: fixed;
+    top: 55px;
+    height: calc(100vh - 45px);
+    z-index: 999;
+  }
+
+  .user {
+    display: flex;
+    align-items: center;
+    color: white;
+
+    .text {
+      margin-left: 8px;
+      color: white;
+    }
+
+    .icon {
+      font-size: 27px;
+    }
+  }
+
+  .content {
+    background-color: #ffffff;
+    padding: 15px;
+    padding-top: 60px;
+    padding-left: calc(200px + 15px);
+    transition: padding-left 0.2s ease-in-out;
+  }
+
+  .content-collapsed {
+    padding-left: calc(70px + 15px);
+  }
+
+  .ant-menu-item-selected {
+    background-color: #576176;
+    border-radius: 0;
+  }
+
+  .ant-menu-item-selected .anticon,
+  .ant-menu-item-selected > .ant-menu-title-content {
+    color: white;
+  }
+
+  .sider-footer {
+    position: absolute;
+    bottom: 16px;
+    margin-left: 25px;
+  }
+
+  .menu-toggle {
+    font-size: 20px;
+    cursor: pointer;
+
+  }
+
+  .menu-toggle:hover {
+    color: $primary-black;
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  .mobile-menu-button {
+    display: none;
+  }
+
+  .menu-icon{
+    color: $primary-black;
+  }
+
+  @media (max-width: 568px) {
+    .image {
+      display: none;
+    }
+    .user .text {
+      color: black;
+      font-size: 15px;
+      margin-top: 7px;
+    }
+
+    .user .icon {
+      font-size: 20px;
+      color: black;
+    }
+
+    .sider {
+      display: none;
+    }
+
+    .content {
+      padding-left: 15px;
+      width: 100%;
+    }
+
+    .mobile-menu-button{
+      display: block;
+    }
+
+    .header{
+      background-color: #ffffff;
+    }
+
+  }
+}

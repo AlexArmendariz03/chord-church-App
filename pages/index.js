@@ -1,4 +1,6 @@
 import Head from "next/head"
+import HomeComponent from "@/components/host/home-component"
+import { Layout } from "@/components/layout/layout"
 
 export default function Home() {
   return (
@@ -9,9 +11,9 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div>
-        Contenido
-      </div>
+      <Layout>
+        <HomeComponent />
+      </Layout>
     </>
   )
 }
