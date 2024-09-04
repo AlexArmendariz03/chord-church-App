@@ -1,0 +1,44 @@
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  font-family: 'Roboto', sans-serif
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.ant-modal .ant-btn[type="submit"],
+.ant-modal .ant-modal-footer .ant-btn-primary {
+  background-color: #17202a;
+  color: white;
+}
+
+.ant-message .ant-message-notice .ant-message-notice-content {
+  width: 95%;
+  height: 40px;
+  background-color: #F6FFED;
+  border-radius: 0%;
+  border: 1px solid #B7EB8F;
+  text-align: left;
+}
+
+.ant-descriptions {
+  width: 100%;
+}
+
+.ant-typography.page-title {
+  font-size: 40px;
+  font-weight: 700;
+  color: #576176;
+}
+
+.ant-typography {
+  font-family: 'Roboto', sans-serif;
+}
+
+@import "./_variables.scss";
+@import "./_components.scss";
