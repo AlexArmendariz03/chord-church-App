@@ -18,9 +18,11 @@ const HeaderBar = () => {
       </div>
       <Link href="/">
         <Image
-          src="/logo.png" alt="logo"
-          width={120} height={120}
-          className="image" priority />
+          src="/logo.png"
+          alt="logo"
+          width={120}
+          height={120}
+          className="image" />
       </Link>
       <div className="user" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
         <UserOutlined className="icon" style={{ fontSize: "20px" }} />
