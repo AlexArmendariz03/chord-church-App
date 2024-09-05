@@ -1,0 +1,33 @@
+.dashboard {
+  min-height: 100vh;
+  background-color: #f0f2f5;
+  color: #000;
+  text-align: center;
+
+  h1 {
+    margin-bottom: 30px;
+  }
+
+  .dashboard-card {
+    width: 240px;
+
+    .dashboard-card-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .dashboard-card-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+
+      &:nth-of-type(1) {
+        color: #1890ff;
+      }
+    }
+
+    .dashboard-card-meta {
+      text-align: center;
+    }
+  }
+}

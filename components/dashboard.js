@@ -1,44 +1,56 @@
-import { Card , Col , Row } from "antd"
+import { Card , Col , Row , Typography } from "antd"
+import { UploadOutlined, AppstoreAddOutlined, UnorderedListOutlined } from "@ant-design/icons"
 
+const { Meta } = Card
 
 const Dashboard = () => {
-  return(
+  return (
     <Row
-      justify="center" align="middle"
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#f0f2f5",
-        color: "#000",
-        textAlign: "center"
-      }}>
+      className="dashboard" justify="center"
+      align="middle">
       <Col xs={24}>
-        <h1 style={{ marginBottom: "30px" }}>Panel de Control</h1>
+        <Typography.Title level={2}>Panel de Control</Typography.Title>
         <Row justify="center" gutter={[16, 16]}>
           <Col>
             <Card
               hoverable
-              style={{ width: 240 }}
-              onClick={() => navigateTo("/cargar")}
-              cover={<img src="/cargar.png" />}>
-              <Card.Meta title="Cargar" description="Sube tus archivos" />
+              className="dashboard-card"
+              onClick={() => navigateTo("/cargar")}>
+              <div className="dashboard-card-content">
+                <UploadOutlined className="dashboard-card-icon" />
+                <Meta
+                  title="Cargar"
+                  description="Sube tus archivos"
+                  className="dashboard-card-meta" />
+              </div>
             </Card>
           </Col>
           <Col>
             <Card
               hoverable
-              style={{ width: 240 }}
-              onClick={() => navigateTo("/servicios")}
-              cover={<img src="/servicios.png" />}>
-              <Card.Meta title="Servicios" description="Accede a los servicios" />
+              className="dashboard-card"
+              onClick={() => navigateTo("/servicios")}>
+              <div className="dashboard-card-content">
+                <AppstoreAddOutlined className="dashboard-card-icon" />
+                <Meta
+                  title="Servicios"
+                  description="Accede a los servicios"
+                  className="dashboard-card-meta" />
+              </div>
             </Card>
           </Col>
           <Col>
             <Card
               hoverable
-              style={{ width: 240 }}
-              onClick={() => navigateTo("/chord-list")}
-              cover={<img src="/chord-list.png" />}>
-              <Card.Meta title="Chord List" description="Ver lista de acordes" />
+              className="dashboard-card"
+              onClick={() => navigateTo("/chord-list")}>
+              <div className="dashboard-card-content">
+                <UnorderedListOutlined className="dashboard-card-icon" />
+                <Meta
+                  title="Chord List"
+                  description="Ver lista de acordes"
+                  className="dashboard-card-meta" />
+              </div>
             </Card>
           </Col>
         </Row>
