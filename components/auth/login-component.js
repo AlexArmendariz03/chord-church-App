@@ -5,14 +5,33 @@ import { useRouter } from "next/router"
 const LoginComponent = () => {
   const router = useRouter()
 
-  const onFinish = values => {
+  const onFinish = async values => {
     const { username, password } = values
-    if (username === "admin" && password === "password123") {
-      message.success("¡Inicio de sesión exitoso!")
-      router.push("/dashboard")
-    } else {
-      message.error("Usuario o contraseña incorrectos")
+
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username, password })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        message.success(data.message)
+        router.push("/dashboard")
+      } else {
+        message.error(data.message)
+      }
+    } catch (error) {
+      message.error("Error al intentar iniciar sesión")
     }
+  }
+
+  const handleRegisterClick = () => {
+    router.push("/register")
   }
 
   return (
@@ -46,6 +65,14 @@ const LoginComponent = () => {
             </Button>
           </Form.Item>
         </Form>
+        <Button
+          type="link"
+          block
+          onClick={handleRegisterClick}
+          xs={{ span: 24 }}
+          lg={{ span: 0 }}>
+          Registrarse
+        </Button>
       </Col>
     </Row>
   )
