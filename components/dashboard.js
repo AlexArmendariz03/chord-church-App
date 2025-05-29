@@ -1,12 +1,20 @@
-import { Card , Col , Row , Typography } from "antd"
+import { Card, Col, Row, Typography } from "antd"
 import { UploadOutlined, AppstoreAddOutlined, UnorderedListOutlined } from "@ant-design/icons"
+import { useRouter } from "next/router" // Importa useRouter
 
 const { Meta } = Card
 
 const Dashboard = () => {
+  const router = useRouter()
+
+  const navigateTo = path => {
+    router.push(path)
+  }
+
   return (
     <Row
-      className="dashboard" justify="center"
+      className="dashboard"
+      justify="center"
       align="middle">
       <Col xs={24}>
         <Typography.Title level={2}>Panel de Control</Typography.Title>
@@ -15,7 +23,7 @@ const Dashboard = () => {
             <Card
               hoverable
               className="dashboard-card"
-              onClick={() => navigateTo("/cargar")}>
+              onClick={() => navigateTo("/uploadPage")}>
               <div className="dashboard-card-content">
                 <UploadOutlined className="dashboard-card-icon" />
                 <Meta
