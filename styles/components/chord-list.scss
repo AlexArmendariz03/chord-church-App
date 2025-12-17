@@ -1,0 +1,28 @@
+.chord-list-page {
+  padding: 32px 24px;
+  background: #f7f9fc;
+  min-height: 100vh;
+
+  .section-header {
+    margin-bottom: 20px;
+
+    .hint-text {
+      color: #6b7280;
+    }
+  }
+
+  .chord-list-card,
+  .chord-summary-card {
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  }
+
+  .chord-item {
+    padding-left: 4px;
+
+    .chord-text {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+}

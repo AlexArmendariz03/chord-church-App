@@ -24,14 +24,6 @@ const SongForm = ({ form, onFinish, onValuesChange, onReset, onCanvaChange }) =>
           options={tonalidades.map(tone => ({ value: tone, label: tone }))} />
       </Form.Item>
       <Form.Item
-        name="lyrics"
-        label="Letra con acordes"
-        rules={[{ required: true, message: "Agrega la letra con sus acordes" }]}>
-        <Input.TextArea
-          rows={6}
-          placeholder="Escribe la letra y marca los acordes, por ejemplo: [C]Grande es el Señor" />
-      </Form.Item>
-      <Form.Item
         name="canva"
         label="Enlace de Canva"
         extra="Pega el enlace para compartir del diseño y generaremos un embed."

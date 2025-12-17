@@ -1,4 +1,4 @@
-import { HomeOutlined, UploadOutlined } from "@ant-design/icons"
+import { AppstoreAddOutlined, HomeOutlined, UnorderedListOutlined, UploadOutlined } from "@ant-design/icons"
 import Link from "next/link"
 
 export const menuItems = [
@@ -11,5 +11,15 @@ export const menuItems = [
     key: "/cargar",
     icon: <UploadOutlined />,
     label: <Link href="/cargar">Cargar letras</Link>
+  },
+  {
+    key: "/servicios",
+    icon: <AppstoreAddOutlined />,
+    label: <Link href="/servicios">Servicios</Link>
+  },
+  {
+    key: "/chord-list",
+    icon: <UnorderedListOutlined />,
+    label: <Link href="/chord-list">Chord List</Link>
   }
 ]

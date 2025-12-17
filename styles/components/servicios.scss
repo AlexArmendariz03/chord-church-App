@@ -1,0 +1,38 @@
+.servicios-page {
+  padding: 32px 24px;
+  background: #f7f9fc;
+  min-height: 100vh;
+
+  .section-header {
+    margin-bottom: 20px;
+
+    .hint-text {
+      color: #6b7280;
+    }
+  }
+
+  .servicio-card {
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+
+    .servicio-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .servicio-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 8px;
+      padding: 12px;
+      background: #f8fafc;
+    }
+
+    .servicio-tono {
+      margin: 0;
+    }
+  }
+}

@@ -14,7 +14,8 @@
 
   .upload-card,
   .preview-card,
-  .canva-card {
+  .canva-card,
+  .sections-card {
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
   }
@@ -40,12 +41,39 @@
     }
 
     .lyrics-preview {
-      min-height: 180px;
+      min-height: 220px;
       padding: 16px;
       background: #fff;
       border: 1px solid #e5e7eb;
       border-radius: 10px;
       white-space: pre-line;
+      display: grid;
+      gap: 12px;
+
+      .section-preview {
+        border: 1px dashed #d1d5db;
+        border-radius: 10px;
+        padding: 12px;
+        background: #f9fafb;
+
+        .section-header {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          margin-bottom: 6px;
+        }
+
+        .section-label {
+          font-weight: 600;
+          color: #111827;
+        }
+
+        .section-text {
+          margin: 0;
+          color: #374151;
+          white-space: pre-line;
+        }
+      }
     }
   }
 
@@ -70,6 +98,29 @@
     .canva-actions {
       margin-top: 10px;
       text-align: right;
+    }
+  }
+
+  .sections-card {
+    margin-top: 16px;
+
+    .section-item {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+
+      .tone-select {
+        width: 100%;
+      }
+
+      .move-controls {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+
+      textarea {
+        resize: vertical;
+      }
     }
   }
 }
