@@ -1,8 +1,7 @@
 import LoginComponent from "@/components/auth/login-component"
 
-
 function Login() {
-  return(
+  return (
     <div>
       <LoginComponent />
     </div>

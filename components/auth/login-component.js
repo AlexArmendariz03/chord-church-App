@@ -1,13 +1,29 @@
-import { Button, Col, Form, Input, Row, message } from "antd"
+import { Button, Col, Form, Input, Row, Typography, message } from "antd"
 import Image from "next/image"
+import Link from "next/link"
 import { useRouter } from "next/router"
+import { ensureDefaultUser, getStoredUsers, defaultUser } from "@/lib/auth-storage"
+import { useEffect } from "react"
+
+const { Text } = Typography
 
 const LoginComponent = () => {
   const router = useRouter()
 
+  useEffect(() => {
+    ensureDefaultUser()
+  }, [])
+
   const onFinish = values => {
     const { username, password } = values
-    if (username === "admin" && password === "password123") {
+    const users = getStoredUsers()
+
+    const isAdmin = username === "admin" && password === "password123"
+    const isStoredUser = users.some(
+      user => user.username === username && user.password === password
+    )
+
+    if (isAdmin || isStoredUser) {
       message.success("¡Inicio de sesión exitoso!")
       router.push("/dashboard")
     } else {
@@ -46,6 +62,16 @@ const LoginComponent = () => {
             </Button>
           </Form.Item>
         </Form>
+        <div className="auth-extra">
+          <Text type="secondary">
+            También puedes entrar con usuario &quot;{defaultUser.username}&quot; y contraseña
+            &quot;{defaultUser.password}&quot;.
+          </Text>
+          <div className="auth-links">
+            <Text>¿No tienes cuenta?</Text>
+            <Link href="/registro">Crear usuario</Link>
+          </div>
+        </div>
       </Col>
     </Row>
   )

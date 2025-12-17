@@ -43,6 +43,28 @@
       width: 100%;
     }
   }
+
+  .auth-extra {
+    text-align: center;
+    color: white;
+    display: grid;
+    gap: 8px;
+
+    .ant-typography {
+      color: white;
+    }
+  }
+
+  .auth-links {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+
+    a {
+      color: #61dafb;
+    }
+  }
 }
-
-
