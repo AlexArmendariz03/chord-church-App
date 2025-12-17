@@ -1,0 +1,48 @@
+.page {
+  padding: 24px;
+
+  .page-title {
+    color: #17202a;
+  }
+
+  .page-subtitle {
+    color: #576176;
+    margin-bottom: 12px;
+  }
+
+  .chord-tag {
+    font-weight: 700;
+    background: #e6f7ff;
+    border-color: #91d5ff;
+  }
+
+  .lyric-text {
+    font-size: 15px;
+  }
+
+  .section {
+    margin-bottom: 4px;
+
+    .section-lines .line {
+      display: block;
+      line-height: 1.8;
+    }
+  }
+
+  .active-song {
+    background: #f0f5ff;
+    cursor: pointer;
+  }
+
+  .musicians-view {
+    width: 100%;
+  }
+
+  .musician-card {
+    background: linear-gradient(135deg, #f0f5ff 0%, #fff 60%);
+  }
+
+  .musician-title {
+    margin-bottom: 0;
+  }
+}

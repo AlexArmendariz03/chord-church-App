@@ -1,9 +1,14 @@
 import { Card , Col , Row , Typography } from "antd"
 import { UploadOutlined, AppstoreAddOutlined, UnorderedListOutlined } from "@ant-design/icons"
+import { useRouter } from "next/router"
 
 const { Meta } = Card
 
 const Dashboard = () => {
+  const router = useRouter()
+
+  const navigateTo = path => router.push(path)
+
   return (
     <Row
       className="dashboard" justify="center"
