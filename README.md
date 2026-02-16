@@ -14,7 +14,7 @@ Aplicación Next.js + TypeScript para planificación de alabanzas en iglesia con
 
 ## Funcionalidades
 
-- Inicio de sesión local con selección de rol (`dirigente` o `musico`).
+- Inicio de sesión por credenciales (usuario/contraseña), con detección automática de rol (`dirigente` o `musico`).
 - Dirigente:
   - Carga alabanzas con nombre, letra, tono y categoría (`jubilo`, `adoracion`).
   - Crea un plan por fecha con exactamente 2 alabanzas de júbilo y 2 de adoración.
@@ -35,6 +35,7 @@ npm start
 
 ## API
 
+- `POST /api/auth/login`
 - `GET /api/songs`
 - `POST /api/songs`
 - `PUT /api/songs/:id`

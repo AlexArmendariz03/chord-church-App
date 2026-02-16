@@ -74,3 +74,19 @@ button {
   color: #065f46;
   font-weight: 600;
 }
+
+.error-message {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.hint {
+  margin-top: 0.75rem;
+  color: #374151;
+  font-size: 0.92rem;
+}
+
+button:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
