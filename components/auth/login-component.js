@@ -17,6 +17,20 @@ const LoginComponent = () => {
     }
   }
 
+  const getResponsePayload = async response => {
+    const rawText = await response.text()
+
+    if (!rawText) {
+      return {}
+    }
+
+    try {
+      return JSON.parse(rawText)
+    } catch {
+      return { message: rawText }
+    }
+  }
+
   const loginRequest = async ({ username, password }) => {
     const response = await fetch("/api/login", {
       method: "POST",
@@ -26,7 +40,7 @@ const LoginComponent = () => {
       body: JSON.stringify({ username, password })
     })
 
-    const data = await response.json()
+    const data = await getResponsePayload(response)
 
     if (!response.ok) {
       throw new Error(data?.message ?? "No se pudo iniciar sesión")
