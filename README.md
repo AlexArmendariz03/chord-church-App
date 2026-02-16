@@ -1,11 +1,11 @@
 # Chord Church
 
-Aplicación migrada y reorganizada a **Next.js + TypeScript** con estructura `src/` y pruebas con **Jest**.
+Aplicación reorganizada a **Next.js + TypeScript** con estructura `src/` y pruebas de validación con **Jest**.
 
 ## Requisitos
 
-- Node.js `>=20.3.1`
-- npm `>=10` recomendado
+- Node.js `20.x`
+- npm `10+` recomendado
 
 ## Scripts principales
 
@@ -24,8 +24,8 @@ npm run test
 - `src/components`: componentes de UI
 - `src/lib`: utilidades compartidas (Prisma + validaciones)
 - `src/styles`: estilos SCSS
-- `src/lib/validation/*.test.ts`: validaciones testeadas con Jest
+- `src/lib/validation/*.test.ts`: pruebas unitarias
 
-## Validaciones y pruebas
+## Validaciones
 
-Se añadió validación de credenciales reutilizable (`validateCredentials`) usada en login y registro, junto con pruebas unitarias en Jest para cubrir casos válidos e inválidos.
+Se añadió validación de credenciales reutilizable (`validateCredentials`) usada en login y registro para garantizar campos requeridos y mínimos de longitud.
