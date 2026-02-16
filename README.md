@@ -1,42 +1,33 @@
 # Chord Church
 
-## Node Version: v20.3.1
+Aplicación Next.js modernizada para Node 20, con arquitectura de negocio desacoplada para facilitar mantenimiento, validación y pruebas automatizadas.
 
-## Getting Started
+## Requisitos
 
-First, run the development server:
+- Node.js 20+
+- npm 10+
+
+## Estructura clave
+
+- `pages/`: UI y rutas HTTP de Next.js.
+- `src/server/auth/`: capa de negocio de autenticación (validaciones + casos de uso).
+- `tests/`: pruebas de reglas de negocio con `node:test`.
+
+## Scripts
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev      # Desarrollo
+npm run build    # Build de producción
+npm run start    # Ejecutar build
+npm run lint     # Lint
+npm run test     # Pruebas de negocio
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Flujo de autenticación
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+1. `pages/api/register.js` y `pages/api/login.js` sólo manejan protocolo HTTP.
+2. Delegan a `createAuthService` para ejecutar reglas de negocio.
+3. La validación de credenciales se centraliza en `validation.mjs`.
+4. La persistencia se encapsula en `repository.mjs` (Prisma).
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Esto permite probar reglas de negocio sin depender de base de datos real.
