@@ -20,6 +20,10 @@ const LoginComponent = () => {
       const data = await response.json()
 
       if (response.ok) {
+        if (typeof window !== "undefined" && data?.user) {
+          localStorage.setItem("currentUser", JSON.stringify(data.user))
+        }
+
         message.success(data.message)
         router.push("/dashboard")
       } else {

@@ -7,13 +7,13 @@ export function createAuthService({ userRepository, hasher }) {
 
   return {
     async register(payload) {
-      const validation = validateCredentials(payload)
+      const validation = validateCredentials(payload, { requireRole: true })
 
       if (!validation.valid) {
         return { status: 400, body: { message: validation.message } }
       }
 
-      const { username, password } = validation.value
+      const { username, password, role } = validation.value
       const existingUser = await userRepository.findByUsername(username)
 
       if (existingUser) {
@@ -21,7 +21,7 @@ export function createAuthService({ userRepository, hasher }) {
       }
 
       const hashedPassword = await hasher.hash(password, 10)
-      const newUser = await userRepository.create({ username, password: hashedPassword })
+      const newUser = await userRepository.create({ username, password: hashedPassword, role })
 
       return {
         status: 201,
@@ -29,7 +29,8 @@ export function createAuthService({ userRepository, hasher }) {
           message: "Usuario registrado exitosamente",
           user: {
             id: newUser.id,
-            username: newUser.username
+            username: newUser.username,
+            role: newUser.role
           }
         }
       }
@@ -54,7 +55,17 @@ export function createAuthService({ userRepository, hasher }) {
         return { status: 401, body: { message: "Contraseña incorrecta" } }
       }
 
-      return { status: 200, body: { message: "Inicio de sesión exitoso" } }
+      return {
+        status: 200,
+        body: {
+          message: "Inicio de sesión exitoso",
+          user: {
+            id: user.id,
+            username: user.username,
+            role: user.role
+          }
+        }
+      }
     }
   }
 }

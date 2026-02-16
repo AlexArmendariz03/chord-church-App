@@ -2,13 +2,32 @@ import { Layout as ALayout, Typography, Dropdown, Button } from "antd"
 import { MenuOutlined, UserOutlined } from "@ant-design/icons"
 import Image from "next/image"
 import Link from "next/link"
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { menuItems } from "./menu-items"
 
 const { Header } = ALayout
 const { Title } = Typography
 
 const HeaderBar = () => {
+  const [userLabel, setUserLabel] = useState("Invitado")
+
+  useEffect(() => {
+    const rawUser = localStorage.getItem("currentUser")
+
+    if (!rawUser) {
+      setUserLabel("Invitado")
+      return
+    }
+
+    try {
+      const parsedUser = JSON.parse(rawUser)
+      const roleLabel = parsedUser?.role === "DIRIGENTE" ? "Dirigente" : "Músico"
+      setUserLabel(`${parsedUser?.username ?? "Usuario"} · ${roleLabel}`)
+    } catch {
+      setUserLabel("Invitado")
+    }
+  }, [])
+
   return (
     <Header className="header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
       <div className="mobile-menu-button">
@@ -29,7 +48,7 @@ const HeaderBar = () => {
         <Title
           className="text" level={5}
           style={{ margin: 0 }}>
-          User rol
+          {userLabel}
         </Title>
       </div>
     </Header>
