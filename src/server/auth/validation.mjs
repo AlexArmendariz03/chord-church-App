@@ -10,8 +10,16 @@ function normalizeRole(inputRole) {
   return inputRole.trim().toUpperCase()
 }
 
+function normalizeUsername(inputUsername) {
+  if (typeof inputUsername !== "string") {
+    return ""
+  }
+
+  return inputUsername.trim().toLowerCase()
+}
+
 export function validateCredentials(payload, options = {}) {
-  const username = typeof payload?.username === "string" ? payload.username.trim() : ""
+  const username = normalizeUsername(payload?.username)
   const password = typeof payload?.password === "string" ? payload.password : ""
   const role = normalizeRole(payload?.role)
 

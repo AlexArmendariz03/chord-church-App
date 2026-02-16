@@ -16,12 +16,13 @@ Aplicación Next.js modernizada para Node 20, con arquitectura de negocio desaco
 ## Scripts
 
 ```bash
-npm run dev         # Desarrollo
-npm run build       # Build de producción
-npm run start       # Ejecutar build
-npm run lint        # Lint
-npm run test        # Pruebas de negocio
-npm run seed:roles  # Crea/actualiza cuentas DIRIGENTE y MUSICO
+npm run dev          # Desarrollo
+npm run build        # Build de producción
+npm run start        # Ejecutar build
+npm run lint         # Lint
+npm run test         # Pruebas de negocio
+npm run seed:roles   # Crea/actualiza cuentas DIRIGENTE y MUSICO
+npm run setup:roles  # Aplica schema en DB + crea cuentas de roles
 ```
 
 ## Flujo de autenticación
@@ -34,13 +35,22 @@ npm run seed:roles  # Crea/actualiza cuentas DIRIGENTE y MUSICO
 
 ## Cuentas por rol
 
-Ejecuta primero migraciones de Prisma y luego:
+Para dejar ambas cuentas listas (dirigente y músico) ejecuta:
 
 ```bash
-npm run seed:roles
+npm run setup:roles
 ```
 
 Esto crea/actualiza:
 
 - `dirigente` / `Dirigente123` (rol `DIRIGENTE`)
 - `musico` / `Musico123` (rol `MUSICO`)
+
+## Login rápido con ambas cuentas
+
+La pantalla de login ahora incluye botones:
+
+- **Entrar como Dirigente**
+- **Entrar como Músico**
+
+Así puedes validar de inmediato que ambos perfiles inician sesión correctamente.

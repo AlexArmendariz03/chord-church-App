@@ -1,36 +1,65 @@
-import { Button, Col, Form, Input, Row, message } from "antd"
+import { Button, Col, Divider, Form, Input, Row, Space, message } from "antd"
 import Image from "next/image"
 import { useRouter } from "next/router"
 
+const demoCredentials = {
+  DIRIGENTE: { username: "dirigente", password: "Dirigente123" },
+  MUSICO: { username: "musico", password: "Musico123" }
+}
+
 const LoginComponent = () => {
   const router = useRouter()
+  const [form] = Form.useForm()
+
+  const persistCurrentUser = user => {
+    if (typeof window !== "undefined" && user) {
+      localStorage.setItem("currentUser", JSON.stringify(user))
+    }
+  }
+
+  const loginRequest = async ({ username, password }) => {
+    const response = await fetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ username, password })
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data?.message ?? "No se pudo iniciar sesión")
+    }
+
+    return data
+  }
 
   const onFinish = async values => {
     const { username, password } = values
 
     try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ username, password })
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        if (typeof window !== "undefined" && data?.user) {
-          localStorage.setItem("currentUser", JSON.stringify(data.user))
-        }
-
-        message.success(data.message)
-        router.push("/dashboard")
-      } else {
-        message.error(data.message)
-      }
+      const data = await loginRequest({ username, password })
+      persistCurrentUser(data.user)
+      message.success(data.message)
+      router.push("/dashboard")
     } catch (error) {
-      message.error("Error al intentar iniciar sesión")
+      message.error(error?.message ?? "Error al intentar iniciar sesión")
+    }
+  }
+
+  const loginAsRole = async role => {
+    const credentials = demoCredentials[role]
+
+    form.setFieldsValue(credentials)
+
+    try {
+      const data = await loginRequest(credentials)
+      persistCurrentUser(data.user)
+      message.success(`${data.message} (${role === "DIRIGENTE" ? "Dirigente" : "Músico"})`)
+      router.push("/dashboard")
+    } catch (error) {
+      message.error(error?.message ?? "Error al iniciar con cuenta demo")
     }
   }
 
@@ -50,7 +79,10 @@ const LoginComponent = () => {
             width={450} height={450}
             src="/1.png" alt="logo" />
         </Row>
-        <Form layout="vertical" onFinish={onFinish}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={onFinish}>
           <Form.Item
             name="username"
             rules={[{ required: true, message: "¡Por favor ingrese su nombre de usuario!" }]}>
@@ -69,6 +101,13 @@ const LoginComponent = () => {
             </Button>
           </Form.Item>
         </Form>
+
+        <Divider plain>Ingreso rápido</Divider>
+        <Space direction="vertical" style={{ width: "100%" }}>
+          <Button block onClick={() => loginAsRole("DIRIGENTE")}>Entrar como Dirigente</Button>
+          <Button block onClick={() => loginAsRole("MUSICO")}>Entrar como Músico</Button>
+        </Space>
+
         <Button
           type="link"
           block

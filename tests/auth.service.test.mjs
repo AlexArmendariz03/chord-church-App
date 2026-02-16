@@ -57,6 +57,16 @@ test("register stores hashed password and selected role", async () => {
   assert.equal(response.body.user.role, "DIRIGENTE")
 })
 
+test("register normalizes username to lowercase", async () => {
+  const repository = createRepositoryStub()
+  const service = createAuthService({ userRepository: repository, hasher: hasherStub })
+
+  const response = await service.register({ username: "Dirigente", password: "12345678", role: "DIRIGENTE" })
+
+  assert.equal(response.status, 201)
+  assert.equal(repository.users[0].username, "dirigente")
+})
+
 test("login rejects wrong password", async () => {
   const repository = createRepositoryStub([{ id: 1, username: "demo", password: "hashed:realpass", role: "MUSICO" }])
   const service = createAuthService({ userRepository: repository, hasher: hasherStub })
@@ -76,4 +86,14 @@ test("login returns user role when credentials are valid", async () => {
   assert.equal(response.status, 200)
   assert.equal(response.body.user.role, "DIRIGENTE")
   assert.match(response.body.message, /exitoso/i)
+})
+
+test("login accepts mixed-case username", async () => {
+  const repository = createRepositoryStub([{ id: 1, username: "musico", password: "hashed:realpass", role: "MUSICO" }])
+  const service = createAuthService({ userRepository: repository, hasher: hasherStub })
+
+  const response = await service.login({ username: "MuSiCo", password: "realpass" })
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.user.role, "MUSICO")
 })
