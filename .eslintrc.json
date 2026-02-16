@@ -6,20 +6,34 @@
   "rules": {
     "max-lines": [
       "warn",
-      {"max": 120, "skipBlankLines": true}
+      {
+        "max": 120,
+        "skipBlankLines": true
+      }
     ],
     "max-len": [
       "warn",
-      { "code": 180 }
+      {
+        "code": 180
+      }
     ],
     "no-trailing-spaces": "error",
     "no-console": [
       "error",
-      { "allow": ["warn", "error", "info"] }
+      {
+        "allow": [
+          "warn",
+          "error",
+          "info"
+        ]
+      }
     ],
     "arrow-spacing": [
       "error",
-      { "before": true, "after": true }
+      {
+        "before": true,
+        "after": true
+      }
     ],
     "arrow-parens": [
       "warn",
@@ -50,7 +64,12 @@
     "default-case": "error",
     "no-redeclare": "error",
     "no-useless-return": "error",
-    "no-unused-vars": ["error", { "ignoreRestSiblings": true }],
+    "no-unused-vars": [
+      "error",
+      {
+        "ignoreRestSiblings": true
+      }
+    ],
     "prefer-arrow-callback": "error",
     "prefer-const": "error",
     "prefer-template": "error",
@@ -59,7 +78,10 @@
       "error",
       3
     ],
-    "object-curly-spacing": ["error", "always"],
+    "object-curly-spacing": [
+      "error",
+      "always"
+    ],
     "quotes": [
       "warn",
       "double"
@@ -68,11 +90,17 @@
       "error",
       "never"
     ],
-    "react/jsx-filename-extension": [1, {
-      "extensions": [
-        ".js"
-      ]
-    }],
+    "react/jsx-filename-extension": [
+      1,
+      {
+        "extensions": [
+          ".js",
+          ".jsx",
+          ".ts",
+          ".tsx"
+        ]
+      }
+    ],
     "space-infix-ops": "error",
     "react/no-deprecated": "warn",
     "react/react-in-jsx-scope": 0,
@@ -97,7 +125,9 @@
     ],
     "react/jsx-no-bind": [
       "error",
-      { "allowArrowFunctions": true }
+      {
+        "allowArrowFunctions": true
+      }
     ],
     "react/jsx-no-duplicate-props": [
       "error"
@@ -114,7 +144,10 @@
     ],
     "react/jsx-max-props-per-line": [
       "error",
-      { "maximum": 2, "when": "always" }
+      {
+        "maximum": 2,
+        "when": "always"
+      }
     ],
     "react/jsx-uses-react": "error",
     "react/jsx-uses-vars": "error",

@@ -1,42 +1,31 @@
 # Chord Church
 
-## Node Version: v20.3.1
+Aplicación migrada y reorganizada a **Next.js + TypeScript** con estructura `src/` y pruebas con **Jest**.
 
-## Getting Started
+## Requisitos
 
-First, run the development server:
+- Node.js `>=20.3.1`
+- npm `>=10` recomendado
+
+## Scripts principales
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
+npm run start
+npm run lint
+npm run typecheck
+npm run test
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Estructura principal
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+- `src/pages`: páginas y API routes en TypeScript
+- `src/components`: componentes de UI
+- `src/lib`: utilidades compartidas (Prisma + validaciones)
+- `src/styles`: estilos SCSS
+- `src/lib/validation/*.test.ts`: validaciones testeadas con Jest
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+## Validaciones y pruebas
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Se añadió validación de credenciales reutilizable (`validateCredentials`) usada en login y registro, junto con pruebas unitarias en Jest para cubrir casos válidos e inválidos.
