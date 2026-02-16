@@ -90,3 +90,38 @@ button:disabled {
   opacity: 0.75;
   cursor: not-allowed;
 }
+
+
+.legacy-login-container {
+  min-height: 100vh;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.legacy-login-card {
+  width: min(440px, 100%);
+}
+
+.legacy-login-image-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.legacy-login-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.legacy-login-form h1,
+.legacy-login-form p,
+.legacy-login-form label {
+  color: #fff;
+}
+
+.legacy-login-form .hint {
+  color: #d1d5db;
+}
