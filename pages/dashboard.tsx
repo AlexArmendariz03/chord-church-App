@@ -1,8 +1,8 @@
-import Layout from "@/components/layout/layout"
 import Dashboard from "@/components/dashboard"
+import Layout from "@/components/layout/layout"
 
 function DashboardPage() {
-  return(
+  return (
     <Layout>
       <Dashboard />
     </Layout>
