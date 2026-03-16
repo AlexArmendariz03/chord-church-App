@@ -1,3 +1,5 @@
+"use client"
+
 import { MenuOutlined, UserOutlined } from "@ant-design/icons"
 import { Button, Dropdown, Layout as ALayout, Typography } from "antd"
 import Image from "next/image"
