@@ -1,7 +1,8 @@
-import { Button, Col, Form, Input, Row, message } from "antd"
+"use client"
+
 import type { LoginFormData } from "@/types/auth"
-import axios from "axios"
-import { useRouter } from "next/router"
+import { Button, Col, Form, Input, Row, message } from "antd"
+import { useRouter } from "next/navigation"
 
 const RegisterComponent = () => {
   const router = useRouter()
@@ -10,16 +11,21 @@ const RegisterComponent = () => {
     const { username, password } = values
 
     try {
-      const response = await axios.post<{ message: string }>("/api/register", {
-        username,
-        password
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username, password })
       })
 
+      const data = (await response.json()) as { message: string }
+
       if (response.status === 201) {
-        message.success(response.data.message)
-        await router.push("/login")
+        message.success(data.message)
+        router.push("/login")
       } else {
-        message.error(response.data.message)
+        message.error(data.message)
       }
     } catch {
       message.error("Error al intentar registrar el usuario")

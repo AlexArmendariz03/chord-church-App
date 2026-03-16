@@ -1,7 +1,9 @@
-import { Button, Col, Form, Input, Row, message } from "antd"
+"use client"
+
 import type { LoginFormData } from "@/types/auth"
+import { Button, Col, Form, Input, Row, message } from "antd"
 import Image from "next/image"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
 const LoginComponent = () => {
   const router = useRouter()
@@ -22,7 +24,7 @@ const LoginComponent = () => {
 
       if (response.ok) {
         message.success(data.message)
-        await router.push("/dashboard")
+        router.push("/dashboard")
       } else {
         message.error(data.message)
       }
@@ -31,8 +33,8 @@ const LoginComponent = () => {
     }
   }
 
-  const handleRegisterClick = async () => {
-    await router.push("/register")
+  const handleRegisterClick = () => {
+    router.push("/register")
   }
 
   return (

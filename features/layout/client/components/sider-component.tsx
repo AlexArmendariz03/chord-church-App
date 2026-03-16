@@ -1,6 +1,8 @@
+"use client"
+
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons"
 import { Layout as ALayout, Menu } from "antd"
-import { useRouter } from "next/router"
+import { usePathname } from "next/navigation"
 import { menuItems } from "./menu-items"
 
 const { Sider } = ALayout
@@ -11,8 +13,7 @@ type SiderBarProps = {
 }
 
 const SiderBar = ({ collapseSider, toggleCollapsedSider }: SiderBarProps) => {
-  const router = useRouter()
-  const currentPath = router.pathname
+  const currentPath = usePathname()
 
   return (
     <Sider className="sider" theme="light" collapsed={collapseSider} onCollapse={toggleCollapsedSider} collapsedWidth={70}>

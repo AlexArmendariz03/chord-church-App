@@ -1,14 +1,16 @@
+"use client"
+
 import { AppstoreAddOutlined, UnorderedListOutlined, UploadOutlined } from "@ant-design/icons"
 import { Card, Col, Row, Typography } from "antd"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
 const { Meta } = Card
 
 const Dashboard = () => {
   const router = useRouter()
 
-  const navigateTo = async (path: string) => {
-    await router.push(path)
+  const navigateTo = (path: string) => {
+    router.push(path)
   }
 
   return (
