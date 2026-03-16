@@ -25,10 +25,7 @@ export async function POST(request: Request) {
         { status: response.status }
     );
   } catch (error) {
-    console.error("LOGIN API ERROR:", error);
-    return NextResponse.json(
-        { message: "Error del servidor" },
-        { status: 500 }
-    );
+    console.error(error);
+    return NextResponse.json({ message: "Error del servidor" }, { status: 500 });
   }
 }
