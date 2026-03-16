@@ -1,4 +1,4 @@
-import { HomeOutlined  } from "@ant-design/icons"
+import { HomeOutlined } from "@ant-design/icons"
 import Link from "next/link"
 
 export const menuItems = [

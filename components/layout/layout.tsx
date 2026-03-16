@@ -1,9 +1,8 @@
 import { Layout as ALayout } from "antd"
-import React from "react"
+import type { PropsWithChildren } from "react"
 import HeaderBar from "./header-component"
 
-export const Layout = ({ children }) => {
-
+const Layout = ({ children }: PropsWithChildren) => {
   return (
     <ALayout className="layout">
       <HeaderBar />

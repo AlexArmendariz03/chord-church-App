@@ -1,8 +1,7 @@
-import { Layout as ALayout, Typography, Dropdown, Button } from "antd"
 import { MenuOutlined, UserOutlined } from "@ant-design/icons"
+import { Button, Dropdown, Layout as ALayout, Typography } from "antd"
 import Image from "next/image"
 import Link from "next/link"
-import React from "react"
 import { menuItems } from "./menu-items"
 
 const { Header } = ALayout
@@ -17,18 +16,11 @@ const HeaderBar = () => {
         </Dropdown>
       </div>
       <Link href="/">
-        <Image
-          src="/logo.png"
-          alt="logo"
-          width={120}
-          height={120}
-          className="image" />
+        <Image src="/logo.png" alt="logo" width={120} height={120} className="image" />
       </Link>
       <div className="user" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
         <UserOutlined className="icon" style={{ fontSize: "20px" }} />
-        <Title
-          className="text" level={5}
-          style={{ margin: 0 }}>
+        <Title className="text" level={5} style={{ margin: 0 }}>
           User rol
         </Title>
       </div>
