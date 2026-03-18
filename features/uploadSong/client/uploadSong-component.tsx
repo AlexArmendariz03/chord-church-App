@@ -18,10 +18,7 @@ import {
     Typography,
 } from 'antd';
 import {
-    BgColorsOutlined,
-    FontSizeOutlined,
     FormatPainterOutlined,
-    HighlightOutlined,
     MinusOutlined,
     PlusOutlined,
     ReloadOutlined,
@@ -29,6 +26,7 @@ import {
     ZoomInOutlined,
     ZoomOutOutlined,
 } from '@ant-design/icons';
+
 
 const { Title, Text: AntText } = Typography;
 const { TextArea } = Input;
@@ -286,6 +284,33 @@ Perdido y Él me halló`,
         };
     };
 
+    const [songName, setSongName] = useState('');
+
+    const handleSaveSong = async () => {
+        try {
+            const response = await fetch('/api/songs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: songName }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Error al guardar');
+            }
+
+            message.success('Canción guardada con éxito');
+            setSongName('');
+        } catch (error) {
+            message.error(
+                error instanceof Error ? error.message : 'Error al guardar la canción'
+            );
+        }
+    };
+
     return (
         <div
             style={{
@@ -320,6 +345,15 @@ Perdido y Él me halló`,
 
                         <Col>
                             <Space wrap>
+                                <Input
+                                    placeholder="Nombre de la canción"
+                                    value={songName}
+                                    onChange={(e) => setSongName(e.target.value)}
+                                />
+                                <Button type="primary" onClick={handleSaveSong}>
+                                    Guardar canción
+                                </Button>
+
                                 <Button
                                     type="primary"
                                     icon={<PlusOutlined />}
