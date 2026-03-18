@@ -26,61 +26,34 @@ import {
     ZoomInOutlined,
     ZoomOutOutlined,
 } from '@ant-design/icons';
-
+import {BoardConfig, Interfaces, ExtraTextItem, SongPayload} from "@/types/UploadSong/interfaces";
 
 const { Title, Text: AntText } = Typography;
 const { TextArea } = Input;
 
-type AlignType = 'left' | 'center' | 'right';
+type EditableItem = ExtraTextItem | Interfaces;
 
-type ExtraTextItem = {
-    id: string;
-    type: 'tone';
-    text: string;
-    x: number;
-    y: number;
-    color: string;
-    fontSize: number;
+const STAGE = {
+    width: 1400,
+    height: 1200,
 };
 
-type ContentBlockItem = {
-    id: string;
-    type: 'content';
-    text: string;
-    x: number;
-    y: number;
-    width: number;
-    color: string;
-    fontSize: number;
-    align: AlignType;
+const BOARD = {
+    x: 120,
+    y: 80,
 };
 
-type SongPayload = {
-    boardConfig: {
-        stageWidth: number;
-        stageHeight: number;
-        boardX: number;
-        boardY: number;
-        boardWidth: number;
-        boardHeight: number;
-        backgroundColor: string;
-        borderColor: string;
-        textColor: string;
-        fontSize: number;
-        padding: number;
-        textAlign: AlignType;
-        zoom: number;
-    };
-    contentBlocks: ContentBlockItem[];
-    extraTexts: ExtraTextItem[];
+const INITIAL_BOARD_CONFIG: BoardConfig = {
+    boardWidth: 760,
+    boardHeight: 980,
+    backgroundColor: '#1f2937',
+    borderColor: '#f59e0b',
+    textColor: '#ffffff',
+    fontSize: 18,
+    padding: 24,
+    textAlign: 'center',
+    zoom: 0.62,
 };
-
-type EditableItem = ExtraTextItem | ContentBlockItem;
-
-const createId = () =>
-    typeof crypto !== 'undefined' && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random()}`;
 
 const CARD_STYLE: React.CSSProperties = {
     borderRadius: 22,
@@ -104,83 +77,60 @@ const SECTION_STYLE: React.CSSProperties = {
     background: '#fff',
 };
 
+const ALIGN_OPTIONS = [
+    { label: 'Izquierda', value: 'left' },
+    { label: 'Centro', value: 'center' },
+    { label: 'Derecha', value: 'right' },
+];
+
+const createId = () =>
+    typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random()}`;
+
+const clampZoom = (value: number) => Math.min(2.5, Math.max(0.35, value));
+
+const createInitialBlock = (): Interfaces => ({
+    id: createId(),
+    type: 'content',
+    text: 'Escribe aquí la letra de tu canción',
+    x: BOARD.x + 24,
+    y: BOARD.y + 24,
+    width: 340,
+    color: '#ffffff',
+    fontSize: 18,
+    align: 'center',
+});
+
 export const UploadSongComponent = () => {
     const { message } = App.useApp();
     const previewContainerRef = useRef<HTMLDivElement | null>(null);
 
-    const stageWidth = 1400;
-    const stageHeight = 1200;
-
-    const boardX = 120;
-    const boardY = 80;
-
-    const INITIAL_BOARD_WIDTH = 760;
-    const INITIAL_BOARD_HEIGHT = 980;
-    const INITIAL_BACKGROUND_COLOR = '#1f2937';
-    const INITIAL_BORDER_COLOR = '#f59e0b';
-    const INITIAL_TEXT_COLOR = '#ffffff';
-    const INITIAL_FONT_SIZE = 18;
-    const INITIAL_PADDING = 24;
-    const INITIAL_TEXT_ALIGN: AlignType = 'center';
-    const INITIAL_ZOOM = 0.62;
-
-    const getInitialContentBlocks = (boardX: number, boardY: number): ContentBlockItem[] => [
-        {
-            id: createId(),
-            type: 'content',
-            text: `Escirbe aqui la letra de tu cancion `,
-            x: boardX + 24,
-            y: boardY + 24,
-            width: 340,
-            color: '#ffffff',
-            fontSize: 18,
-            align: 'center',
-        },
-    ];
-
-    const [boardWidth, setBoardWidth] = useState(INITIAL_BOARD_WIDTH);
-    const [boardHeight, setBoardHeight] = useState(INITIAL_BOARD_HEIGHT);
-
-    const [backgroundColor, setBackgroundColor] = useState(INITIAL_BACKGROUND_COLOR);
-    const [borderColor, setBorderColor] = useState(INITIAL_BORDER_COLOR);
-    const [textColor, setTextColor] = useState(INITIAL_TEXT_COLOR);
-
-    const [fontSize, setFontSize] = useState(INITIAL_FONT_SIZE);
-    const [padding, setPadding] = useState(INITIAL_PADDING);
-    const [textAlign, setTextAlign] = useState<AlignType>(INITIAL_TEXT_ALIGN);
-
-    const [zoom, setZoom] = useState(INITIAL_ZOOM);
-
-    const [contentBlocks, setContentBlocks] = useState<ContentBlockItem[]>(
-        getInitialContentBlocks(boardX, boardY)
-    );
-
+    const [songName, setSongName] = useState('');
+    const [boardConfig, setBoardConfig] = useState<BoardConfig>(INITIAL_BOARD_CONFIG);
+    const [contentBlocks, setContentBlocks] = useState<Interfaces[]>([createInitialBlock()]);
     const [extraTexts, setExtraTexts] = useState<ExtraTextItem[]>([]);
-    const [selectedId, setSelectedId] = useState<string | null>(contentBlocks[0]?.id ?? null);
-    const [editingId, setEditingId] = useState<string | null>(null);
+    const [selectedId, setSelectedId] = useState<string | null>(null);
 
     const selectedItem = useMemo<EditableItem | null>(() => {
-        const content = contentBlocks.find((item) => item.id === selectedId);
-        if (content) return content;
-
-        const tone = extraTexts.find((item) => item.id === selectedId);
-        if (tone) return tone;
-
-        return null;
+        return (
+            contentBlocks.find((item) => item.id === selectedId) ||
+            extraTexts.find((item) => item.id === selectedId) ||
+            null
+        );
     }, [contentBlocks, extraTexts, selectedId]);
 
-    const clampZoom = (value: number) => Math.min(2.5, Math.max(0.35, value));
-
-    const clearSelection = () => {
-        setSelectedId(null);
-        setEditingId(null);
+    const updateBoardConfig = <K extends keyof BoardConfig>(key: K, value: BoardConfig[K]) => {
+        setBoardConfig((prev) => ({ ...prev, [key]: value }));
     };
 
+    const clearSelection = () => setSelectedId(null);
+
     const constrainPosition = (x: number, y: number, width = 100, height = 40) => {
-        const minX = boardX + 8;
-        const minY = boardY + 8;
-        const maxX = boardX + boardWidth - width - 8;
-        const maxY = boardY + boardHeight - height - 8;
+        const minX = BOARD.x + 8;
+        const minY = BOARD.y + 8;
+        const maxX = BOARD.x + boardConfig.boardWidth - width - 8;
+        const maxY = BOARD.y + boardConfig.boardHeight - height - 8;
 
         return {
             x: Math.max(minX, Math.min(x, maxX)),
@@ -188,31 +138,21 @@ export const UploadSongComponent = () => {
         };
     };
 
-    const selectItem = (id: string) => {
-        setSelectedId(id);
-    };
-
-    const startEditing = (id: string) => {
-        setSelectedId(id);
-        setEditingId(id);
-    };
-
     const handleAddContentBlock = () => {
-        const newItem: ContentBlockItem = {
+        const newItem: Interfaces = {
             id: createId(),
             type: 'content',
             text: 'Nuevo bloque de contenido',
-            x: boardX + padding + 20,
-            y: boardY + padding + 20,
+            x: BOARD.x + boardConfig.padding + 20,
+            y: BOARD.y + boardConfig.padding + 20,
             width: 320,
-            color: textColor,
-            fontSize,
-            align: textAlign,
+            color: boardConfig.textColor,
+            fontSize: boardConfig.fontSize,
+            align: boardConfig.textAlign,
         };
 
         setContentBlocks((prev) => [...prev, newItem]);
         setSelectedId(newItem.id);
-        setEditingId(newItem.id);
         message.success('Bloque agregado');
     };
 
@@ -221,15 +161,14 @@ export const UploadSongComponent = () => {
             id: createId(),
             type: 'tone',
             text: 'Em',
-            x: boardX + padding + 20,
-            y: boardY + padding - 28,
+            x: BOARD.x + boardConfig.padding + 20,
+            y: BOARD.y + boardConfig.padding - 28,
             color: '#2563eb',
             fontSize: 28,
         };
 
         setExtraTexts((prev) => [...prev, newItem]);
         setSelectedId(newItem.id);
-        setEditingId(newItem.id);
         message.success('Tono agregado');
     };
 
@@ -238,32 +177,20 @@ export const UploadSongComponent = () => {
 
         if (selectedItem.type === 'content') {
             setContentBlocks((prev) =>
-                prev.map((item) =>
-                    item.id === selectedItem.id ? { ...item, [field]: value } : item
-                )
+                prev.map((item) => (item.id === selectedItem.id ? { ...item, [field]: value } : item))
             );
             return;
         }
 
         setExtraTexts((prev) =>
-            prev.map((item) =>
-                item.id === selectedItem.id ? { ...item, [field]: value } : item
-            )
+            prev.map((item) => (item.id === selectedItem.id ? { ...item, [field]: value } : item))
         );
     };
 
     const deleteItemById = (id: string) => {
-        const isContent = contentBlocks.some((item) => item.id === id);
-
-        if (isContent) {
-            setContentBlocks((prev) => prev.filter((item) => item.id !== id));
-        } else {
-            setExtraTexts((prev) => prev.filter((item) => item.id !== id));
-        }
-
+        setContentBlocks((prev) => prev.filter((item) => item.id !== id));
+        setExtraTexts((prev) => prev.filter((item) => item.id !== id));
         if (selectedId === id) setSelectedId(null);
-        if (editingId === id) setEditingId(null);
-
         message.success('Elemento eliminado');
     };
 
@@ -271,95 +198,54 @@ export const UploadSongComponent = () => {
         setContentBlocks((prev) =>
             prev.map((item, index) => ({
                 ...item,
-                x: boardX + padding,
-                y: boardY + padding + index * 150,
+                x: BOARD.x + boardConfig.padding,
+                y: BOARD.y + boardConfig.padding + index * 150,
             }))
         );
         message.success('Bloques reordenados');
     };
 
-    const handleZoomIn = () => {
-        setZoom((prev) => clampZoom(Number((prev + 0.1).toFixed(2))));
-    };
-
-    const handleZoomOut = () => {
-        setZoom((prev) => clampZoom(Number((prev - 0.1).toFixed(2))));
-    };
-
-    const handleResetZoom = () => {
-        setZoom(1);
-    };
+    const handleZoomChange = (value: number) => updateBoardConfig('zoom', clampZoom(value));
+    const handleZoomIn = () => handleZoomChange(Number((boardConfig.zoom + 0.1).toFixed(2)));
+    const handleZoomOut = () => handleZoomChange(Number((boardConfig.zoom - 0.1).toFixed(2)));
+    const handleResetZoom = () => handleZoomChange(1);
 
     const handleFitZoom = () => {
         const container = previewContainerRef.current;
         if (!container) return;
 
         const availableWidth = container.clientWidth - 40;
-        const fitScale = availableWidth / stageWidth;
-        setZoom(clampZoom(Number(fitScale.toFixed(2))));
+        handleZoomChange(Number((availableWidth / STAGE.width).toFixed(2)));
         message.success('Zoom ajustado');
     };
 
     const getDeleteButtonPosition = (item: EditableItem) => {
         if (item.type === 'content') {
-            return {
-                x: item.x + item.width - 4,
-                y: item.y - 6,
-            };
+            return { x: item.x + item.width - 4, y: item.y - 6 };
         }
 
         const approxWidth = Math.max(34, item.text.length * item.fontSize * 0.58);
-        return {
-            x: item.x + approxWidth,
-            y: item.y - 6,
-        };
+        return { x: item.x + approxWidth, y: item.y - 6 };
     };
-
-    const [songName, setSongName] = useState('');
 
     const buildSongPayload = (): SongPayload => ({
         boardConfig: {
-            stageWidth,
-            stageHeight,
-            boardX,
-            boardY,
-            boardWidth,
-            boardHeight,
-            backgroundColor,
-            borderColor,
-            textColor,
-            fontSize,
-            padding,
-            textAlign,
-            zoom,
+            stageWidth: STAGE.width,
+            stageHeight: STAGE.height,
+            boardX: BOARD.x,
+            boardY: BOARD.y,
+            ...boardConfig,
         },
         contentBlocks,
         extraTexts,
     });
 
     const resetEditor = () => {
-        const initialBlocks = getInitialContentBlocks(boardX, boardY);
-
         setSongName('');
-
-        setBoardWidth(INITIAL_BOARD_WIDTH);
-        setBoardHeight(INITIAL_BOARD_HEIGHT);
-
-        setBackgroundColor(INITIAL_BACKGROUND_COLOR);
-        setBorderColor(INITIAL_BORDER_COLOR);
-        setTextColor(INITIAL_TEXT_COLOR);
-
-        setFontSize(INITIAL_FONT_SIZE);
-        setPadding(INITIAL_PADDING);
-        setTextAlign(INITIAL_TEXT_ALIGN);
-
-        setZoom(INITIAL_ZOOM);
-
-        setContentBlocks(initialBlocks);
+        setBoardConfig(INITIAL_BOARD_CONFIG);
+        setContentBlocks([createInitialBlock()]);
         setExtraTexts([]);
-
-        setSelectedId(initialBlocks[0]?.id ?? null);
-        setEditingId(null);
+        setSelectedId(null);
     };
 
     const handleSaveSong = async () => {
@@ -369,17 +255,10 @@ export const UploadSongComponent = () => {
                 return;
             }
 
-            const payload = buildSongPayload();
-
             const response = await fetch('/api/songs', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    name: songName,
-                    payload,
-                }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: songName, payload: buildSongPayload() }),
             });
 
             const data = await response.json();
@@ -425,7 +304,6 @@ export const UploadSongComponent = () => {
                                 </Title>
                                 <Tag color="blue">Seleccionar</Tag>
                                 <Tag color="purple">Doble click</Tag>
-                                <Tag color="gold">Edición directa</Tag>
                             </Space>
                         </Col>
 
@@ -439,22 +317,12 @@ export const UploadSongComponent = () => {
                                 <Button type="primary" onClick={handleSaveSong}>
                                     Guardar canción
                                 </Button>
-
-                                <Button
-                                    type="primary"
-                                    icon={<PlusOutlined />}
-                                    onClick={handleAddContentBlock}
-                                >
+                                <Button type="primary" icon={<PlusOutlined />} onClick={handleAddContentBlock}>
                                     Bloque
                                 </Button>
-
-                                <Button
-                                    icon={<FormatPainterOutlined />}
-                                    onClick={handleAddTone}
-                                >
+                                <Button icon={<FormatPainterOutlined />} onClick={handleAddTone}>
                                     Tono
                                 </Button>
-
                                 <Button
                                     icon={<ReloadOutlined />}
                                     onClick={handleResetContentPositions}
@@ -476,17 +344,8 @@ export const UploadSongComponent = () => {
                         height: '100%',
                     }}
                 >
-                    <Card
-                        style={{ ...CARD_STYLE, height: '100%' }}
-                        styles={{ body: { padding: 14, height: '100%' } }}
-                    >
-                        <div
-                            style={{
-                                display: 'grid',
-                                gridTemplateRows: 'auto auto',
-                                gap: 14,
-                            }}
-                        >
+                    <Card style={{ ...CARD_STYLE, height: '100%' }} styles={{ body: { padding: 14, height: '100%' } }}>
+                        <div style={{ display: 'grid', gridTemplateRows: 'auto auto', gap: 14 }}>
                             <div style={SECTION_STYLE}>
                                 <Space direction="vertical" size={10} style={{ width: '100%' }}>
                                     <div>
@@ -505,25 +364,22 @@ export const UploadSongComponent = () => {
                                             </Tag>
 
                                             <div>
-                                                <AntText strong style={{ fontSize: 13 }}>Texto</AntText>
+                                                <AntText strong style={{ fontSize: 13 }}>
+                                                    Texto
+                                                </AntText>
+
                                                 {selectedItem.type === 'content' ? (
                                                     <TextArea
-                                                        value={selectedItem.text}
-                                                        onChange={(e) =>
-                                                            updateSelectedItem('text', e.target.value)
-                                                        }
                                                         rows={4}
+                                                        value={selectedItem.text}
+                                                        onChange={(e) => updateSelectedItem('text', e.target.value)}
                                                         style={{ marginTop: 6, borderRadius: 10 }}
-                                                        placeholder="Escribe el contenido"
                                                     />
                                                 ) : (
                                                     <Input
                                                         value={selectedItem.text}
-                                                        onChange={(e) =>
-                                                            updateSelectedItem('text', e.target.value)
-                                                        }
+                                                        onChange={(e) => updateSelectedItem('text', e.target.value)}
                                                         style={{ marginTop: 6 }}
-                                                        placeholder="Ej. Em, G, C"
                                                     />
                                                 )}
                                             </div>
@@ -536,9 +392,7 @@ export const UploadSongComponent = () => {
                                                     min={14}
                                                     max={60}
                                                     value={selectedItem.fontSize}
-                                                    onChange={(value) =>
-                                                        updateSelectedItem('fontSize', value)
-                                                    }
+                                                    onChange={(value) => updateSelectedItem('fontSize', value)}
                                                     style={{ margin: '4px 0 0' }}
                                                 />
                                             </div>
@@ -553,9 +407,7 @@ export const UploadSongComponent = () => {
                                                             min={180}
                                                             max={700}
                                                             value={selectedItem.width}
-                                                            onChange={(value) =>
-                                                                updateSelectedItem('width', value)
-                                                            }
+                                                            onChange={(value) => updateSelectedItem('width', value)}
                                                             style={{ margin: '4px 0 0' }}
                                                         />
                                                     </Col>
@@ -565,34 +417,26 @@ export const UploadSongComponent = () => {
                                                             Alineación
                                                         </AntText>
                                                         <Select
-                                                            value={selectedItem.align}
-                                                            onChange={(value) =>
-                                                                updateSelectedItem('align', value)
-                                                            }
                                                             size="small"
+                                                            value={selectedItem.align}
+                                                            onChange={(value) => updateSelectedItem('align', value)}
                                                             style={{ width: '100%' }}
-                                                            options={[
-                                                                { label: 'Izquierda', value: 'left' },
-                                                                { label: 'Centro', value: 'center' },
-                                                                { label: 'Derecha', value: 'right' },
-                                                            ]}
+                                                            options={ALIGN_OPTIONS}
                                                         />
                                                     </Col>
                                                 </Row>
                                             )}
 
                                             <div>
-                                                <AntText strong style={{ fontSize: 13 }}>Color</AntText>
-                                                <div>
-                                                    <input
-                                                        type="color"
-                                                        value={selectedItem.color}
-                                                        onChange={(e) =>
-                                                            updateSelectedItem('color', e.target.value)
-                                                        }
-                                                        style={COLOR_INPUT_STYLE}
-                                                    />
-                                                </div>
+                                                <AntText strong style={{ fontSize: 13 }}>
+                                                    Color
+                                                </AntText>
+                                                <input
+                                                    type="color"
+                                                    value={selectedItem.color}
+                                                    onChange={(e) => updateSelectedItem('color', e.target.value)}
+                                                    style={COLOR_INPUT_STYLE}
+                                                />
                                             </div>
                                         </>
                                     ) : (
@@ -616,8 +460,8 @@ export const UploadSongComponent = () => {
                                             <AntText style={{ fontSize: 12 }}>Fondo</AntText>
                                             <input
                                                 type="color"
-                                                value={backgroundColor}
-                                                onChange={(e) => setBackgroundColor(e.target.value)}
+                                                value={boardConfig.backgroundColor}
+                                                onChange={(e) => updateBoardConfig('backgroundColor', e.target.value)}
                                                 style={COLOR_INPUT_STYLE}
                                             />
                                         </Col>
@@ -626,8 +470,8 @@ export const UploadSongComponent = () => {
                                             <AntText style={{ fontSize: 12 }}>Borde</AntText>
                                             <input
                                                 type="color"
-                                                value={borderColor}
-                                                onChange={(e) => setBorderColor(e.target.value)}
+                                                value={boardConfig.borderColor}
+                                                onChange={(e) => updateBoardConfig('borderColor', e.target.value)}
                                                 style={COLOR_INPUT_STYLE}
                                             />
                                         </Col>
@@ -636,8 +480,8 @@ export const UploadSongComponent = () => {
                                             <AntText style={{ fontSize: 12 }}>Texto</AntText>
                                             <input
                                                 type="color"
-                                                value={textColor}
-                                                onChange={(e) => setTextColor(e.target.value)}
+                                                value={boardConfig.textColor}
+                                                onChange={(e) => updateBoardConfig('textColor', e.target.value)}
                                                 style={COLOR_INPUT_STYLE}
                                             />
                                         </Col>
@@ -649,8 +493,8 @@ export const UploadSongComponent = () => {
                                             <Slider
                                                 min={14}
                                                 max={60}
-                                                value={fontSize}
-                                                onChange={setFontSize}
+                                                value={boardConfig.fontSize}
+                                                onChange={(value) => updateBoardConfig('fontSize', value)}
                                                 style={{ margin: '4px 0 0' }}
                                             />
                                         </Col>
@@ -662,8 +506,8 @@ export const UploadSongComponent = () => {
                                             <Slider
                                                 min={8}
                                                 max={80}
-                                                value={padding}
-                                                onChange={setPadding}
+                                                value={boardConfig.padding}
+                                                onChange={(value) => updateBoardConfig('padding', value)}
                                                 style={{ margin: '4px 0 0' }}
                                             />
                                         </Col>
@@ -675,8 +519,8 @@ export const UploadSongComponent = () => {
                                             <Slider
                                                 min={300}
                                                 max={1200}
-                                                value={boardWidth}
-                                                onChange={setBoardWidth}
+                                                value={boardConfig.boardWidth}
+                                                onChange={(value) => updateBoardConfig('boardWidth', value)}
                                                 style={{ margin: '4px 0 0' }}
                                             />
                                         </Col>
@@ -688,8 +532,8 @@ export const UploadSongComponent = () => {
                                             <Slider
                                                 min={180}
                                                 max={1100}
-                                                value={boardHeight}
-                                                onChange={setBoardHeight}
+                                                value={boardConfig.boardHeight}
+                                                onChange={(value) => updateBoardConfig('boardHeight', value)}
                                                 style={{ margin: '4px 0 0' }}
                                             />
                                         </Col>
@@ -699,15 +543,11 @@ export const UploadSongComponent = () => {
                                                 Alineación base
                                             </AntText>
                                             <Select
-                                                value={textAlign}
-                                                onChange={(value) => setTextAlign(value)}
                                                 size="small"
+                                                value={boardConfig.textAlign}
+                                                onChange={(value) => updateBoardConfig('textAlign', value)}
                                                 style={{ width: '100%', marginTop: 6 }}
-                                                options={[
-                                                    { label: 'Izquierda', value: 'left' },
-                                                    { label: 'Centro', value: 'center' },
-                                                    { label: 'Derecha', value: 'right' },
-                                                ]}
+                                                options={ALIGN_OPTIONS}
                                             />
                                         </Col>
                                     </Row>
@@ -716,10 +556,7 @@ export const UploadSongComponent = () => {
                         </div>
                     </Card>
 
-                    <Card
-                        style={{ ...CARD_STYLE, height: '100%' }}
-                        styles={{ body: { padding: 14, height: '100%' } }}
-                    >
+                    <Card style={{ ...CARD_STYLE, height: '100%' }} styles={{ body: { padding: 14, height: '100%' } }}>
                         <div
                             style={{
                                 display: 'grid',
@@ -736,7 +573,7 @@ export const UploadSongComponent = () => {
                                             Vista previa
                                         </Title>
                                         <AntText type="secondary" style={{ fontSize: 13 }}>
-                                            Click para seleccionar. Doble click para editar.
+                                            Click para seleccionar
                                         </AntText>
                                     </div>
                                 </Col>
@@ -761,13 +598,13 @@ export const UploadSongComponent = () => {
                                             }}
                                         >
                                             <AntText strong style={{ minWidth: 42, fontSize: 12 }}>
-                                                {Math.round(zoom * 100)}%
+                                                {Math.round(boardConfig.zoom * 100)}%
                                             </AntText>
                                             <Slider
                                                 min={35}
                                                 max={250}
-                                                value={Math.round(zoom * 100)}
-                                                onChange={(value) => setZoom(value / 100)}
+                                                value={Math.round(boardConfig.zoom * 100)}
+                                                onChange={(value) => handleZoomChange(value / 100)}
                                                 style={{ flex: 1, margin: 0 }}
                                             />
                                         </div>
@@ -800,29 +637,28 @@ export const UploadSongComponent = () => {
                             >
                                 <div
                                     style={{
-                                        width: stageWidth * zoom,
-                                        height: stageHeight * zoom,
+                                        width: STAGE.width * boardConfig.zoom,
+                                        height: STAGE.height * boardConfig.zoom,
                                         margin: '0 auto',
-                                        transform: `scale(${zoom})`,
+                                        transform: `scale(${boardConfig.zoom})`,
                                         transformOrigin: 'top left',
                                     }}
                                 >
                                     <Stage
-                                        width={stageWidth}
-                                        height={stageHeight}
+                                        width={STAGE.width}
+                                        height={STAGE.height}
                                         onMouseDown={(e) => {
-                                            const clickedOnEmpty = e.target === e.target.getStage();
-                                            if (clickedOnEmpty) clearSelection();
+                                            if (e.target === e.target.getStage()) clearSelection();
                                         }}
                                     >
                                         <Layer>
                                             <Rect
-                                                x={boardX}
-                                                y={boardY}
-                                                width={boardWidth}
-                                                height={boardHeight}
-                                                fill={backgroundColor}
-                                                stroke={borderColor}
+                                                x={BOARD.x}
+                                                y={BOARD.y}
+                                                width={boardConfig.boardWidth}
+                                                height={boardConfig.boardHeight}
+                                                fill={boardConfig.backgroundColor}
+                                                stroke={boardConfig.borderColor}
                                                 strokeWidth={4}
                                                 cornerRadius={18}
                                                 shadowBlur={18}
@@ -840,7 +676,7 @@ export const UploadSongComponent = () => {
                                                             y={item.y}
                                                             text={item.text}
                                                             width={item.width}
-                                                            height={boardHeight - padding * 2}
+                                                            height={boardConfig.boardHeight - boardConfig.padding * 2}
                                                             fontSize={item.fontSize}
                                                             fill={item.color}
                                                             align={item.align}
@@ -848,10 +684,10 @@ export const UploadSongComponent = () => {
                                                             draggable
                                                             stroke={isSelected ? '#60a5fa' : undefined}
                                                             strokeWidth={isSelected ? 0.4 : 0}
-                                                            onClick={() => selectItem(item.id)}
-                                                            onTap={() => selectItem(item.id)}
-                                                            onDblClick={() => startEditing(item.id)}
-                                                            onDblTap={() => startEditing(item.id)}
+                                                            onClick={() => setSelectedId(item.id)}
+                                                            onTap={() => setSelectedId(item.id)}
+                                                            onDblClick={() => setSelectedId(item.id)}
+                                                            onDblTap={() => setSelectedId(item.id)}
                                                             dragBoundFunc={(pos) => {
                                                                 const lines = item.text.split('\n').length;
                                                                 const estimatedHeight = Math.max(42, lines * item.fontSize * 1.5);
@@ -880,11 +716,7 @@ export const UploadSongComponent = () => {
                                                                     deleteItemById(item.id);
                                                                 }}
                                                             >
-                                                                <Circle
-                                                                    radius={8}
-                                                                    fill="rgba(15,23,42,0.72)"
-                                                                    shadowBlur={2}
-                                                                />
+                                                                <Circle radius={8} fill="rgba(15,23,42,0.72)" shadowBlur={2} />
                                                                 <Line
                                                                     points={[-3, -3, 3, 3]}
                                                                     stroke="#fff"
@@ -919,10 +751,10 @@ export const UploadSongComponent = () => {
                                                             draggable
                                                             stroke={isSelected ? '#a855f7' : undefined}
                                                             strokeWidth={isSelected ? 0.45 : 0}
-                                                            onClick={() => selectItem(item.id)}
-                                                            onTap={() => selectItem(item.id)}
-                                                            onDblClick={() => startEditing(item.id)}
-                                                            onDblTap={() => startEditing(item.id)}
+                                                            onClick={() => setSelectedId(item.id)}
+                                                            onTap={() => setSelectedId(item.id)}
+                                                            onDblClick={() => setSelectedId(item.id)}
+                                                            onDblTap={() => setSelectedId(item.id)}
                                                             dragBoundFunc={(pos) =>
                                                                 constrainPosition(
                                                                     pos.x,
@@ -934,8 +766,8 @@ export const UploadSongComponent = () => {
                                                             onDragEnd={(e) => {
                                                                 const { x, y } = e.target.position();
                                                                 setExtraTexts((prev) =>
-                                                                    prev.map((textItem) =>
-                                                                        textItem.id === item.id ? { ...textItem, x, y } : textItem
+                                                                    prev.map((tone) =>
+                                                                        tone.id === item.id ? { ...tone, x, y } : tone
                                                                     )
                                                                 );
                                                             }}
@@ -954,11 +786,7 @@ export const UploadSongComponent = () => {
                                                                     deleteItemById(item.id);
                                                                 }}
                                                             >
-                                                                <Circle
-                                                                    radius={8}
-                                                                    fill="rgba(15,23,42,0.72)"
-                                                                    shadowBlur={2}
-                                                                />
+                                                                <Circle radius={8} fill="rgba(15,23,42,0.72)" shadowBlur={2} />
                                                                 <Line
                                                                     points={[-3, -3, 3, 3]}
                                                                     stroke="#fff"
