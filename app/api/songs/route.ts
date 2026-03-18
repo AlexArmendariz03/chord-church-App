@@ -3,12 +3,13 @@ import { prisma } from '@/shared/server/prisma';
 
 type CreateSongBody = {
     name: string;
+    payload: unknown;
 };
 
 export async function POST(req: Request) {
     try {
         const body: CreateSongBody = await req.json();
-        const { name } = body;
+        const { name, payload } = body;
 
         if (!name || !name.trim()) {
             return NextResponse.json(
@@ -17,9 +18,17 @@ export async function POST(req: Request) {
             );
         }
 
+        if (!payload) {
+            return NextResponse.json(
+                { message: 'El payload es obligatorio' },
+                { status: 400 }
+            );
+        }
+
         const data = await prisma.song.create({
             data: {
                 name: name.trim(),
+                payload,
             },
         });
 

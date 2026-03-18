@@ -55,6 +55,26 @@ type ContentBlockItem = {
     align: AlignType;
 };
 
+type SongPayload = {
+    boardConfig: {
+        stageWidth: number;
+        stageHeight: number;
+        boardX: number;
+        boardY: number;
+        boardWidth: number;
+        boardHeight: number;
+        backgroundColor: string;
+        borderColor: string;
+        textColor: string;
+        fontSize: number;
+        padding: number;
+        textAlign: AlignType;
+        zoom: number;
+    };
+    contentBlocks: ContentBlockItem[];
+    extraTexts: ExtraTextItem[];
+};
+
 type EditableItem = ExtraTextItem | ContentBlockItem;
 
 const createId = () =>
@@ -94,27 +114,21 @@ export const UploadSongComponent = () => {
     const boardX = 120;
     const boardY = 80;
 
-    const [boardWidth, setBoardWidth] = useState(760);
-    const [boardHeight, setBoardHeight] = useState(980);
+    const INITIAL_BOARD_WIDTH = 760;
+    const INITIAL_BOARD_HEIGHT = 980;
+    const INITIAL_BACKGROUND_COLOR = '#1f2937';
+    const INITIAL_BORDER_COLOR = '#f59e0b';
+    const INITIAL_TEXT_COLOR = '#ffffff';
+    const INITIAL_FONT_SIZE = 18;
+    const INITIAL_PADDING = 24;
+    const INITIAL_TEXT_ALIGN: AlignType = 'center';
+    const INITIAL_ZOOM = 0.62;
 
-    const [backgroundColor, setBackgroundColor] = useState('#1f2937');
-    const [borderColor, setBorderColor] = useState('#f59e0b');
-    const [textColor, setTextColor] = useState('#ffffff');
-
-    const [fontSize, setFontSize] = useState(18);
-    const [padding, setPadding] = useState(24);
-    const [textAlign, setTextAlign] = useState<AlignType>('center');
-
-    const [zoom, setZoom] = useState(0.62);
-
-    const [contentBlocks, setContentBlocks] = useState<ContentBlockItem[]>([
+    const getInitialContentBlocks = (boardX: number, boardY: number): ContentBlockItem[] => [
         {
             id: createId(),
             type: 'content',
-            text: `Sublime gracia del Señor
-Que a un infeliz salvó
-Fui ciego mas hoy miro yo
-Perdido y Él me halló`,
+            text: `Escirbe aqui la letra de tu cancion `,
             x: boardX + 24,
             y: boardY + 24,
             width: 340,
@@ -122,7 +136,24 @@ Perdido y Él me halló`,
             fontSize: 18,
             align: 'center',
         },
-    ]);
+    ];
+
+    const [boardWidth, setBoardWidth] = useState(INITIAL_BOARD_WIDTH);
+    const [boardHeight, setBoardHeight] = useState(INITIAL_BOARD_HEIGHT);
+
+    const [backgroundColor, setBackgroundColor] = useState(INITIAL_BACKGROUND_COLOR);
+    const [borderColor, setBorderColor] = useState(INITIAL_BORDER_COLOR);
+    const [textColor, setTextColor] = useState(INITIAL_TEXT_COLOR);
+
+    const [fontSize, setFontSize] = useState(INITIAL_FONT_SIZE);
+    const [padding, setPadding] = useState(INITIAL_PADDING);
+    const [textAlign, setTextAlign] = useState<AlignType>(INITIAL_TEXT_ALIGN);
+
+    const [zoom, setZoom] = useState(INITIAL_ZOOM);
+
+    const [contentBlocks, setContentBlocks] = useState<ContentBlockItem[]>(
+        getInitialContentBlocks(boardX, boardY)
+    );
 
     const [extraTexts, setExtraTexts] = useState<ExtraTextItem[]>([]);
     const [selectedId, setSelectedId] = useState<string | null>(contentBlocks[0]?.id ?? null);
@@ -286,14 +317,69 @@ Perdido y Él me halló`,
 
     const [songName, setSongName] = useState('');
 
+    const buildSongPayload = (): SongPayload => ({
+        boardConfig: {
+            stageWidth,
+            stageHeight,
+            boardX,
+            boardY,
+            boardWidth,
+            boardHeight,
+            backgroundColor,
+            borderColor,
+            textColor,
+            fontSize,
+            padding,
+            textAlign,
+            zoom,
+        },
+        contentBlocks,
+        extraTexts,
+    });
+
+    const resetEditor = () => {
+        const initialBlocks = getInitialContentBlocks(boardX, boardY);
+
+        setSongName('');
+
+        setBoardWidth(INITIAL_BOARD_WIDTH);
+        setBoardHeight(INITIAL_BOARD_HEIGHT);
+
+        setBackgroundColor(INITIAL_BACKGROUND_COLOR);
+        setBorderColor(INITIAL_BORDER_COLOR);
+        setTextColor(INITIAL_TEXT_COLOR);
+
+        setFontSize(INITIAL_FONT_SIZE);
+        setPadding(INITIAL_PADDING);
+        setTextAlign(INITIAL_TEXT_ALIGN);
+
+        setZoom(INITIAL_ZOOM);
+
+        setContentBlocks(initialBlocks);
+        setExtraTexts([]);
+
+        setSelectedId(initialBlocks[0]?.id ?? null);
+        setEditingId(null);
+    };
+
     const handleSaveSong = async () => {
         try {
+            if (!songName.trim()) {
+                message.error('El nombre de la canción es obligatorio');
+                return;
+            }
+
+            const payload = buildSongPayload();
+
             const response = await fetch('/api/songs', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ name: songName }),
+                body: JSON.stringify({
+                    name: songName,
+                    payload,
+                }),
             });
 
             const data = await response.json();
@@ -303,7 +389,7 @@ Perdido y Él me halló`,
             }
 
             message.success('Canción guardada con éxito');
-            setSongName('');
+            resetEditor();
         } catch (error) {
             message.error(
                 error instanceof Error ? error.message : 'Error al guardar la canción'
