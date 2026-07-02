@@ -107,6 +107,8 @@ export const UploadSongComponent = () => {
     const previewContainerRef = useRef<HTMLDivElement | null>(null);
 
     const [songName, setSongName] = useState('');
+    const [songKey, setSongKey] = useState('C');
+    const [songCategory, setSongCategory] = useState<'jubilo' | 'adoracion'>('jubilo');
     const [boardConfig, setBoardConfig] = useState<BoardConfig>(INITIAL_BOARD_CONFIG);
     const [contentBlocks, setContentBlocks] = useState<Interfaces[]>([createInitialBlock()]);
     const [extraTexts, setExtraTexts] = useState<ExtraTextItem[]>([]);
@@ -242,6 +244,8 @@ export const UploadSongComponent = () => {
 
     const resetEditor = () => {
         setSongName('');
+        setSongKey('C');
+        setSongCategory('jubilo');
         setBoardConfig(INITIAL_BOARD_CONFIG);
         setContentBlocks([createInitialBlock()]);
         setExtraTexts([]);
@@ -250,15 +254,28 @@ export const UploadSongComponent = () => {
 
     const handleSaveSong = async () => {
         try {
-            if (!songName.trim()) {
-                message.error('El nombre de la canción es obligatorio');
+            if (!songName.trim() || !songKey.trim()) {
+                message.error('El nombre y tono de la canción son obligatorios');
+                return;
+            }
+
+            const lyrics = contentBlocks.map((block) => block.text.trim()).filter(Boolean).join('\n\n');
+
+            if (!lyrics.trim()) {
+                message.error('La letra de la canción es obligatoria');
                 return;
             }
 
             const response = await fetch('/api/songs', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: songName, payload: buildSongPayload() }),
+                body: JSON.stringify({
+                    name: songName,
+                    key: songKey,
+                    category: songCategory,
+                    lyrics,
+                    payload: buildSongPayload(),
+                }),
             });
 
             const data = await response.json();
@@ -313,6 +330,21 @@ export const UploadSongComponent = () => {
                                     placeholder="Nombre de la canción"
                                     value={songName}
                                     onChange={(e) => setSongName(e.target.value)}
+                                />
+                                <Input
+                                    placeholder="Tono (ej. C, Em, F#)"
+                                    value={songKey}
+                                    onChange={(e) => setSongKey(e.target.value)}
+                                    style={{ width: 150 }}
+                                />
+                                <Select
+                                    value={songCategory}
+                                    onChange={setSongCategory}
+                                    style={{ width: 150 }}
+                                    options={[
+                                        { label: 'Júbilo', value: 'jubilo' },
+                                        { label: 'Adoración', value: 'adoracion' },
+                                    ]}
                                 />
                                 <Button type="primary" onClick={handleSaveSong}>
                                     Guardar canción

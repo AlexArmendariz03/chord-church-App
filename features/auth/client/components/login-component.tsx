@@ -20,10 +20,11 @@ const LoginComponent = () => {
         body: JSON.stringify({ username, password })
       })
 
-      const data = (await response.json()) as { message: string }
+      const data = (await response.json()) as { message: string; role?: string }
 
       if (response.ok) {
         message.success(data.message)
+        if (data.role) localStorage.setItem("userRole", data.role)
         router.push("/dashboard")
       } else {
         message.error(data.message)

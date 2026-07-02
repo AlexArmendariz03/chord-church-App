@@ -1,10 +1,20 @@
-import { HomeOutlined } from "@ant-design/icons"
+import { AppstoreAddOutlined, HomeOutlined, UploadOutlined } from "@ant-design/icons"
 import Link from "next/link"
 
 export const menuItems = [
   {
-    key: "/",
+    key: "/dashboard",
     icon: <HomeOutlined />,
-    label: <Link href="/">Inicio</Link>
+    label: <Link href="/dashboard">Inicio</Link>
+  },
+  {
+    key: "/uploadPage",
+    icon: <UploadOutlined />,
+    label: <Link href="/uploadPage">Canciones</Link>
+  },
+  {
+    key: "/servicios",
+    icon: <AppstoreAddOutlined />,
+    label: <Link href="/servicios">Servicios</Link>
   }
 ]

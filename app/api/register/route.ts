@@ -5,11 +5,10 @@ import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
   try {
-    const { username, password, email, name } = (await request.json()) as {
+    const { username, password, role } = (await request.json()) as {
       username?: string;
       password?: string;
-      email?: string;
-      name?: string;
+      role?: "leader" | "musico";
     };
 
     if (!username || !password) {
@@ -40,6 +39,7 @@ export async function POST(request: Request) {
       data: {
         username,
         password: hashedPassword,
+        role: role === "leader" ? "leader" : "musico",
       },
     });
 
