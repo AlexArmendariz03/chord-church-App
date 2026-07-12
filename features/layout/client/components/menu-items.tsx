@@ -10,7 +10,7 @@ export const menuItems = [
   {
     key: "/uploadPage",
     icon: <UploadOutlined />,
-    label: <Link href="/uploadPage">Canciones</Link>
+    label: <Link href="/uploadPage">Alabanzas</Link>
   },
   {
     key: "/servicios",

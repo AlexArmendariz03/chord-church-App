@@ -30,7 +30,7 @@ const HeaderBar = () => {
       <div className="user" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
         <UserOutlined className="icon" style={{ fontSize: "20px" }} />
         <Title className="text" level={5} style={{ margin: 0 }}>
-          {role === "leader" ? "Dirigente" : "Músico"}
+          {(role === "dirigente" || role === "leader") ? "Dirigente" : "Músico"}
         </Title>
       </div>
     </Header>

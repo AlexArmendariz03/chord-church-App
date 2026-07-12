@@ -1,29 +1,44 @@
-import { prisma } from "@/shared/server/prisma"
-import bcrypt from "bcryptjs"
-import type { UserRole } from "@prisma/client"
+export type UserRole = "dirigente" | "musico"
 
 type LoginParams = {
   username: string
   password: string
 }
 
-const STATIC_USERS: Array<{ username: string; password: string; role: UserRole }> = [
-  { username: "leader", password: "leader123", role: "leader" },
-  { username: "musico", password: "musico123", role: "musico" }
+type StaticUser = LoginParams & {
+  role: UserRole
+  displayName: string
+}
+
+export const STATIC_USERS: StaticUser[] = [
+  {
+    username: "dirigente",
+    password: "dirigente123",
+    role: "dirigente",
+    displayName: "Dirigente"
+  },
+  {
+    username: "musico",
+    password: "musico123",
+    role: "musico",
+    displayName: "Músico"
+  }
 ]
 
 export async function loginUser({ username, password }: LoginParams): Promise<{ message: string; role?: UserRole; status: number }> {
-  const user = await prisma.user.findUnique({ where: { username } })
+  const normalizedUsername = username.trim().toLowerCase()
+  const staticUser = STATIC_USERS.find((candidate) => candidate.username === normalizedUsername && candidate.password === password)
 
-  if (user) {
-    const isValidPassword = await bcrypt.compare(password, user.password)
-    return isValidPassword
-      ? { status: 200, message: `Inicio de sesión exitoso (${user.role})`, role: user.role }
-      : { status: 401, message: "Contraseña incorrecta" }
+  if (!staticUser) {
+    return {
+      status: 401,
+      message: "Credenciales incorrectas. Usa dirigente/dirigente123 o musico/musico123"
+    }
   }
 
-  const staticUser = STATIC_USERS.find((candidate) => candidate.username === username && candidate.password === password)
-  if (!staticUser) return { status: 401, message: "Usuario o contraseña incorrectos" }
-
-  return { status: 200, message: `Inicio de sesión exitoso (${staticUser.role})`, role: staticUser.role }
+  return {
+    status: 200,
+    message: `Inicio de sesión exitoso (${staticUser.displayName})`,
+    role: staticUser.role
+  }
 }

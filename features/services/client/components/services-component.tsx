@@ -22,7 +22,7 @@ const ServicesComponent = () => {
   const [services, setServices] = useState<ServiceWithSongs[]>([])
   const [loading, setLoading] = useState(false)
 
-  const isLeader = role === "leader"
+  const isLeader = role === "dirigente" || role === "leader"
   const jubiloSongs = useMemo(() => songs.filter((song) => song.category === "jubilo"), [songs])
   const adoracionSongs = useMemo(() => songs.filter((song) => song.category === "adoracion"), [songs])
 
@@ -63,7 +63,7 @@ const ServicesComponent = () => {
         <Card>
           <Title level={2}>Servicios</Title>
           <Paragraph>
-            El dirigente selecciona exactamente <Text strong>2 canciones de júbilo</Text> y <Text strong>2 de adoración</Text>. Los servicios dejan de mostrarse automáticamente después de la fecha del evento.
+            El dirigente crea el servicio seleccionando exactamente <Text strong>2 canciones de júbilo</Text> y <Text strong>2 de adoración</Text>. El músico solo ve las letras y tonos del servicio vigente en la fecha guardada.
           </Paragraph>
           <Tag color={isLeader ? "gold" : "blue"}>Rol actual: {isLeader ? "Dirigente" : "Músico"}</Tag>
         </Card>

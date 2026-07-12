@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Layer, Rect, Stage, Text, Group, Circle, Line } from 'react-konva';
 import {
     App,
@@ -106,6 +106,7 @@ export const UploadSongComponent = () => {
     const { message } = App.useApp();
     const previewContainerRef = useRef<HTMLDivElement | null>(null);
 
+    const [role, setRole] = useState('musico');
     const [songName, setSongName] = useState('');
     const [songKey, setSongKey] = useState('C');
     const [songCategory, setSongCategory] = useState<'jubilo' | 'adoracion'>('jubilo');
@@ -113,6 +114,12 @@ export const UploadSongComponent = () => {
     const [contentBlocks, setContentBlocks] = useState<Interfaces[]>([createInitialBlock()]);
     const [extraTexts, setExtraTexts] = useState<ExtraTextItem[]>([]);
     const [selectedId, setSelectedId] = useState<string | null>(null);
+
+    const isLeader = role === 'dirigente' || role === 'leader';
+
+    useEffect(() => {
+        setRole(localStorage.getItem('userRole') ?? 'musico');
+    }, []);
 
     const selectedItem = useMemo<EditableItem | null>(() => {
         return (
@@ -284,7 +291,7 @@ export const UploadSongComponent = () => {
                 throw new Error(data.message || 'Error al guardar');
             }
 
-            message.success('Canción guardada con éxito');
+            message.success('Alabanza guardada con éxito');
             resetEditor();
         } catch (error) {
             message.error(
@@ -292,6 +299,17 @@ export const UploadSongComponent = () => {
             );
         }
     };
+
+    if (!isLeader) {
+        return (
+            <div style={{ padding: 24 }}>
+                <Card style={CARD_STYLE}>
+                    <Title level={3}>Acceso solo para dirigente</Title>
+                    <AntText>El músico solo puede ver las letras y tonos en el apartado Servicios.</AntText>
+                </Card>
+            </div>
+        );
+    }
 
     return (
         <div
@@ -317,7 +335,7 @@ export const UploadSongComponent = () => {
                         <Col flex="auto">
                             <Space size={8} wrap>
                                 <Title level={4} style={{ margin: 0 }}>
-                                    Editor de canción
+                                    Editor de alabanza
                                 </Title>
                                 <Tag color="blue">Seleccionar</Tag>
                                 <Tag color="purple">Doble click</Tag>
@@ -327,7 +345,7 @@ export const UploadSongComponent = () => {
                         <Col>
                             <Space wrap>
                                 <Input
-                                    placeholder="Nombre de la canción"
+                                    placeholder="Nombre de la alabanza"
                                     value={songName}
                                     onChange={(e) => setSongName(e.target.value)}
                                 />
@@ -347,7 +365,7 @@ export const UploadSongComponent = () => {
                                     ]}
                                 />
                                 <Button type="primary" onClick={handleSaveSong}>
-                                    Guardar canción
+                                    Guardar alabanza
                                 </Button>
                                 <Button type="primary" icon={<PlusOutlined />} onClick={handleAddContentBlock}>
                                     Bloque
