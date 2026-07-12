@@ -1,6 +1,6 @@
 "use client"
 
-import { AppstoreAddOutlined, UploadOutlined } from "@ant-design/icons"
+import { AppstoreAddOutlined, PlayCircleOutlined, UnorderedListOutlined, UploadOutlined } from "@ant-design/icons"
 import { Card, Col, Row, Typography } from "antd"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -29,14 +29,24 @@ const Dashboard = () => {
         </Typography.Paragraph>
         <Row justify="center" gutter={[16, 16]}>
           {isLeader && (
-            <Col>
-              <Card hoverable className="dashboard-card" onClick={() => navigateTo("/uploadPage")}>
-                <div className="dashboard-card-content">
-                  <UploadOutlined className="dashboard-card-icon" />
-                  <Meta title="Alabanzas" description="Crear letras, tonos y categorías" className="dashboard-card-meta" />
-                </div>
-              </Card>
-            </Col>
+            <>
+              <Col>
+                <Card hoverable className="dashboard-card" onClick={() => navigateTo("/uploadPage")}>
+                  <div className="dashboard-card-content">
+                    <UploadOutlined className="dashboard-card-icon" />
+                    <Meta title="Crear alabanzas" description="Crear letras, tonos y categorías" className="dashboard-card-meta" />
+                  </div>
+                </Card>
+              </Col>
+              <Col>
+                <Card hoverable className="dashboard-card" onClick={() => navigateTo("/alabanzas")}>
+                  <div className="dashboard-card-content">
+                    <UnorderedListOutlined className="dashboard-card-icon" />
+                    <Meta title="Lista de alabanzas" description="Editar o eliminar por categoría" className="dashboard-card-meta" />
+                  </div>
+                </Card>
+              </Col>
+            </>
           )}
           <Col>
             <Card hoverable className="dashboard-card" onClick={() => navigateTo("/servicios")}>
@@ -47,6 +57,14 @@ const Dashboard = () => {
                   description={isLeader ? "Programa canciones por fecha" : "Ver letras y tonos del servicio"}
                   className="dashboard-card-meta"
                 />
+              </div>
+            </Card>
+          </Col>
+          <Col>
+            <Card hoverable className="dashboard-card" onClick={() => navigateTo("/en-curso")}>
+              <div className="dashboard-card-content">
+                <PlayCircleOutlined className="dashboard-card-icon" />
+                <Meta title="En curso" description="Pantalla del servicio programado" className="dashboard-card-meta" />
               </div>
             </Card>
           </Col>
