@@ -54,7 +54,7 @@ const Dashboard = () => {
                 <AppstoreAddOutlined className="dashboard-card-icon" />
                 <Meta
                   title="Servicios"
-                  description={isLeader ? "Programa canciones por fecha" : "Ver letras y tonos del servicio"}
+                  description={isLeader ? "Programa canciones por fecha" : "Ver servicios programados"}
                   className="dashboard-card-meta"
                 />
               </div>
@@ -64,7 +64,7 @@ const Dashboard = () => {
             <Card hoverable className="dashboard-card" onClick={() => navigateTo("/en-curso")}>
               <div className="dashboard-card-content">
                 <PlayCircleOutlined className="dashboard-card-icon" />
-                <Meta title="En curso" description="Pantalla del servicio programado" className="dashboard-card-meta" />
+                <Meta title="En curso" description="Abrir alabanzas una a una" className="dashboard-card-meta" />
               </div>
             </Card>
           </Col>

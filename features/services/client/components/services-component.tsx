@@ -63,7 +63,7 @@ const ServicesComponent = () => {
         <Card>
           <Title level={2}>Servicios demo</Title>
           <Paragraph>
-            Flujo hardcodeado: ya hay alabanzas de ejemplo cargadas. El dirigente crea el servicio seleccionando exactamente <Text strong>2 canciones de júbilo</Text> y <Text strong>2 de adoración</Text>. El músico solo ve las letras y tonos del servicio vigente en la fecha guardada.
+            Flujo hardcodeado: ya hay alabanzas de ejemplo cargadas. El dirigente crea el servicio seleccionando exactamente <Text strong>2 canciones de júbilo</Text> y <Text strong>2 de adoración</Text>. El músico no edita ni crea alabanzas: solo ve los servicios programados y puede abrir cada alabanza desde En curso.
           </Paragraph>
           <Tag color={isLeader ? "gold" : "blue"}>Rol actual: {isLeader ? "Dirigente" : "Músico"}</Tag>
         </Card>
