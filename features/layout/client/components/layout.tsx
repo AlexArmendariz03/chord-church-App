@@ -6,11 +6,7 @@ const Layout = ({ children }: PropsWithChildren) => {
   return (
     <ALayout className="layout">
       <HeaderBar />
-      <ALayout>
-        <ALayout>
-          <div>{children}</div>
-        </ALayout>
-      </ALayout>
+      <div className="content">{children}</div>
     </ALayout>
   )
 }

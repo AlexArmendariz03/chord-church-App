@@ -9,7 +9,7 @@ import {
   MinusOutlined,
   PlusOutlined
 } from "@ant-design/icons"
-import { App, Button, Card, Col, Empty, Row, Space, Tag, Typography } from "antd"
+import { App, Button, Card, Col, Empty, Row, Space, Tag, Tooltip, Typography } from "antd"
 import type { ServiceWithSongs } from "@/types/services"
 
 const { Paragraph, Title, Text } = Typography
@@ -80,7 +80,17 @@ const CurrentServiceComponent = () => {
   const decreaseFont = () => setFontSize((current) => Math.max(current - 4, 22))
 
   return (
-    <div style={{ padding: isPresentationMode ? 0 : 24, background: isPresentationMode ? "#0f172a" : undefined, minHeight: "100vh" }}>
+    <div
+      style={{
+        background: isPresentationMode ? "#0f172a" : undefined,
+        inset: isPresentationMode ? 0 : undefined,
+        minHeight: isPresentationMode ? "100vh" : undefined,
+        overflow: isPresentationMode ? "auto" : undefined,
+        padding: isPresentationMode ? 0 : 0,
+        position: isPresentationMode ? "fixed" : "relative",
+        zIndex: isPresentationMode ? 2000 : 1
+      }}
+    >
       <Space direction="vertical" size={20} style={{ width: "100%" }}>
         {!isPresentationMode && (
           <Card loading={loading}>
@@ -125,10 +135,13 @@ const CurrentServiceComponent = () => {
                 <Card
                   title={
                     <Space wrap>
-                      <Button
-                        icon={isSongListCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                        onClick={() => setIsSongListCollapsed((current) => !current)}
-                      />
+                      <Tooltip title={isSongListCollapsed ? "Mostrar lista" : "Colapsar lista"}>
+                        <Button
+                          aria-label={isSongListCollapsed ? "Mostrar lista" : "Colapsar lista"}
+                          icon={isSongListCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                          onClick={() => setIsSongListCollapsed((current) => !current)}
+                        />
+                      </Tooltip>
                       <span>{activeSong.position}. {activeSong.song.name}</span>
                     </Space>
                   }
@@ -146,11 +159,20 @@ const CurrentServiceComponent = () => {
                       </Col>
                       <Col>
                         <Space wrap>
-                          <Button icon={<MinusOutlined />} onClick={decreaseFont}>Letra</Button>
-                          <Button icon={<PlusOutlined />} onClick={increaseFont}>Letra</Button>
-                          <Button icon={isPresentationMode ? <CompressOutlined /> : <ExpandOutlined />} type="primary" onClick={togglePresentationMode}>
-                            {isPresentationMode ? "Salir" : "Pantalla completa"}
-                          </Button>
+                          <Tooltip title="Reducir letra">
+                            <Button aria-label="Reducir letra" icon={<MinusOutlined />} onClick={decreaseFont} />
+                          </Tooltip>
+                          <Tooltip title="Aumentar letra">
+                            <Button aria-label="Aumentar letra" icon={<PlusOutlined />} onClick={increaseFont} />
+                          </Tooltip>
+                          <Tooltip title={isPresentationMode ? "Salir de pantalla completa" : "Pantalla completa"}>
+                            <Button
+                              aria-label={isPresentationMode ? "Salir de pantalla completa" : "Pantalla completa"}
+                              icon={isPresentationMode ? <CompressOutlined /> : <ExpandOutlined />}
+                              type="primary"
+                              onClick={togglePresentationMode}
+                            />
+                          </Tooltip>
                         </Space>
                       </Col>
                     </Row>
