@@ -140,9 +140,9 @@ const SongsListComponent = () => {
     <div style={{ padding: 24 }}>
       <Space direction="vertical" size={20} style={{ width: "100%" }}>
         <Card>
-          <Title level={2}>Lista de alabanzas</Title>
+          <Title level={2}>Lista de alabanzas demo</Title>
           <Paragraph>
-            Administra las alabanzas creadas. Entra a cada pestaña para editar tonos, letras, categoría o eliminar registros.
+            Flujo hardcodeado: puedes crear, editar y eliminar alabanzas en memoria para validar la experiencia. Entra a cada pestaña para editar tonos, letras, categoría o eliminar registros.
           </Paragraph>
         </Card>
 

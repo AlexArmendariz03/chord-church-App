@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server"
-import { prisma } from "@/shared/server/prisma"
-import type { SongCategory } from "@prisma/client"
+import { demoSongStore, type DemoSongCategory } from "@/shared/server/demo-data"
 
-const isSongCategory = (value: unknown): value is SongCategory => value === "jubilo" || value === "adoracion"
+const isSongCategory = (value: unknown): value is DemoSongCategory => value === "jubilo" || value === "adoracion"
 
 type CreateSongBody = {
   name?: string
@@ -13,8 +12,7 @@ type CreateSongBody = {
 }
 
 export async function GET() {
-  const songs = await prisma.song.findMany({ orderBy: [{ category: "asc" }, { name: "asc" }] })
-  return NextResponse.json(songs)
+  return NextResponse.json(demoSongStore.list())
 }
 
 export async function POST(req: Request) {
@@ -25,19 +23,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Nombre, tono, tipo y letra son obligatorios" }, { status: 400 })
     }
 
-    const song = await prisma.song.create({
-      data: {
-        name: name.trim(),
-        key: key.trim(),
-        category,
-        lyrics: lyrics.trim(),
-        payload: payload ?? undefined
-      }
+    const song = demoSongStore.create({
+      name: name.trim(),
+      key: key.trim(),
+      category,
+      lyrics: lyrics.trim(),
+      payload
     })
 
     return NextResponse.json(song, { status: 201 })
   } catch (error) {
-    console.error("Error creating song:", error)
+    console.error("Error creating demo song:", error)
     return NextResponse.json({ message: "Error al guardar la canción" }, { status: 500 })
   }
 }

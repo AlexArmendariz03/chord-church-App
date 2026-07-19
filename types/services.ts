@@ -1,7 +1,27 @@
-import type { Song, Service, ServiceSong } from "@prisma/client"
+export type SongCategory = "jubilo" | "adoracion"
 
-export type SongWithMeta = Pick<Song, "id" | "name" | "key" | "category" | "lyrics">
+export type SongWithMeta = {
+  id: string
+  name: string
+  key: string
+  category: SongCategory
+  lyrics: string
+  createdAt?: string
+  updatedAt?: string
+}
 
-export type ServiceWithSongs = Service & {
-  songs: Array<ServiceSong & { song: SongWithMeta }>
+export type ServiceWithSongs = {
+  id: string
+  title: string
+  eventDate: string
+  createdAt: string
+  updatedAt: string
+  songs: Array<{
+    id: string
+    serviceId: string
+    songId: string
+    category: SongCategory
+    position: number
+    song: SongWithMeta
+  }>
 }

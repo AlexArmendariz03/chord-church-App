@@ -34,9 +34,9 @@ const CurrentServiceComponent = () => {
     <div style={{ padding: 24 }}>
       <Space direction="vertical" size={20} style={{ width: "100%" }}>
         <Card loading={loading}>
-          <Title level={2}>En curso</Title>
+          <Title level={2}>En curso demo</Title>
           <Paragraph>
-            Aquí se muestra el próximo servicio vigente según la fecha y hora guardada en Servicios.
+            Aquí se muestra el próximo servicio vigente del flujo hardcodeado, según la fecha y hora guardada en Servicios.
           </Paragraph>
         </Card>
 
