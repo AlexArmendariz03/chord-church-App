@@ -1,6 +1,14 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import {
+  CompressOutlined,
+  ExpandOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  MinusOutlined,
+  PlusOutlined
+} from "@ant-design/icons"
 import { App, Button, Card, Col, Empty, Row, Space, Tag, Typography } from "antd"
 import type { ServiceWithSongs } from "@/types/services"
 
@@ -11,6 +19,9 @@ const CurrentServiceComponent = () => {
   const [services, setServices] = useState<ServiceWithSongs[]>([])
   const [loading, setLoading] = useState(true)
   const [activeServiceSongId, setActiveServiceSongId] = useState<string | null>(null)
+  const [isSongListCollapsed, setIsSongListCollapsed] = useState(false)
+  const [isPresentationMode, setIsPresentationMode] = useState(false)
+  const [fontSize, setFontSize] = useState(30)
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -47,58 +58,145 @@ const CurrentServiceComponent = () => {
     if (nextSong) setActiveServiceSongId(nextSong.id)
   }
 
+  const togglePresentationMode = async () => {
+    const nextPresentationMode = !isPresentationMode
+    setIsPresentationMode(nextPresentationMode)
+    setIsSongListCollapsed(nextPresentationMode)
+
+    try {
+      if (nextPresentationMode && !document.fullscreenElement) {
+        await document.documentElement.requestFullscreen()
+      }
+
+      if (!nextPresentationMode && document.fullscreenElement) {
+        await document.exitFullscreen()
+      }
+    } catch {
+      message.info("Modo presentación activado dentro de la página")
+    }
+  }
+
+  const increaseFont = () => setFontSize((current) => Math.min(current + 4, 56))
+  const decreaseFont = () => setFontSize((current) => Math.max(current - 4, 22))
+
   return (
-    <div style={{ padding: 24 }}>
+    <div style={{ padding: isPresentationMode ? 0 : 24, background: isPresentationMode ? "#0f172a" : undefined, minHeight: "100vh" }}>
       <Space direction="vertical" size={20} style={{ width: "100%" }}>
-        <Card loading={loading}>
-          <Title level={2}>En curso demo</Title>
-          <Paragraph>
-            Vista previa para el músico: abre cada alabanza del servicio programado para ver tono, categoría y letra en pantalla grande.
-          </Paragraph>
-        </Card>
+        {!isPresentationMode && (
+          <Card loading={loading}>
+            <Title level={2}>En curso demo</Title>
+            <Paragraph>
+              Vista previa para el músico: la lista queda colapsable al lado izquierdo y la letra se puede poner en pantalla completa para verla durante el servicio.
+            </Paragraph>
+          </Card>
+        )}
 
         {!loading && !currentService ? (
           <Empty description="No hay servicio en curso o próximo" />
         ) : currentService ? (
-          <Row gutter={[16, 16]}>
-            <Col xs={24} lg={8}>
-              <Card title="Alabanzas programadas" extra={<Text strong>{new Date(currentService.eventDate).toLocaleString()}</Text>}>
-                <Space direction="vertical" style={{ width: "100%" }}>
-                  <Title level={4} style={{ marginTop: 0 }}>{currentService.title}</Title>
-                  {currentService.songs.map(({ id, song, category, position }) => (
-                    <Button
-                      block
-                      key={id}
-                      type={activeSong?.id === id ? "primary" : "default"}
-                      onClick={() => setActiveServiceSongId(id)}
-                      style={{ height: "auto", justifyContent: "flex-start", padding: "10px 12px", textAlign: "left" }}
-                    >
-                      {position}. {song.name} · {song.key} · {category === "jubilo" ? "Júbilo" : "Adoración"}
-                    </Button>
-                  ))}
-                </Space>
-              </Card>
-            </Col>
+          <Row gutter={isPresentationMode ? [0, 0] : [16, 16]} style={{ minHeight: isPresentationMode ? "100vh" : undefined }}>
+            {!isSongListCollapsed && (
+              <Col xs={24} lg={isPresentationMode ? 6 : 8}>
+                <Card
+                  title="Alabanzas programadas"
+                  extra={<Text strong>{new Date(currentService.eventDate).toLocaleString()}</Text>}
+                  style={{ height: "100%", borderRadius: isPresentationMode ? 0 : 8 }}
+                >
+                  <Space direction="vertical" style={{ width: "100%" }}>
+                    <Title level={4} style={{ marginTop: 0 }}>{currentService.title}</Title>
+                    {currentService.songs.map(({ id, song, category, position }) => (
+                      <Button
+                        block
+                        key={id}
+                        type={activeSong?.id === id ? "primary" : "default"}
+                        onClick={() => setActiveServiceSongId(id)}
+                        style={{ height: "auto", justifyContent: "flex-start", padding: "12px", textAlign: "left", whiteSpace: "normal" }}
+                      >
+                        {position}. {song.name} · {song.key} · {category === "jubilo" ? "Júbilo" : "Adoración"}
+                      </Button>
+                    ))}
+                  </Space>
+                </Card>
+              </Col>
+            )}
 
-            <Col xs={24} lg={16}>
+            <Col xs={24} lg={isSongListCollapsed ? 24 : isPresentationMode ? 18 : 16}>
               {activeSong ? (
                 <Card
-                  title={`${activeSong.position}. ${activeSong.song.name}`}
-                  extra={<Tag color={activeSong.category === "jubilo" ? "green" : "purple"}>{activeSong.category === "jubilo" ? "Júbilo" : "Adoración"}</Tag>}
-                >
-                  <Space direction="vertical" size={18} style={{ width: "100%" }}>
-                    <Title level={1} style={{ margin: 0 }}>Tono: {activeSong.song.key}</Title>
-                    <Paragraph style={{ whiteSpace: "pre-wrap", fontSize: 24, lineHeight: 1.6, marginBottom: 0 }}>
-                      {activeSong.song.lyrics}
-                    </Paragraph>
-                    <Space>
-                      <Button disabled={activeIndex <= 0} onClick={() => goToSong(activeIndex - 1)}>
-                        Anterior
-                      </Button>
-                      <Button disabled={!currentService.songs[activeIndex + 1]} type="primary" onClick={() => goToSong(activeIndex + 1)}>
-                        Siguiente
-                      </Button>
+                  title={
+                    <Space wrap>
+                      <Button
+                        icon={isSongListCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                        onClick={() => setIsSongListCollapsed((current) => !current)}
+                      />
+                      <span>{activeSong.position}. {activeSong.song.name}</span>
                     </Space>
+                  }
+                  extra={<Tag color={activeSong.category === "jubilo" ? "green" : "purple"}>{activeSong.category === "jubilo" ? "Júbilo" : "Adoración"}</Tag>}
+                  style={{ minHeight: isPresentationMode ? "100vh" : 620, borderRadius: isPresentationMode ? 0 : 8 }}
+                  styles={{ body: { background: isPresentationMode ? "#0f172a" : "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)" } }}
+                >
+                  <Space direction="vertical" size={22} style={{ width: "100%" }}>
+                    <Row justify="space-between" align="middle" gutter={[12, 12]}>
+                      <Col>
+                        <Space size={12} wrap>
+                          <Title level={1} style={{ margin: 0, color: isPresentationMode ? "#f8fafc" : undefined }}>Tono: {activeSong.song.key}</Title>
+                          <Text style={{ color: isPresentationMode ? "#cbd5e1" : undefined }}>Canción {activeIndex + 1} de {currentService.songs.length}</Text>
+                        </Space>
+                      </Col>
+                      <Col>
+                        <Space wrap>
+                          <Button icon={<MinusOutlined />} onClick={decreaseFont}>Letra</Button>
+                          <Button icon={<PlusOutlined />} onClick={increaseFont}>Letra</Button>
+                          <Button icon={isPresentationMode ? <CompressOutlined /> : <ExpandOutlined />} type="primary" onClick={togglePresentationMode}>
+                            {isPresentationMode ? "Salir" : "Pantalla completa"}
+                          </Button>
+                        </Space>
+                      </Col>
+                    </Row>
+
+                    <div
+                      style={{
+                        background: isPresentationMode ? "#111827" : "#ffffff",
+                        border: isPresentationMode ? "1px solid #334155" : "1px solid #e5e7eb",
+                        borderRadius: 20,
+                        boxShadow: isPresentationMode ? "none" : "0 18px 45px rgba(15, 23, 42, 0.08)",
+                        color: isPresentationMode ? "#f8fafc" : "#111827",
+                        minHeight: isPresentationMode ? "calc(100vh - 240px)" : 380,
+                        padding: isPresentationMode ? 44 : 32
+                      }}
+                    >
+                      <Paragraph style={{ whiteSpace: "pre-wrap", fontSize, lineHeight: 1.55, marginBottom: 0, color: "inherit" }}>
+                        {activeSong.song.lyrics}
+                      </Paragraph>
+                    </div>
+
+                    <Row justify="space-between" align="middle" gutter={[12, 12]}>
+                      <Col>
+                        <Button disabled={activeIndex <= 0} size="large" onClick={() => goToSong(activeIndex - 1)}>
+                          Anterior
+                        </Button>
+                      </Col>
+                      <Col>
+                        <Space>
+                          {currentService.songs.map((serviceSong, index) => (
+                            <Button
+                              key={serviceSong.id}
+                              shape="circle"
+                              type={serviceSong.id === activeSong.id ? "primary" : "default"}
+                              onClick={() => goToSong(index)}
+                            >
+                              {index + 1}
+                            </Button>
+                          ))}
+                        </Space>
+                      </Col>
+                      <Col>
+                        <Button disabled={!currentService.songs[activeIndex + 1]} size="large" type="primary" onClick={() => goToSong(activeIndex + 1)}>
+                          Siguiente
+                        </Button>
+                      </Col>
+                    </Row>
                   </Space>
                 </Card>
               ) : (
