@@ -1,52 +1,44 @@
-export type UserRole = "leader" | "musico";
+export type UserRole = "dirigente" | "musico"
 
-type StaticUser = {
-  username: string;
-  password: string;
-  role: UserRole;
-};
+type LoginParams = {
+  username: string
+  password: string
+}
 
-const STATIC_USERS: StaticUser[] = [
+type StaticUser = LoginParams & {
+  role: UserRole
+  displayName: string
+}
+
+export const STATIC_USERS: StaticUser[] = [
   {
-    username: "leader",
-    password: "leader123",
-    role: "leader",
+    username: "dirigente",
+    password: "dirigente123",
+    role: "dirigente",
+    displayName: "Dirigente"
   },
   {
     username: "musico",
     password: "musico123",
     role: "musico",
-  },
-];
+    displayName: "Músico"
+  }
+]
 
-type LoginParams = {
-  username: string;
-  password: string;
-};
-
-export async function loginUser({
-                                  username,
-                                  password,
-                                }: LoginParams): Promise<{ message: string; role?: UserRole; status: number }> {
-  const staticUser = STATIC_USERS.find((user) => user.username === username);
+export async function loginUser({ username, password }: LoginParams): Promise<{ message: string; role?: UserRole; status: number }> {
+  const normalizedUsername = username.trim().toLowerCase()
+  const staticUser = STATIC_USERS.find((candidate) => candidate.username === normalizedUsername && candidate.password === password)
 
   if (!staticUser) {
     return {
       status: 401,
-      message: "Usuario no encontrado",
-    };
-  }
-
-  if (staticUser.password !== password) {
-    return {
-      status: 401,
-      message: "Contraseña incorrecta",
-    };
+      message: "Credenciales incorrectas. Usa dirigente/dirigente123 o musico/musico123"
+    }
   }
 
   return {
     status: 200,
-    message: `Inicio de sesión exitoso (${staticUser.role})`,
-    role: staticUser.role,
-  };
+    message: `Inicio de sesión exitoso (${staticUser.displayName})`,
+    role: staticUser.role
+  }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Layer, Rect, Stage, Text, Group, Circle, Line } from 'react-konva';
 import {
     App,
@@ -106,11 +106,20 @@ export const UploadSongComponent = () => {
     const { message } = App.useApp();
     const previewContainerRef = useRef<HTMLDivElement | null>(null);
 
+    const [role, setRole] = useState('musico');
     const [songName, setSongName] = useState('');
+    const [songKey, setSongKey] = useState('C');
+    const [songCategory, setSongCategory] = useState<'jubilo' | 'adoracion'>('jubilo');
     const [boardConfig, setBoardConfig] = useState<BoardConfig>(INITIAL_BOARD_CONFIG);
     const [contentBlocks, setContentBlocks] = useState<Interfaces[]>([createInitialBlock()]);
     const [extraTexts, setExtraTexts] = useState<ExtraTextItem[]>([]);
     const [selectedId, setSelectedId] = useState<string | null>(null);
+
+    const isLeader = role === 'dirigente' || role === 'leader';
+
+    useEffect(() => {
+        setRole(localStorage.getItem('userRole') ?? 'musico');
+    }, []);
 
     const selectedItem = useMemo<EditableItem | null>(() => {
         return (
@@ -242,6 +251,8 @@ export const UploadSongComponent = () => {
 
     const resetEditor = () => {
         setSongName('');
+        setSongKey('C');
+        setSongCategory('jubilo');
         setBoardConfig(INITIAL_BOARD_CONFIG);
         setContentBlocks([createInitialBlock()]);
         setExtraTexts([]);
@@ -250,15 +261,28 @@ export const UploadSongComponent = () => {
 
     const handleSaveSong = async () => {
         try {
-            if (!songName.trim()) {
-                message.error('El nombre de la canción es obligatorio');
+            if (!songName.trim() || !songKey.trim()) {
+                message.error('El nombre y tono de la canción son obligatorios');
+                return;
+            }
+
+            const lyrics = contentBlocks.map((block) => block.text.trim()).filter(Boolean).join('\n\n');
+
+            if (!lyrics.trim()) {
+                message.error('La letra de la canción es obligatoria');
                 return;
             }
 
             const response = await fetch('/api/songs', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: songName, payload: buildSongPayload() }),
+                body: JSON.stringify({
+                    name: songName,
+                    key: songKey,
+                    category: songCategory,
+                    lyrics,
+                    payload: buildSongPayload(),
+                }),
             });
 
             const data = await response.json();
@@ -267,7 +291,7 @@ export const UploadSongComponent = () => {
                 throw new Error(data.message || 'Error al guardar');
             }
 
-            message.success('Canción guardada con éxito');
+            message.success('Alabanza guardada con éxito');
             resetEditor();
         } catch (error) {
             message.error(
@@ -275,6 +299,17 @@ export const UploadSongComponent = () => {
             );
         }
     };
+
+    if (!isLeader) {
+        return (
+            <div style={{ padding: 24 }}>
+                <Card style={CARD_STYLE}>
+                    <Title level={3}>Acceso solo para dirigente</Title>
+                    <AntText>El músico solo puede ver las letras y tonos en el apartado Servicios.</AntText>
+                </Card>
+            </div>
+        );
+    }
 
     return (
         <div
@@ -300,7 +335,7 @@ export const UploadSongComponent = () => {
                         <Col flex="auto">
                             <Space size={8} wrap>
                                 <Title level={4} style={{ margin: 0 }}>
-                                    Editor de canción
+                                    Editor de alabanza
                                 </Title>
                                 <Tag color="blue">Seleccionar</Tag>
                                 <Tag color="purple">Doble click</Tag>
@@ -310,12 +345,27 @@ export const UploadSongComponent = () => {
                         <Col>
                             <Space wrap>
                                 <Input
-                                    placeholder="Nombre de la canción"
+                                    placeholder="Nombre de la alabanza"
                                     value={songName}
                                     onChange={(e) => setSongName(e.target.value)}
                                 />
+                                <Input
+                                    placeholder="Tono (ej. C, Em, F#)"
+                                    value={songKey}
+                                    onChange={(e) => setSongKey(e.target.value)}
+                                    style={{ width: 150 }}
+                                />
+                                <Select
+                                    value={songCategory}
+                                    onChange={setSongCategory}
+                                    style={{ width: 150 }}
+                                    options={[
+                                        { label: 'Júbilo', value: 'jubilo' },
+                                        { label: 'Adoración', value: 'adoracion' },
+                                    ]}
+                                />
                                 <Button type="primary" onClick={handleSaveSong}>
-                                    Guardar canción
+                                    Guardar alabanza
                                 </Button>
                                 <Button type="primary" icon={<PlusOutlined />} onClick={handleAddContentBlock}>
                                     Bloque

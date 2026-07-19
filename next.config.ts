@@ -1,9 +1,9 @@
-const path = require("path")
+import path from "path"
+import type { NextConfig } from "next"
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
   sassOptions: {
-    includePaths: [path.join(__dirname, "styles")]
+    includePaths: [path.join(process.cwd(), "styles")]
   },
   reactStrictMode: true,
   transpilePackages: [
@@ -19,4 +19,4 @@ const nextConfig = {
   ]
 }
 
-module.exports = nextConfig
+export default nextConfig

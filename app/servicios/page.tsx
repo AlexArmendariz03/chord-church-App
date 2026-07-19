@@ -1,12 +1,12 @@
 import { App } from "antd"
 import Layout from "@/features/layout/client/components/layout"
-import { UploadSongComponent } from "@/features/uploadSong/client/uploadSong-component"
+import ServicesComponent from "@/features/services/client/components/services-component"
 
-export default function UploadPage() {
+export default function ServicesPage() {
   return (
     <Layout>
       <App>
-        <UploadSongComponent />
+        <ServicesComponent />
       </App>
     </Layout>
   )
