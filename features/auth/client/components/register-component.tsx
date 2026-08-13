@@ -33,8 +33,12 @@ const RegisterComponent = () => {
   }
 
   return (
-    <Row justify="center" align="middle" style={{ minHeight: "100vh" }}>
-      <Col xs={24} sm={18} md={12} lg={8}>
+    <Row
+      justify="center" align="middle"
+      style={{ minHeight: "100vh" }}>
+      <Col
+        xs={24} sm={18}
+        md={12} lg={8}>
         <Form layout="vertical" onFinish={onFinish}>
           <Form.Item name="username" rules={[{ required: true, message: "Por favor ingrese su nombre de usuario!" }]}>
             <Input placeholder="Nombre de usuario" />
@@ -43,7 +47,9 @@ const RegisterComponent = () => {
             <Input.Password placeholder="Contraseña" />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" block>
+            <Button
+              type="primary" htmlType="submit"
+              block>
               Registrar
             </Button>
           </Form.Item>

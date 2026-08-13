@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "ESLINT_USE_FLAT_CONFIG=false eslint . --ext .ts,.tsx",
+    "lint:fix": "ESLINT_USE_FLAT_CONFIG=false eslint . --ext .ts,.tsx --fix"
   },
   "engines": {
     "node": "20.x"
@@ -16,7 +17,6 @@
     "@prisma/client": "^6.19.2",
     "antd": "5.27.5",
     "axios": "1.13.5",
-    "bcrypt": "6.0.0",
     "bcryptjs": "^3.0.3",
     "konva": "^10.2.1",
     "next": "16.1.5",
@@ -26,7 +26,6 @@
     "react-konva": "^19.2.3"
   },
   "devDependencies": {
-    "@types/bcrypt": "5.0.2",
     "@types/node": "^20.19.10",
     "@types/react": "19.1.10",
     "@types/react-dom": "19.1.7",

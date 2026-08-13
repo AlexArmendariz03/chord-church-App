@@ -43,9 +43,9 @@ const CurrentServiceComponent = () => {
   const currentService = useMemo(() => services[0], [services])
   const activeSong = useMemo(() => {
     if (!currentService) return null
-    return currentService.songs.find((serviceSong) => serviceSong.id === activeServiceSongId) ?? currentService.songs[0] ?? null
+    return currentService.songs.find(serviceSong => serviceSong.id === activeServiceSongId) ?? currentService.songs[0] ?? null
   }, [activeServiceSongId, currentService])
-  const activeIndex = currentService?.songs.findIndex((serviceSong) => serviceSong.id === activeSong?.id) ?? -1
+  const activeIndex = currentService?.songs.findIndex(serviceSong => serviceSong.id === activeSong?.id) ?? -1
 
   useEffect(() => {
     if (currentService?.songs[0] && !activeServiceSongId) {
@@ -76,8 +76,8 @@ const CurrentServiceComponent = () => {
     }
   }
 
-  const increaseFont = () => setFontSize((current) => Math.min(current + 4, 56))
-  const decreaseFont = () => setFontSize((current) => Math.max(current - 4, 22))
+  const increaseFont = () => setFontSize(current => Math.min(current + 4, 56))
+  const decreaseFont = () => setFontSize(current => Math.max(current - 4, 22))
 
   return (
     <div
@@ -89,9 +89,10 @@ const CurrentServiceComponent = () => {
         padding: isPresentationMode ? 0 : 0,
         position: isPresentationMode ? "fixed" : "relative",
         zIndex: isPresentationMode ? 2000 : 1
-      }}
-    >
-      <Space direction="vertical" size={20} style={{ width: "100%" }}>
+      }}>
+      <Space
+        direction="vertical" size={20}
+        style={{ width: "100%" }}>
         {!isPresentationMode && (
           <Card loading={loading}>
             <Title level={2}>En curso demo</Title>
@@ -110,8 +111,7 @@ const CurrentServiceComponent = () => {
                 <Card
                   title="Alabanzas programadas"
                   extra={<Text strong>{new Date(currentService.eventDate).toLocaleString()}</Text>}
-                  style={{ height: "100%", borderRadius: isPresentationMode ? 0 : 8 }}
-                >
+                  style={{ height: "100%", borderRadius: isPresentationMode ? 0 : 8 }}>
                   <Space direction="vertical" style={{ width: "100%" }}>
                     <Title level={4} style={{ marginTop: 0 }}>{currentService.title}</Title>
                     {currentService.songs.map(({ id, song, category, position }) => (
@@ -120,8 +120,7 @@ const CurrentServiceComponent = () => {
                         key={id}
                         type={activeSong?.id === id ? "primary" : "default"}
                         onClick={() => setActiveServiceSongId(id)}
-                        style={{ height: "auto", justifyContent: "flex-start", padding: "12px", textAlign: "left", whiteSpace: "normal" }}
-                      >
+                        style={{ height: "auto", justifyContent: "flex-start", padding: "12px", textAlign: "left", whiteSpace: "normal" }}>
                         {position}. {song.name} · {song.key} · {category === "jubilo" ? "Júbilo" : "Adoración"}
                       </Button>
                     ))}
@@ -139,18 +138,20 @@ const CurrentServiceComponent = () => {
                         <Button
                           aria-label={isSongListCollapsed ? "Mostrar lista" : "Colapsar lista"}
                           icon={isSongListCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                          onClick={() => setIsSongListCollapsed((current) => !current)}
-                        />
+                          onClick={() => setIsSongListCollapsed(current => !current)} />
                       </Tooltip>
                       <span>{activeSong.position}. {activeSong.song.name}</span>
                     </Space>
                   }
                   extra={<Tag color={activeSong.category === "jubilo" ? "green" : "purple"}>{activeSong.category === "jubilo" ? "Júbilo" : "Adoración"}</Tag>}
                   style={{ minHeight: isPresentationMode ? "100vh" : 620, borderRadius: isPresentationMode ? 0 : 8 }}
-                  styles={{ body: { background: isPresentationMode ? "#0f172a" : "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)" } }}
-                >
-                  <Space direction="vertical" size={22} style={{ width: "100%" }}>
-                    <Row justify="space-between" align="middle" gutter={[12, 12]}>
+                  styles={{ body: { background: isPresentationMode ? "#0f172a" : "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)" } }}>
+                  <Space
+                    direction="vertical" size={22}
+                    style={{ width: "100%" }}>
+                    <Row
+                      justify="space-between" align="middle"
+                      gutter={[12, 12]}>
                       <Col>
                         <Space size={12} wrap>
                           <Title level={1} style={{ margin: 0, color: isPresentationMode ? "#f8fafc" : undefined }}>Tono: {activeSong.song.key}</Title>
@@ -160,18 +161,21 @@ const CurrentServiceComponent = () => {
                       <Col>
                         <Space wrap>
                           <Tooltip title="Reducir letra">
-                            <Button aria-label="Reducir letra" icon={<MinusOutlined />} onClick={decreaseFont} />
+                            <Button
+                              aria-label="Reducir letra" icon={<MinusOutlined />}
+                              onClick={decreaseFont} />
                           </Tooltip>
                           <Tooltip title="Aumentar letra">
-                            <Button aria-label="Aumentar letra" icon={<PlusOutlined />} onClick={increaseFont} />
+                            <Button
+                              aria-label="Aumentar letra" icon={<PlusOutlined />}
+                              onClick={increaseFont} />
                           </Tooltip>
                           <Tooltip title={isPresentationMode ? "Salir de pantalla completa" : "Pantalla completa"}>
                             <Button
                               aria-label={isPresentationMode ? "Salir de pantalla completa" : "Pantalla completa"}
                               icon={isPresentationMode ? <CompressOutlined /> : <ExpandOutlined />}
                               type="primary"
-                              onClick={togglePresentationMode}
-                            />
+                              onClick={togglePresentationMode} />
                           </Tooltip>
                         </Space>
                       </Col>
@@ -186,16 +190,19 @@ const CurrentServiceComponent = () => {
                         color: isPresentationMode ? "#f8fafc" : "#111827",
                         minHeight: isPresentationMode ? "calc(100vh - 240px)" : 380,
                         padding: isPresentationMode ? 44 : 32
-                      }}
-                    >
+                      }}>
                       <Paragraph style={{ whiteSpace: "pre-wrap", fontSize, lineHeight: 1.55, marginBottom: 0, color: "inherit" }}>
                         {activeSong.song.lyrics}
                       </Paragraph>
                     </div>
 
-                    <Row justify="space-between" align="middle" gutter={[12, 12]}>
+                    <Row
+                      justify="space-between" align="middle"
+                      gutter={[12, 12]}>
                       <Col>
-                        <Button disabled={activeIndex <= 0} size="large" onClick={() => goToSong(activeIndex - 1)}>
+                        <Button
+                          disabled={activeIndex <= 0} size="large"
+                          onClick={() => goToSong(activeIndex - 1)}>
                           Anterior
                         </Button>
                       </Col>
@@ -206,15 +213,16 @@ const CurrentServiceComponent = () => {
                               key={serviceSong.id}
                               shape="circle"
                               type={serviceSong.id === activeSong.id ? "primary" : "default"}
-                              onClick={() => goToSong(index)}
-                            >
+                              onClick={() => goToSong(index)}>
                               {index + 1}
                             </Button>
                           ))}
                         </Space>
                       </Col>
                       <Col>
-                        <Button disabled={!currentService.songs[activeIndex + 1]} size="large" type="primary" onClick={() => goToSong(activeIndex + 1)}>
+                        <Button
+                          disabled={!currentService.songs[activeIndex + 1]} size="large"
+                          type="primary" onClick={() => goToSong(activeIndex + 1)}>
                           Siguiente
                         </Button>
                       </Col>

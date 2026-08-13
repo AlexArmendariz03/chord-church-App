@@ -1,5 +1,6 @@
-import { loginUser } from "@/features/auth/server/login"
 import { NextResponse } from "next/server"
+import { loginUser } from "@/features/auth/server/login"
+import { setSessionCookie } from "@/shared/server/session"
 
 export async function POST(request: Request) {
   try {
@@ -10,6 +11,11 @@ export async function POST(request: Request) {
     }
 
     const response = await loginUser({ username, password })
+
+    if (response.status === 200 && response.role) {
+      await setSessionCookie({ username: username.trim().toLowerCase(), role: response.role })
+    }
+
     return NextResponse.json({ message: response.message, role: response.role }, { status: response.status })
   } catch (error) {
     console.error(error)

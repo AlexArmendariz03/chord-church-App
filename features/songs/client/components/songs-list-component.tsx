@@ -28,9 +28,9 @@ const SongsListComponent = () => {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  const isLeader = role === "dirigente" || role === "leader"
-  const jubiloSongs = useMemo(() => songs.filter((song) => song.category === "jubilo"), [songs])
-  const adoracionSongs = useMemo(() => songs.filter((song) => song.category === "adoracion"), [songs])
+  const isLeader = role === "leader"
+  const jubiloSongs = useMemo(() => songs.filter(song => song.category === "jubilo"), [songs])
+  const adoracionSongs = useMemo(() => songs.filter(song => song.category === "adoracion"), [songs])
 
   const fetchSongs = async () => {
     setLoading(true)
@@ -104,16 +104,21 @@ const SongsListComponent = () => {
 
     return (
       <Row gutter={[16, 16]}>
-        {items.map((song) => (
-          <Col xs={24} md={12} xl={8} key={song.id}>
+        {items.map(song => (
+          <Col
+            xs={24} md={12}
+            xl={8} key={song.id}>
             <Card
               title={song.name}
               extra={<Tag color={song.category === "jubilo" ? "green" : "purple"}>{song.category === "jubilo" ? "Júbilo" : "Adoración"}</Tag>}
               actions={[
-                <Button type="link" key="edit" onClick={() => openEditModal(song)}>Editar</Button>,
-                <Button type="link" danger key="delete" onClick={() => deleteSong(song)}>Eliminar</Button>
-              ]}
-            >
+                <Button
+                  type="link" key="edit"
+                  onClick={() => openEditModal(song)}>Editar</Button>,
+                <Button
+                  type="link" danger
+                  key="delete" onClick={() => deleteSong(song)}>Eliminar</Button>
+              ]}>
               <Title level={5}>Tono: {song.key}</Title>
               <Paragraph ellipsis={{ rows: 5, expandable: true, symbol: "ver más" }} style={{ whiteSpace: "pre-wrap" }}>
                 {song.lyrics}
@@ -129,7 +134,7 @@ const SongsListComponent = () => {
     return (
       <div style={{ padding: 24 }}>
         <Card>
-          <Title level={3}>Acceso solo para dirigente</Title>
+          <Title level={3}>Acceso solo para líder</Title>
           <Paragraph>El músico solo puede consultar las alabanzas dentro de Servicios o En curso.</Paragraph>
         </Card>
       </div>
@@ -138,7 +143,9 @@ const SongsListComponent = () => {
 
   return (
     <div style={{ padding: 24 }}>
-      <Space direction="vertical" size={20} style={{ width: "100%" }}>
+      <Space
+        direction="vertical" size={20}
+        style={{ width: "100%" }}>
         <Card>
           <Title level={2}>Lista de alabanzas demo</Title>
           <Paragraph>
@@ -151,26 +158,40 @@ const SongsListComponent = () => {
             items={[
               { key: "jubilo", label: `Júbilo (${jubiloSongs.length})`, children: renderSongs(jubiloSongs) },
               { key: "adoracion", label: `Adoración (${adoracionSongs.length})`, children: renderSongs(adoracionSongs) }
-            ]}
-          />
+            ]} />
         </Card>
       </Space>
 
-      <Modal title="Editar alabanza" open={Boolean(editingSong)} onCancel={closeEditModal} footer={null} destroyOnHidden>
-        <Form form={form} layout="vertical" onFinish={updateSong}>
-          <Form.Item name="name" label="Nombre" rules={[{ required: true, message: "Escribe el nombre" }]}>
+      <Modal
+        title="Editar alabanza" open={Boolean(editingSong)}
+        onCancel={closeEditModal} footer={null}
+        destroyOnHidden>
+        <Form
+          form={form} layout="vertical"
+          onFinish={updateSong}>
+          <Form.Item
+            name="name" label="Nombre"
+            rules={[{ required: true, message: "Escribe el nombre" }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="key" label="Tono" rules={[{ required: true, message: "Escribe el tono" }]}>
+          <Form.Item
+            name="key" label="Tono"
+            rules={[{ required: true, message: "Escribe el tono" }]}>
             <Input placeholder="Ej. C, D, Em" />
           </Form.Item>
-          <Form.Item name="category" label="Categoría" rules={[{ required: true, message: "Selecciona categoría" }]}>
+          <Form.Item
+            name="category" label="Categoría"
+            rules={[{ required: true, message: "Selecciona categoría" }]}>
             <Select options={CATEGORY_OPTIONS} />
           </Form.Item>
-          <Form.Item name="lyrics" label="Letra" rules={[{ required: true, message: "Escribe la letra" }]}>
+          <Form.Item
+            name="lyrics" label="Letra"
+            rules={[{ required: true, message: "Escribe la letra" }]}>
             <TextArea rows={8} />
           </Form.Item>
-          <Button type="primary" htmlType="submit" loading={saving} block>
+          <Button
+            type="primary" htmlType="submit"
+            loading={saving} block>
             Guardar cambios
           </Button>
         </Form>
