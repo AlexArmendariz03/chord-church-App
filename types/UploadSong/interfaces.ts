@@ -1,9 +1,9 @@
 
-export type AlignType = 'left' | 'center' | 'right';
+export type AlignType = "left" | "center" | "right";
 
 export type ExtraTextItem = {
     id: string;
-    type: 'tone';
+    type: "tone";
     text: string;
     x: number;
     y: number;
@@ -12,7 +12,7 @@ export type ExtraTextItem = {
 };
 export type Interfaces = {
     id: string;
-    type: 'content';
+    type: "content";
     text: string;
     x: number;
     y: number;

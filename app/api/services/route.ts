@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
-import { demoServiceStore } from "@/shared/server/demo-data"
+import { prisma } from "@/shared/server/prisma"
+import { requireLeader } from "@/shared/server/session"
 
 type CreateServiceBody = {
   title?: string
@@ -9,10 +10,26 @@ type CreateServiceBody = {
 }
 
 export async function GET() {
-  return NextResponse.json(demoServiceStore.listActive())
+  const services = await prisma.service.findMany({
+    where: { eventDate: { gte: new Date() } },
+    orderBy: { eventDate: "asc" },
+    include: {
+      songs: {
+        orderBy: { position: "asc" },
+        include: { song: true }
+      }
+    }
+  })
+
+  return NextResponse.json(services)
 }
 
 export async function POST(req: Request) {
+  const leader = await requireLeader()
+  if (!leader) {
+    return NextResponse.json({ message: "Solo el líder puede crear servicios" }, { status: 403 })
+  }
+
   try {
     const { title, eventDate, jubiloSongIds = [], adoracionSongIds = [] }: CreateServiceBody = await req.json()
     const selectedIds = [...jubiloSongIds, ...adoracionSongIds]
@@ -22,28 +39,40 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Título y fecha del evento son obligatorios" }, { status: 400 })
     }
 
-    if (jubiloSongIds.length !== 2 || adoracionSongIds.length !== 2 || new Set(selectedIds).size !== 4) {
-      return NextResponse.json({ message: "Debes seleccionar exactamente 2 júbilo y 2 adoración" }, { status: 400 })
+    if (jubiloSongIds.length < 1 || adoracionSongIds.length < 1 || new Set(selectedIds).size !== selectedIds.length) {
+      return NextResponse.json({ message: "Selecciona al menos 1 canción de júbilo y 1 de adoración, sin repetir" }, { status: 400 })
     }
 
-    const songs = demoServiceStore.findSongsByIds(selectedIds)
-    const validJubilo = songs.filter((song) => song.category === "jubilo" && jubiloSongIds.includes(song.id)).length
-    const validAdoracion = songs.filter((song) => song.category === "adoracion" && adoracionSongIds.includes(song.id)).length
+    const songs = await prisma.song.findMany({ where: { id: { in: selectedIds } } })
+    const validJubilo = songs.filter(song => song.category === "jubilo" && jubiloSongIds.includes(song.id)).length
+    const validAdoracion = songs.filter(song => song.category === "adoracion" && adoracionSongIds.includes(song.id)).length
 
-    if (validJubilo !== 2 || validAdoracion !== 2) {
+    if (validJubilo !== jubiloSongIds.length || validAdoracion !== adoracionSongIds.length) {
       return NextResponse.json({ message: "La selección no coincide con los tipos de canción" }, { status: 400 })
     }
 
-    const service = demoServiceStore.create({
-      title: title.trim(),
-      eventDate: parsedDate.toISOString(),
-      jubiloSongIds,
-      adoracionSongIds
+    const service = await prisma.service.create({
+      data: {
+        title: title.trim(),
+        eventDate: parsedDate,
+        songs: {
+          create: [
+            ...jubiloSongIds.map((songId, index) => ({ songId, category: "jubilo" as const, position: index + 1 })),
+            ...adoracionSongIds.map((songId, index) => ({ songId, category: "adoracion" as const, position: jubiloSongIds.length + index + 1 }))
+          ]
+        }
+      },
+      include: {
+        songs: {
+          orderBy: { position: "asc" },
+          include: { song: true }
+        }
+      }
     })
 
     return NextResponse.json(service, { status: 201 })
   } catch (error) {
-    console.error("Error creating demo service:", error)
+    console.error("Error creating service:", error)
     return NextResponse.json({ message: "Error al crear el servicio" }, { status: 500 })
   }
 }

@@ -35,10 +35,16 @@ const LoginComponent = () => {
   }
 
   return (
-    <Row justify="center" align="middle" className="login-container">
-      <Col xs={24} sm={18} md={12} lg={8}>
+    <Row
+      justify="center" align="middle"
+      className="login-container">
+      <Col
+        xs={24} sm={18}
+        md={12} lg={8}>
         <Row justify="center">
-          <Image width={450} height={450} src="/1.png" alt="logo" />
+          <Image
+            width={450} height={450}
+            src="/1.png" alt="logo" />
         </Row>
         <Alert
           type="info"
@@ -47,11 +53,10 @@ const LoginComponent = () => {
           message="Credenciales hardcodeadas"
           description={
             <Space direction="vertical" size={0}>
-              <Typography.Text>Dirigente: dirigente / dirigente123</Typography.Text>
+              <Typography.Text>Líder: leader / leader123</Typography.Text>
               <Typography.Text>Músico: musico / musico123</Typography.Text>
             </Space>
-          }
-        />
+          } />
         <Form layout="vertical" onFinish={onFinish}>
           <Form.Item name="username" rules={[{ required: true, message: "¡Por favor ingrese su usuario!" }]}>
             <Input placeholder="Usuario" autoComplete="username" />
@@ -60,7 +65,9 @@ const LoginComponent = () => {
             <Input.Password placeholder="Contraseña" autoComplete="current-password" />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" block>
+            <Button
+              type="primary" htmlType="submit"
+              block>
               Iniciar Sesión
             </Button>
           </Form.Item>

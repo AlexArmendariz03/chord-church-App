@@ -22,9 +22,9 @@ const ServicesComponent = () => {
   const [services, setServices] = useState<ServiceWithSongs[]>([])
   const [loading, setLoading] = useState(false)
 
-  const isLeader = role === "dirigente" || role === "leader"
-  const jubiloSongs = useMemo(() => songs.filter((song) => song.category === "jubilo"), [songs])
-  const adoracionSongs = useMemo(() => songs.filter((song) => song.category === "adoracion"), [songs])
+  const isLeader = role === "leader"
+  const jubiloSongs = useMemo(() => songs.filter(song => song.category === "jubilo"), [songs])
+  const adoracionSongs = useMemo(() => songs.filter(song => song.category === "adoracion"), [songs])
 
   const fetchData = async () => {
     const [songsResponse, servicesResponse] = await Promise.all([fetch("/api/songs"), fetch("/api/services")])
@@ -59,51 +59,75 @@ const ServicesComponent = () => {
 
   return (
     <div style={{ padding: 24 }}>
-      <Space direction="vertical" size={20} style={{ width: "100%" }}>
+      <Space
+        direction="vertical" size={20}
+        style={{ width: "100%" }}>
         <Card>
           <Title level={2}>Servicios demo</Title>
           <Paragraph>
-            Flujo hardcodeado: ya hay alabanzas de ejemplo cargadas. El dirigente crea el servicio seleccionando exactamente <Text strong>2 canciones de júbilo</Text> y <Text strong>2 de adoración</Text>. El músico no edita ni crea alabanzas: solo ve los servicios programados y puede abrir cada alabanza desde En curso.
+            El líder crea el servicio seleccionando al menos <Text strong>1 canción de júbilo</Text> y <Text strong>1 de adoración</Text>. El músico no edita ni crea alabanzas: solo ve los servicios programados y puede abrir cada alabanza desde En curso.
           </Paragraph>
-          <Tag color={isLeader ? "gold" : "blue"}>Rol actual: {isLeader ? "Dirigente" : "Músico"}</Tag>
+          <Tag color={isLeader ? "gold" : "blue"}>Rol actual: {isLeader ? "Líder" : "Músico"}</Tag>
         </Card>
 
         {isLeader && (
           <Card title="Crear servicio">
-            <Form form={form} layout="vertical" onFinish={createService}>
+            <Form
+              form={form} layout="vertical"
+              onFinish={createService}>
               <Row gutter={16}>
                 <Col xs={24} md={12}>
-                  <Form.Item name="title" label="Nombre del servicio" rules={[{ required: true, message: "Escribe el nombre" }]}>
+                  <Form.Item
+                    name="title" label="Nombre del servicio"
+                    rules={[{ required: true, message: "Escribe el nombre" }]}>
                     <Input placeholder="Ej. Servicio domingo" />
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={12}>
-                  <Form.Item name="eventDate" label="Fecha del evento" rules={[{ required: true, message: "Selecciona la fecha" }]}>
+                  <Form.Item
+                    name="eventDate" label="Fecha del evento"
+                    rules={[{ required: true, message: "Selecciona la fecha" }]}>
                     <DatePicker showTime style={{ width: "100%" }} />
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={12}>
-                  <Form.Item name="jubiloSongIds" label="2 canciones de júbilo" rules={[{ required: true, type: "array", len: 2, message: "Selecciona exactamente 2" }]}>
-                    <Select mode="multiple" maxCount={2} options={jubiloSongs.map((song) => ({ label: `${song.name} (${song.key})`, value: song.id }))} />
+                  <Form.Item
+                    name="jubiloSongIds" label="Canciones de júbilo (mínimo 1)"
+                    rules={[{ required: true, type: "array", min: 1, message: "Selecciona al menos 1" }]}>
+                    <Select
+                      mode="multiple"
+                      options={jubiloSongs.map(song => ({ label: `${song.name} (${song.key})`, value: song.id }))} />
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={12}>
-                  <Form.Item name="adoracionSongIds" label="2 canciones de adoración" rules={[{ required: true, type: "array", len: 2, message: "Selecciona exactamente 2" }]}>
-                    <Select mode="multiple" maxCount={2} options={adoracionSongs.map((song) => ({ label: `${song.name} (${song.key})`, value: song.id }))} />
+                  <Form.Item
+                    name="adoracionSongIds" label="Canciones de adoración (mínimo 1)"
+                    rules={[{ required: true, type: "array", min: 1, message: "Selecciona al menos 1" }]}>
+                    <Select
+                      mode="multiple"
+                      options={adoracionSongs.map(song => ({ label: `${song.name} (${song.key})`, value: song.id }))} />
                   </Form.Item>
                 </Col>
               </Row>
-              <Button type="primary" htmlType="submit" loading={loading}>Guardar servicio</Button>
+              <Button
+                type="primary" htmlType="submit"
+                loading={loading}>Guardar servicio</Button>
             </Form>
           </Card>
         )}
 
-        {services.length === 0 ? <Empty description="No hay servicios activos" /> : services.map((service) => (
-          <Card key={service.id} title={service.title} extra={new Date(service.eventDate).toLocaleString()}>
+        {services.length === 0 ? <Empty description="No hay servicios activos" /> : services.map(service => (
+          <Card
+            key={service.id} title={service.title}
+            extra={new Date(service.eventDate).toLocaleString()}>
             <Row gutter={[16, 16]}>
               {service.songs.map(({ id, song, category, position }) => (
-                <Col xs={24} md={12} key={id}>
-                  <Card size="small" title={`${position}. ${song.name}`} extra={<Tag color={category === "jubilo" ? "green" : "purple"}>{category === "jubilo" ? "Júbilo" : "Adoración"}</Tag>}>
+                <Col
+                  xs={24} md={12}
+                  key={id}>
+                  <Card
+                    size="small" title={`${position}. ${song.name}`}
+                    extra={<Tag color={category === "jubilo" ? "green" : "purple"}>{category === "jubilo" ? "Júbilo" : "Adoración"}</Tag>}>
                     <Title level={4}>Tono: {song.key}</Title>
                     <Paragraph style={{ whiteSpace: "pre-wrap" }}>{song.lyrics}</Paragraph>
                   </Card>

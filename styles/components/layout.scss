@@ -16,14 +16,6 @@
     display: block;
   }
 
-  .sider {
-    box-shadow: 0 2px 10px #424A5C;
-    position: fixed;
-    top: 55px;
-    height: calc(100vh - 45px);
-    z-index: 999;
-  }
-
   .user {
     display: flex;
     align-items: center;
@@ -47,37 +39,6 @@
     width: 100%;
   }
 
-  .content-collapsed {
-    padding-left: 24px;
-  }
-
-  .ant-menu-item-selected {
-    background-color: #576176;
-    border-radius: 0;
-  }
-
-  .ant-menu-item-selected .anticon,
-  .ant-menu-item-selected > .ant-menu-title-content {
-    color: white;
-  }
-
-  .sider-footer {
-    position: absolute;
-    bottom: 16px;
-    margin-left: 25px;
-  }
-
-  .menu-toggle {
-    font-size: 20px;
-    cursor: pointer;
-
-  }
-
-  .menu-toggle:hover {
-    color: $primary-black;
-    transition: transform 0.2s ease, color 0.2s ease;
-  }
-
   .mobile-menu-button {
     display: none;
   }
@@ -99,10 +60,6 @@
     .user .icon {
       font-size: 20px;
       color: black;
-    }
-
-    .sider {
-      display: none;
     }
 
     .content {

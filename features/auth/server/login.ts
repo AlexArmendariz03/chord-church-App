@@ -1,4 +1,7 @@
-export type UserRole = "dirigente" | "musico"
+import bcrypt from "bcryptjs"
+import { prisma } from "@/shared/server/prisma"
+
+export type UserRole = "leader" | "musico"
 
 type LoginParams = {
   username: string
@@ -12,10 +15,10 @@ type StaticUser = LoginParams & {
 
 export const STATIC_USERS: StaticUser[] = [
   {
-    username: "dirigente",
-    password: "dirigente123",
-    role: "dirigente",
-    displayName: "Dirigente"
+    username: "leader",
+    password: "leader123",
+    role: "leader",
+    displayName: "Líder"
   },
   {
     username: "musico",
@@ -27,18 +30,27 @@ export const STATIC_USERS: StaticUser[] = [
 
 export async function loginUser({ username, password }: LoginParams): Promise<{ message: string; role?: UserRole; status: number }> {
   const normalizedUsername = username.trim().toLowerCase()
-  const staticUser = STATIC_USERS.find((candidate) => candidate.username === normalizedUsername && candidate.password === password)
+  const staticUser = STATIC_USERS.find(candidate => candidate.username === normalizedUsername && candidate.password === password)
 
-  if (!staticUser) {
+  if (staticUser) {
     return {
-      status: 401,
-      message: "Credenciales incorrectas. Usa dirigente/dirigente123 o musico/musico123"
+      status: 200,
+      message: `Inicio de sesión exitoso (${staticUser.displayName})`,
+      role: staticUser.role
+    }
+  }
+
+  const dbUser = await prisma.user.findUnique({ where: { username: normalizedUsername } })
+  if (dbUser && (await bcrypt.compare(password, dbUser.password))) {
+    return {
+      status: 200,
+      message: "Inicio de sesión exitoso",
+      role: dbUser.role
     }
   }
 
   return {
-    status: 200,
-    message: `Inicio de sesión exitoso (${staticUser.displayName})`,
-    role: staticUser.role
+    status: 401,
+    message: "Credenciales incorrectas. Usa leader/leader123 o musico/musico123"
   }
 }

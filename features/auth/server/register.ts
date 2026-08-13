@@ -1,48 +1,39 @@
+import bcrypt from "bcryptjs"
+import { prisma } from "@/shared/server/prisma"
+import { STATIC_USERS } from "./login"
+
 type RegisterParams = {
-  username: string;
-  password: string;
-};
+  username: string
+  password: string
+}
 
-type StaticUser = {
-  username: string;
-  password: string;
-  role: "leader" | "musico";
-};
+const RESERVED_USERNAMES = new Set(STATIC_USERS.map(user => user.username))
 
-const STATIC_USERS: StaticUser[] = [
-  {
-    username: "leader",
-    password: "leader123",
-    role: "leader",
-  },
-  {
-    username: "musico",
-    password: "musico123",
-    role: "musico",
-  },
-];
+export async function registerUser({ username, password }: RegisterParams): Promise<{ message: string; status: number }> {
+  const normalizedUsername = username.trim().toLowerCase()
 
-export async function registerUser({
-                                     username,
-                                     password,
-                                   }: RegisterParams): Promise<{ message: string; status: number }> {
-  const existingUser = STATIC_USERS.find((user) => user.username === username);
-
-  if (existingUser) {
-    return {
-      status: 409,
-      message: "El nombre de usuario ya está en uso",
-    };
+  if (!normalizedUsername || !password) {
+    return { status: 400, message: "Usuario y contraseña son obligatorios" }
   }
 
-  STATIC_USERS.push({
-    username,
-    password,
-    role: "musico",
-  });
+  if (RESERVED_USERNAMES.has(normalizedUsername)) {
+    return { status: 409, message: "El nombre de usuario ya está en uso" }
+  }
 
-  return {
-    status: 201,
-    message: "Usuario registrado exitosamente",
-  };
+  const existingUser = await prisma.user.findUnique({ where: { username: normalizedUsername } })
+  if (existingUser) {
+    return { status: 409, message: "El nombre de usuario ya está en uso" }
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10)
+
+  await prisma.user.create({
+    data: {
+      username: normalizedUsername,
+      password: hashedPassword,
+      role: "musico"
+    }
+  })
+
+  return { status: 201, message: "Usuario registrado exitosamente" }
 }
