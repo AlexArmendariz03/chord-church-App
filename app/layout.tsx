@@ -1,5 +1,9 @@
 import "@/styles/globals.scss"
 import type { ReactNode } from "react"
+import { Inter } from "next/font/google"
+import ThemeProvider from "@/features/layout/client/components/theme-provider"
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 
 export const metadata = {
   title: "Chord Church App",
@@ -12,9 +16,11 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en">
+    <html lang="en" className={inter.variable}>
       <body>
-        <main>{children}</main>
+        <main>
+          <ThemeProvider>{children}</ThemeProvider>
+        </main>
       </body>
     </html>
   )
