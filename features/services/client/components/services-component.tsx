@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { MoreOutlined } from "@ant-design/icons"
-import { App, Button, Card, Col, Collapse, DatePicker, Dropdown, Empty, Form, Input, List, Row, Select, Space, Tag, Typography } from "antd"
+import { App, Button, Card, Col, Collapse, DatePicker, Dropdown, Empty, Form, Input, Row, Select, Space, Tag, Typography } from "antd"
 import dayjs, { type Dayjs } from "dayjs"
+import { useSearchParams } from "next/navigation"
 import type { ServiceWithSongs, SongWithMeta } from "@/types/services"
 
 const { Title, Paragraph, Text } = Typography
@@ -17,6 +18,7 @@ type ServiceFormValues = {
 
 const ServicesComponent = () => {
   const { modal, message } = App.useApp()
+  const searchParams = useSearchParams()
   const [form] = Form.useForm<ServiceFormValues>()
   const [role, setRole] = useState<string>("musico")
   const [songs, setSongs] = useState<SongWithMeta[]>([])
@@ -24,6 +26,7 @@ const ServicesComponent = () => {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null)
+  const [urlEditApplied, setUrlEditApplied] = useState(false)
 
   const isLeader = role === "leader"
   const jubiloSongs = useMemo(() => songs.filter(song => song.category === "jubilo"), [songs])
@@ -61,6 +64,16 @@ const ServicesComponent = () => {
     setEditingServiceId(null)
     form.resetFields()
   }
+
+  useEffect(() => {
+    if (urlEditApplied || !services.length) return
+    const editId = searchParams.get("edit")
+    if (!editId) return
+    const target = services.find(service => service.id === editId)
+    if (target) startEdit(target)
+    setUrlEditApplied(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [services, searchParams, urlEditApplied])
 
   const saveService = async (values: ServiceFormValues) => {
     setSaving(true)
@@ -105,7 +118,7 @@ const ServicesComponent = () => {
   return (
     <div style={{ padding: 24 }}>
       <Space
-        direction="vertical" size={20}
+        orientation="vertical" size={20}
         style={{ width: "100%" }}>
         <Card>
           <Title level={2}>Servicios</Title>
@@ -166,13 +179,13 @@ const ServicesComponent = () => {
           </Card>
         )}
 
-        <Card
-          loading={loading} styles={{ body: { padding: services.length ? 0 : 24 } }}>
+        <Card loading={loading}>
           {services.length === 0 ? (
             <Empty description="No hay servicios activos" />
           ) : (
             <Collapse
               ghost
+              className="collapse-panel-list"
               items={services.map(service => ({
                 key: service.id,
                 label: (
@@ -216,14 +229,9 @@ const ServicesComponent = () => {
                   </Row>
                 ),
                 children: (
-                  <List
-                    size="small"
-                    dataSource={[...service.songs].sort((a, b) => a.position - b.position)}
-                    rowKey="id"
-                    renderItem={({ id, song, category, position }) => (
-                      <List.Item
-                        key={id}
-                        style={{ display: "flex", justifyContent: "space-between" }}>
+                  <div>
+                    {[...service.songs].sort((a, b) => a.position - b.position).map(({ id, song, category, position }) => (
+                      <div key={id} className="nested-song-row">
                         <Text>{position}. {song.name}</Text>
                         <Space>
                           <Text type="secondary">Tono: {song.key}</Text>
@@ -231,8 +239,9 @@ const ServicesComponent = () => {
                             {category === "jubilo" ? "Júbilo" : "Adoración"}
                           </Tag>
                         </Space>
-                      </List.Item>
-                    )} />
+                      </div>
+                    ))}
+                  </div>
                 )
               }))} />
           )}
