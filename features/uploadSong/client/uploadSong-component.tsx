@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { Layer, Rect, Stage, Text, Group, Circle, Line } from "react-konva"
+import { useRouter, useSearchParams } from "next/navigation"
 import {
     App,
     Button,
@@ -13,6 +14,7 @@ import {
     Select,
     Slider,
     Space,
+    Spin,
     Tag,
     Tooltip,
     Typography
@@ -102,8 +104,28 @@ const createInitialBlock = (): Interfaces => ({
     align: "center"
 })
 
+const buildBlocksFromLyrics = (lyrics: string): Interfaces[] => {
+    const chunks = lyrics.split("\n\n").map(chunk => chunk.trim()).filter(Boolean)
+    if (!chunks.length) return [createInitialBlock()]
+
+    return chunks.map((text, index) => ({
+        id: createId(),
+        type: "content",
+        text,
+        x: BOARD.x + 24,
+        y: BOARD.y + 24 + index * 150,
+        width: 340,
+        color: "#ffffff",
+        fontSize: 18,
+        align: "center"
+    }))
+}
+
 export const UploadSongComponent = () => {
     const { message } = App.useApp()
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const editingId = searchParams.get("id")
     const previewContainerRef = useRef<HTMLDivElement | null>(null)
 
     const [role, setRole] = useState("musico")
@@ -114,12 +136,43 @@ export const UploadSongComponent = () => {
     const [contentBlocks, setContentBlocks] = useState<Interfaces[]>([createInitialBlock()])
     const [extraTexts, setExtraTexts] = useState<ExtraTextItem[]>([])
     const [selectedId, setSelectedId] = useState<string | null>(null)
+    const [loadingSong, setLoadingSong] = useState(Boolean(editingId))
 
     const isLeader = role === "leader"
 
     useEffect(() => {
         setRole(localStorage.getItem("userRole") ?? "musico")
     }, [])
+
+    useEffect(() => {
+        if (!editingId) return
+
+        setLoadingSong(true)
+        fetch(`/api/songs/${editingId}`)
+            .then(res => {
+                if (!res.ok) throw new Error("No se pudo cargar la alabanza")
+                return res.json()
+            })
+            .then((song: { name: string; key: string; category: "jubilo" | "adoracion"; lyrics: string; payload?: SongPayload | null }) => {
+                setSongName(song.name)
+                setSongKey(song.key)
+                setSongCategory(song.category)
+
+                if (song.payload?.contentBlocks?.length || song.payload?.extraTexts?.length) {
+                    setContentBlocks(song.payload.contentBlocks ?? [])
+                    setExtraTexts(song.payload.extraTexts ?? [])
+                    if (song.payload.boardConfig) {
+                        setBoardConfig(prev => ({ ...prev, ...song.payload!.boardConfig }))
+                    }
+                } else {
+                    setContentBlocks(buildBlocksFromLyrics(song.lyrics))
+                    setExtraTexts([])
+                }
+            })
+            .catch(() => message.error("No se pudo cargar la alabanza a editar"))
+            .finally(() => setLoadingSong(false))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editingId])
 
     const selectedItem = useMemo<EditableItem | null>(() => {
         return (
@@ -273,8 +326,8 @@ export const UploadSongComponent = () => {
                 return
             }
 
-            const response = await fetch("/api/songs", {
-                method: "POST",
+            const response = await fetch(editingId ? `/api/songs/${editingId}` : "/api/songs", {
+                method: editingId ? "PUT" : "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     name: songName,
@@ -291,8 +344,13 @@ export const UploadSongComponent = () => {
                 throw new Error(data.message || "Error al guardar")
             }
 
-            message.success("Alabanza guardada con éxito")
-            resetEditor()
+            if (editingId) {
+                message.success("Alabanza actualizada con éxito")
+                router.push("/alabanzas")
+            } else {
+                message.success("Alabanza guardada con éxito")
+                resetEditor()
+            }
         } catch (error) {
             message.error(
                 error instanceof Error ? error.message : "Error al guardar la canción"
@@ -307,6 +365,17 @@ export const UploadSongComponent = () => {
               <Title level={3}>Acceso solo para líder</Title>
               <AntText>El músico solo puede ver las letras y tonos en el apartado Servicios.</AntText>
             </Card>
+          </div>
+        )
+    }
+
+    if (loadingSong) {
+        return (
+          <div style={{ padding: 24, textAlign: "center" }}>
+            <Spin size="large" />
+            <div style={{ marginTop: 12 }}>
+              <AntText type="secondary">Cargando alabanza...</AntText>
+            </div>
           </div>
         )
     }
@@ -335,7 +404,7 @@ export const UploadSongComponent = () => {
               <Col flex="auto">
                 <Space size={8} wrap>
                   <Title level={4} style={{ margin: 0 }}>
-                    Editor de alabanza
+                    {editingId ? "Editando alabanza" : "Editor de alabanza"}
                   </Title>
                   <Tag color="blue">Seleccionar</Tag>
                   <Tag color="purple">Doble click</Tag>
@@ -362,7 +431,7 @@ export const UploadSongComponent = () => {
                                         { label: "Adoración", value: "adoracion" }
                                     ]} />
                   <Button type="primary" onClick={handleSaveSong}>
-                    Guardar alabanza
+                    {editingId ? "Guardar cambios" : "Guardar alabanza"}
                   </Button>
                   <Button
                     type="primary" icon={<PlusOutlined />}

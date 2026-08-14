@@ -19,6 +19,18 @@ type UpdateSongBody = {
   payload?: unknown
 }
 
+export async function GET(_req: Request, context: RouteContext) {
+  try {
+    const { id } = await context.params
+    const song = await prisma.song.findUnique({ where: { id } })
+    if (!song) return NextResponse.json({ message: "Alabanza no encontrada" }, { status: 404 })
+    return NextResponse.json(song)
+  } catch (error) {
+    console.error("Error fetching song:", error)
+    return NextResponse.json({ message: "Error al cargar la alabanza" }, { status: 500 })
+  }
+}
+
 export async function PUT(req: Request, context: RouteContext) {
   const leader = await requireLeader()
   if (!leader) {

@@ -1,0 +1,35 @@
+.song-row {
+  padding: 14px 4px !important;
+  gap: 16px;
+
+  .song-row-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .song-row-name {
+    display: block;
+    font-size: 15px;
+  }
+
+  .song-row-preview {
+    margin: 2px 0 0 !important;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .song-row-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 576px) {
+    flex-wrap: wrap;
+
+    .song-row-meta {
+      gap: 8px;
+    }
+  }
+}

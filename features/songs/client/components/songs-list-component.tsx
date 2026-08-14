@@ -1,38 +1,25 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { App, Button, Card, Col, Empty, Form, Input, Modal, Row, Select, Space, Tabs, Tag, Typography } from "antd"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { MoreOutlined } from "@ant-design/icons"
+import { App, Button, Card, Dropdown, Empty, List, Space, Tabs, Tag, Typography } from "antd"
+import { useRouter } from "next/navigation"
 import type { SongWithMeta } from "@/types/services"
 
-const { Paragraph, Title } = Typography
-const { TextArea } = Input
-
-type SongFormValues = {
-  name: string
-  key: string
-  category: "jubilo" | "adoracion"
-  lyrics: string
-}
-
-const CATEGORY_OPTIONS = [
-  { label: "Júbilo", value: "jubilo" },
-  { label: "Adoración", value: "adoracion" }
-]
+const { Paragraph, Text, Title } = Typography
 
 const SongsListComponent = () => {
   const { modal, message } = App.useApp()
-  const [form] = Form.useForm<SongFormValues>()
+  const router = useRouter()
   const [role, setRole] = useState("musico")
   const [songs, setSongs] = useState<SongWithMeta[]>([])
-  const [editingSong, setEditingSong] = useState<SongWithMeta | null>(null)
   const [loading, setLoading] = useState(false)
-  const [saving, setSaving] = useState(false)
 
   const isLeader = role === "leader"
   const jubiloSongs = useMemo(() => songs.filter(song => song.category === "jubilo"), [songs])
   const adoracionSongs = useMemo(() => songs.filter(song => song.category === "adoracion"), [songs])
 
-  const fetchSongs = async () => {
+  const fetchSongs = useCallback(async () => {
     setLoading(true)
     try {
       const response = await fetch("/api/songs")
@@ -44,43 +31,12 @@ const SongsListComponent = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [message])
 
   useEffect(() => {
     setRole(localStorage.getItem("userRole") ?? "musico")
     fetchSongs()
-  }, [])
-
-  const openEditModal = (song: SongWithMeta) => {
-    setEditingSong(song)
-    form.setFieldsValue({ name: song.name, key: song.key, category: song.category, lyrics: song.lyrics })
-  }
-
-  const closeEditModal = () => {
-    setEditingSong(null)
-    form.resetFields()
-  }
-
-  const updateSong = async (values: SongFormValues) => {
-    if (!editingSong) return
-    setSaving(true)
-    try {
-      const response = await fetch(`/api/songs/${editingSong.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values)
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.message ?? "Error al actualizar")
-      message.success("Alabanza actualizada")
-      closeEditModal()
-      await fetchSongs()
-    } catch (error) {
-      message.error(error instanceof Error ? error.message : "Error al actualizar")
-    } finally {
-      setSaving(false)
-    }
-  }
+  }, [fetchSongs])
 
   const deleteSong = (song: SongWithMeta) => {
     modal.confirm({
@@ -103,30 +59,44 @@ const SongsListComponent = () => {
     if (!items.length) return <Empty description="No hay alabanzas en esta categoría" />
 
     return (
-      <Row gutter={[16, 16]}>
-        {items.map(song => (
-          <Col
-            xs={24} md={12}
-            xl={8} key={song.id}>
-            <Card
-              title={song.name}
-              extra={<Tag color={song.category === "jubilo" ? "green" : "purple"}>{song.category === "jubilo" ? "Júbilo" : "Adoración"}</Tag>}
-              actions={[
-                <Button
-                  type="link" key="edit"
-                  onClick={() => openEditModal(song)}>Editar</Button>,
-                <Button
-                  type="link" danger
-                  key="delete" onClick={() => deleteSong(song)}>Eliminar</Button>
-              ]}>
-              <Title level={5}>Tono: {song.key}</Title>
-              <Paragraph ellipsis={{ rows: 5, expandable: true, symbol: "ver más" }} style={{ whiteSpace: "pre-wrap" }}>
+      <List
+        itemLayout="horizontal"
+        dataSource={items}
+        rowKey="id"
+        renderItem={song => (
+          <List.Item className="song-row">
+            <div className="song-row-main">
+              <Text strong className="song-row-name">{song.name}</Text>
+              <Paragraph
+                type="secondary" ellipsis={{ rows: 1 }}
+                className="song-row-preview">
                 {song.lyrics}
               </Paragraph>
-            </Card>
-          </Col>
-        ))}
-      </Row>
+            </div>
+            <div className="song-row-meta">
+              <Text type="secondary">Tono: {song.key}</Text>
+              <Tag color={song.category === "jubilo" ? "green" : "purple"}>
+                {song.category === "jubilo" ? "Júbilo" : "Adoración"}
+              </Tag>
+              <Dropdown
+                trigger={["click"]}
+                menu={{
+                  items: [
+                    { key: "edit", label: "Editar" },
+                    { key: "delete", label: "Eliminar", danger: true }
+                  ],
+                  onClick: ({ key }) => {
+                    if (key === "edit") router.push(`/uploadPage?id=${song.id}`)
+                    if (key === "delete") deleteSong(song)
+                  }
+                }}>
+                <Button
+                  type="text" icon={<MoreOutlined />}
+                  aria-label="Más acciones" />
+              </Dropdown>
+            </div>
+          </List.Item>
+        )} />
     )
   }
 
@@ -147,9 +117,9 @@ const SongsListComponent = () => {
         direction="vertical" size={20}
         style={{ width: "100%" }}>
         <Card>
-          <Title level={2}>Lista de alabanzas demo</Title>
+          <Title level={2}>Lista de alabanzas</Title>
           <Paragraph>
-            Flujo hardcodeado: puedes crear, editar y eliminar alabanzas en memoria para validar la experiencia. Entra a cada pestaña para editar tonos, letras, categoría o eliminar registros.
+            Crea, edita y elimina alabanzas por categoría. Usa el menú de cada fila para editar en el editor visual o eliminar.
           </Paragraph>
         </Card>
 
@@ -161,41 +131,6 @@ const SongsListComponent = () => {
             ]} />
         </Card>
       </Space>
-
-      <Modal
-        title="Editar alabanza" open={Boolean(editingSong)}
-        onCancel={closeEditModal} footer={null}
-        destroyOnHidden>
-        <Form
-          form={form} layout="vertical"
-          onFinish={updateSong}>
-          <Form.Item
-            name="name" label="Nombre"
-            rules={[{ required: true, message: "Escribe el nombre" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="key" label="Tono"
-            rules={[{ required: true, message: "Escribe el tono" }]}>
-            <Input placeholder="Ej. C, D, Em" />
-          </Form.Item>
-          <Form.Item
-            name="category" label="Categoría"
-            rules={[{ required: true, message: "Selecciona categoría" }]}>
-            <Select options={CATEGORY_OPTIONS} />
-          </Form.Item>
-          <Form.Item
-            name="lyrics" label="Letra"
-            rules={[{ required: true, message: "Escribe la letra" }]}>
-            <TextArea rows={8} />
-          </Form.Item>
-          <Button
-            type="primary" htmlType="submit"
-            loading={saving} block>
-            Guardar cambios
-          </Button>
-        </Form>
-      </Modal>
     </div>
   )
 }
