@@ -1,8 +1,12 @@
+:root {
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
 * {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
-  font-family: 'Roboto', sans-serif
+  font-family: var(--font-inter), sans-serif
 }
 
 html,
@@ -37,7 +41,7 @@ body {
 }
 
 .ant-typography {
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--font-inter), sans-serif;
 }
 
 @import "./_variables.scss";

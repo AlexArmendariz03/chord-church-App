@@ -1,33 +1,86 @@
 .dashboard {
-  min-height: 100vh;
-  background-color: #f0f2f5;
-  color: #000;
-  text-align: center;
+  color: $ink-dark;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-bottom: 40px;
 
-  h1 {
-    margin-bottom: 30px;
+  .dashboard-hero {
+    background: linear-gradient(135deg, #eef0ff 0%, #f7f8fb 65%);
+    border: 1px solid #e3e5fb;
+    border-radius: 20px;
+    padding: 32px 28px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .dashboard-eyebrow {
+    letter-spacing: 1.5px;
+    font-size: 12px;
+    font-weight: 700;
+    color: $accent-indigo;
+  }
+
+  .dashboard-subtitle {
+    color: $primary-typography;
+    max-width: 480px;
+    margin: 0 auto 24px !important;
   }
 
   .dashboard-card {
-    width: 240px;
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid $header-border;
+    box-shadow: 0 2px 10px rgba(17, 24, 39, 0.04);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    text-align: left;
+
+    &:hover {
+      box-shadow: 0 10px 24px rgba(79, 70, 229, 0.14);
+      transform: translateY(-2px);
+      border-color: rgba(79, 70, 229, 0.3);
+    }
 
     .dashboard-card-content {
       display: flex;
       flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .dashboard-card-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(79, 70, 229, 0.1);
+      display: flex;
       align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
     }
 
     .dashboard-card-icon {
-      font-size: 48px;
-      margin-bottom: 10px;
-
-      &:nth-of-type(1) {
-        color: #1890ff;
-      }
+      font-size: 22px;
+      color: $accent-indigo;
     }
 
     .dashboard-card-meta {
-      text-align: center;
+      text-align: left;
     }
+  }
+
+  .next-service-card {
+    border-radius: 16px;
+    border: 1px solid $header-border;
+    text-align: left;
+  }
+
+  .next-service-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: $ink-dark;
+  }
+
+  .next-service-body {
+    text-align: left;
   }
 }

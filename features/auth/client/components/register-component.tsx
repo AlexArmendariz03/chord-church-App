@@ -1,11 +1,12 @@
 "use client"
 
 import type { LoginFormData } from "@/types/auth"
-import { Button, Col, Form, Input, Row, message } from "antd"
+import { App, Button, Col, Form, Input, Row } from "antd"
 import { useRouter } from "next/navigation"
 
 const RegisterComponent = () => {
   const router = useRouter()
+  const { message } = App.useApp()
 
   const onFinish = async (values: LoginFormData) => {
     const { username, password } = values

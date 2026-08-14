@@ -1,7 +1,7 @@
 .login-container {
   min-height: 100vh;
   padding: 0 20px;
-  background: black;
+  background: $page-bg;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -23,9 +23,24 @@
     height: auto;
   }
 
+  .login-card {
+    border-radius: 16px;
+    border: 1px solid $header-border;
+    box-shadow: 0 12px 32px rgba(17, 24, 39, 0.06);
+    margin-top: 16px;
+  }
+
+  .login-dev-note {
+    display: block;
+    text-align: center;
+    margin-top: 16px;
+    color: $primary-typography;
+    font-size: 12px;
+  }
+
   .ant-form {
     width: 100%;
-    margin: 0 auto 16px;
+    margin: 0 auto;
 
     .ant-form-item {
       max-width: 100%;
