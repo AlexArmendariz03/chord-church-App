@@ -95,9 +95,9 @@ const CurrentServiceComponent = () => {
         style={{ width: "100%" }}>
         {!isPresentationMode && (
           <Card loading={loading}>
-            <Title level={2}>En curso demo</Title>
+            <Title level={2}>En curso</Title>
             <Paragraph>
-              Vista previa para el músico: la lista queda colapsable al lado izquierdo y la letra se puede poner en pantalla completa para verla durante el servicio.
+              La lista de alabanzas queda colapsable al lado izquierdo y la letra se puede poner en pantalla completa para verla durante el servicio.
             </Paragraph>
           </Card>
         )}
@@ -191,7 +191,7 @@ const CurrentServiceComponent = () => {
                         minHeight: isPresentationMode ? "calc(100vh - 240px)" : 380,
                         padding: isPresentationMode ? 44 : 32
                       }}>
-                      <Paragraph style={{ whiteSpace: "pre-wrap", fontSize, lineHeight: 1.55, marginBottom: 0, color: "inherit" }}>
+                      <Paragraph style={{ whiteSpace: "pre-wrap", fontSize, lineHeight: 1.55, marginBottom: 0, color: "inherit", fontFamily: "var(--font-mono)" }}>
                         {activeSong.song.lyrics}
                       </Paragraph>
                     </div>

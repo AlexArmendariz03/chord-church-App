@@ -1,12 +1,7 @@
 import { AppstoreAddOutlined, HomeOutlined, PlayCircleOutlined, UnorderedListOutlined, UploadOutlined } from "@ant-design/icons"
 import Link from "next/link"
 
-export const menuItems = [
-  {
-    key: "/dashboard",
-    icon: <HomeOutlined />,
-    label: <Link href="/dashboard">Inicio</Link>
-  },
+const LEADER_ONLY_ITEMS = [
   {
     key: "/uploadPage",
     icon: <UploadOutlined />,
@@ -16,7 +11,16 @@ export const menuItems = [
     key: "/alabanzas",
     icon: <UnorderedListOutlined />,
     label: <Link href="/alabanzas">Lista de alabanzas</Link>
+  }
+]
+
+export const getMenuItems = (isLeader: boolean) => [
+  {
+    key: "/dashboard",
+    icon: <HomeOutlined />,
+    label: <Link href="/dashboard">Inicio</Link>
   },
+  ...(isLeader ? LEADER_ONLY_ITEMS : []),
   {
     key: "/servicios",
     icon: <AppstoreAddOutlined />,
