@@ -464,7 +464,7 @@ export const UploadSongComponent = () => {
               <div style={{ display: "grid", gridTemplateRows: "auto auto", gap: 14 }}>
                 <div style={SECTION_STYLE}>
                   <Space
-                    direction="vertical" size={10}
+                    orientation="vertical" size={10}
                     style={{ width: "100%" }}>
                     <div>
                       <Title level={5} style={{ margin: 0 }}>
@@ -561,7 +561,7 @@ export const UploadSongComponent = () => {
 
                 <div style={SECTION_STYLE}>
                   <Space
-                    direction="vertical" size={10}
+                    orientation="vertical" size={10}
                     style={{ width: "100%" }}>
                     <Space size={6}>
                       <SettingOutlined />

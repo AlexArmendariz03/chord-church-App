@@ -91,7 +91,7 @@ const CurrentServiceComponent = () => {
         zIndex: isPresentationMode ? 2000 : 1
       }}>
       <Space
-        direction="vertical" size={20}
+        orientation="vertical" size={20}
         style={{ width: "100%" }}>
         {!isPresentationMode && (
           <Card loading={loading}>
@@ -112,7 +112,7 @@ const CurrentServiceComponent = () => {
                   title="Alabanzas programadas"
                   extra={<Text strong>{new Date(currentService.eventDate).toLocaleString()}</Text>}
                   style={{ height: "100%", borderRadius: isPresentationMode ? 0 : 8 }}>
-                  <Space direction="vertical" style={{ width: "100%" }}>
+                  <Space orientation="vertical" style={{ width: "100%" }}>
                     <Title level={4} style={{ marginTop: 0 }}>{currentService.title}</Title>
                     {currentService.songs.map(({ id, song, category, position }) => (
                       <Button
@@ -147,7 +147,7 @@ const CurrentServiceComponent = () => {
                   style={{ minHeight: isPresentationMode ? "100vh" : 620, borderRadius: isPresentationMode ? 0 : 8 }}
                   styles={{ body: { background: isPresentationMode ? "#0f172a" : "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)" } }}>
                   <Space
-                    direction="vertical" size={22}
+                    orientation="vertical" size={22}
                     style={{ width: "100%" }}>
                     <Row
                       justify="space-between" align="middle"
