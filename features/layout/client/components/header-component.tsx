@@ -39,11 +39,12 @@ const HeaderBar = () => {
           <Button icon={<MenuOutlined className="menu-icon" />} type="text" />
         </Dropdown>
       </div>
-      <Link href="/dashboard">
+      <Link href="/dashboard" className="brand">
         <Image
-          src="/logo-mark.png" alt="Chord Church"
-          width={120} height={120}
-          className="image" priority />
+          src="/logo-icon.png" alt=""
+          width={32} height={49}
+          className="brand-icon" priority />
+        <span className="brand-name">Chord Church</span>
       </Link>
       <Menu
         className="nav-menu" mode="horizontal"

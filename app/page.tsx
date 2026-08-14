@@ -1,5 +1,5 @@
-import LoginComponent from "@/features/auth/client/components/login-component"
+import { redirect } from "next/navigation"
 
 export default function HomePage() {
-  return <LoginComponent />
+  redirect("/login")
 }

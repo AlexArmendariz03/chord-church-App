@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { MoreOutlined } from "@ant-design/icons"
-import { App, Button, Card, Dropdown, Empty, List, Space, Tabs, Tag, Typography } from "antd"
+import { App, Button, Card, Dropdown, Empty, Listy, Space, Tabs, Tag, Typography } from "antd"
 import { useRouter } from "next/navigation"
 import type { SongWithMeta } from "@/types/services"
 
@@ -59,44 +59,45 @@ const SongsListComponent = () => {
     if (!items.length) return <Empty description="No hay alabanzas en esta categoría" />
 
     return (
-      <List
-        itemLayout="horizontal"
-        dataSource={items}
-        rowKey="id"
-        renderItem={song => (
-          <List.Item className="song-row">
-            <div className="song-row-main">
-              <Text strong className="song-row-name">{song.name}</Text>
-              <Paragraph
-                type="secondary" ellipsis={{ rows: 1 }}
-                className="song-row-preview">
-                {song.lyrics}
-              </Paragraph>
+      <div className="list-panel">
+        <Listy
+          items={items}
+          rowKey="id"
+          itemRender={song => (
+            <div className="song-row">
+              <div className="song-row-main">
+                <Text strong className="song-row-name">{song.name}</Text>
+                <Paragraph
+                  type="secondary" ellipsis={{ rows: 1 }}
+                  className="song-row-preview">
+                  {song.lyrics}
+                </Paragraph>
+              </div>
+              <div className="song-row-meta">
+                <Text type="secondary">Tono: {song.key}</Text>
+                <Tag color={song.category === "jubilo" ? "green" : "purple"}>
+                  {song.category === "jubilo" ? "Júbilo" : "Adoración"}
+                </Tag>
+                <Dropdown
+                  trigger={["click"]}
+                  menu={{
+                    items: [
+                      { key: "edit", label: "Editar" },
+                      { key: "delete", label: "Eliminar", danger: true }
+                    ],
+                    onClick: ({ key }) => {
+                      if (key === "edit") router.push(`/uploadPage?id=${song.id}`)
+                      if (key === "delete") deleteSong(song)
+                    }
+                  }}>
+                  <Button
+                    type="text" icon={<MoreOutlined />}
+                    aria-label="Más acciones" />
+                </Dropdown>
+              </div>
             </div>
-            <div className="song-row-meta">
-              <Text type="secondary">Tono: {song.key}</Text>
-              <Tag color={song.category === "jubilo" ? "green" : "purple"}>
-                {song.category === "jubilo" ? "Júbilo" : "Adoración"}
-              </Tag>
-              <Dropdown
-                trigger={["click"]}
-                menu={{
-                  items: [
-                    { key: "edit", label: "Editar" },
-                    { key: "delete", label: "Eliminar", danger: true }
-                  ],
-                  onClick: ({ key }) => {
-                    if (key === "edit") router.push(`/uploadPage?id=${song.id}`)
-                    if (key === "delete") deleteSong(song)
-                  }
-                }}>
-                <Button
-                  type="text" icon={<MoreOutlined />}
-                  aria-label="Más acciones" />
-              </Dropdown>
-            </div>
-          </List.Item>
-        )} />
+          )} />
+      </div>
     )
   }
 
@@ -114,7 +115,7 @@ const SongsListComponent = () => {
   return (
     <div style={{ padding: 24 }}>
       <Space
-        direction="vertical" size={20}
+        orientation="vertical" size={20}
         style={{ width: "100%" }}>
         <Card>
           <Title level={2}>Lista de alabanzas</Title>

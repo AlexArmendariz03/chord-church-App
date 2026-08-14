@@ -16,8 +16,27 @@
     padding: 0 24px;
   }
 
-  .image {
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    color: $ink-dark;
+
+    &:hover {
+      color: $accent-indigo;
+    }
+  }
+
+  .brand-icon {
     display: block;
+  }
+
+  .brand-name {
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
   }
 
   .nav-menu {
@@ -67,6 +86,10 @@
   }
 
   @media (max-width: 568px) {
+    .brand-name {
+      display: none;
+    }
+
     .user .text {
       font-size: 15px;
       margin-top: 7px;
