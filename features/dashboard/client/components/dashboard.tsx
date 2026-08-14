@@ -1,7 +1,7 @@
 "use client"
 
-import { AppstoreAddOutlined, ArrowRightOutlined, CalendarOutlined, PlayCircleOutlined, UnorderedListOutlined, UploadOutlined } from "@ant-design/icons"
-import { Button, Card, Col, Empty, Row, Tag, Typography } from "antd"
+import { AppstoreAddOutlined, CalendarOutlined, MoreOutlined, PlayCircleOutlined, UnorderedListOutlined, UploadOutlined } from "@ant-design/icons"
+import { App, Button, Card, Col, Collapse, Dropdown, Empty, Row, Space, Tag, Typography } from "antd"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import type { ServiceWithSongs } from "@/types/services"
@@ -11,8 +11,9 @@ const { Title, Paragraph, Text } = Typography
 
 const Dashboard = () => {
   const router = useRouter()
+  const { modal, message } = App.useApp()
   const [role, setRole] = useState("musico")
-  const [nextService, setNextService] = useState<ServiceWithSongs | null>(null)
+  const [services, setServices] = useState<ServiceWithSongs[]>([])
   const [loadingService, setLoadingService] = useState(true)
   const isLeader = role === "leader"
 
@@ -20,20 +21,42 @@ const Dashboard = () => {
     setRole(localStorage.getItem("userRole") ?? "musico")
   }, [])
 
-  useEffect(() => {
+  const fetchServices = () => {
+    setLoadingService(true)
     fetch("/api/services")
       .then(res => res.json())
-      .then((services: ServiceWithSongs[]) => setNextService(services[0] ?? null))
-      .catch(() => setNextService(null))
+      .then((data: ServiceWithSongs[]) => {
+        const sorted = [...data].sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime())
+        setServices(sorted)
+      })
+      .catch(() => setServices([]))
       .finally(() => setLoadingService(false))
+  }
+
+  useEffect(() => {
+    fetchServices()
   }, [])
 
   const navigateTo = (path: string) => {
     router.push(path)
   }
 
-  const jubiloCount = nextService?.songs.filter(s => s.category === "jubilo").length ?? 0
-  const adoracionCount = nextService?.songs.filter(s => s.category === "adoracion").length ?? 0
+  const deleteService = (service: ServiceWithSongs) => {
+    modal.confirm({
+      title: "Eliminar servicio",
+      content: `¿Seguro que deseas eliminar "${service.title}"? Esta acción no se puede deshacer.`,
+      okText: "Eliminar",
+      okButtonProps: { danger: true },
+      cancelText: "Cancelar",
+      async onOk() {
+        const response = await fetch(`/api/services/${service.id}`, { method: "DELETE" })
+        const data = await response.json()
+        if (!response.ok) throw new Error(data.message ?? "Error al eliminar")
+        message.success("Servicio eliminado")
+        fetchServices()
+      }
+    })
+  }
 
   return (
     <div className="dashboard">
@@ -124,32 +147,76 @@ const Dashboard = () => {
         className="next-service-card" loading={loadingService}
         title={(
           <span className="next-service-title">
-            <CalendarOutlined /> Próximo servicio
+            <CalendarOutlined /> Próximos servicios
           </span>
-        )}
-        extra={nextService && (
-          <Button
-            type="link" onClick={() => navigateTo("/en-curso")}
-            icon={<ArrowRightOutlined />} iconPosition="end">
-            Abrir en curso
-          </Button>
         )}>
-        {nextService ? (
-          <Row
-            align="middle" gutter={[16, 16]}
-            className="next-service-body">
-            <Col flex="auto">
-              <Title
-                level={4} style={{ margin: 0 }}>
-                {nextService.title}
-              </Title>
-              <Text type="secondary">{new Date(nextService.eventDate).toLocaleString()}</Text>
-            </Col>
-            <Col>
-              <Tag color="gold">{jubiloCount} júbilo</Tag>
-              <Tag color="purple">{adoracionCount} adoración</Tag>
-            </Col>
-          </Row>
+        {services.length ? (
+          <Collapse
+            ghost
+            className="collapse-panel-list"
+            items={services.map(service => {
+              const jubiloCount = service.songs.filter(s => s.category === "jubilo").length
+              const adoracionCount = service.songs.filter(s => s.category === "adoracion").length
+
+              return {
+                key: service.id,
+                label: (
+                  <Row
+                    align="middle" gutter={12}
+                    wrap={false}>
+                    <Col flex="auto">
+                      <Text strong>{service.title}</Text>
+                      <br />
+                      <Text
+                        type="secondary" style={{ fontSize: 13 }}>
+                        {new Date(service.eventDate).toLocaleString()}
+                      </Text>
+                    </Col>
+                    <Col>
+                      <Space size={4}>
+                        <Tag color="gold">{jubiloCount} júbilo</Tag>
+                        <Tag color="purple">{adoracionCount} adoración</Tag>
+                      </Space>
+                    </Col>
+                    {isLeader && (
+                      <Col onClick={e => e.stopPropagation()}>
+                        <Dropdown
+                          trigger={["click"]}
+                          menu={{
+                            items: [
+                              { key: "edit", label: "Editar" },
+                              { key: "delete", label: "Eliminar", danger: true }
+                            ],
+                            onClick: ({ key }) => {
+                              if (key === "edit") navigateTo(`/servicios?edit=${service.id}`)
+                              if (key === "delete") deleteService(service)
+                            }
+                          }}>
+                          <Button
+                            type="text" icon={<MoreOutlined />}
+                            aria-label="Más acciones" />
+                        </Dropdown>
+                      </Col>
+                    )}
+                  </Row>
+                ),
+                children: (
+                  <div>
+                    {[...service.songs].sort((a, b) => a.position - b.position).map(({ id, song, category, position }) => (
+                      <div key={id} className="nested-song-row">
+                        <Text>{position}. {song.name}</Text>
+                        <Space>
+                          <Text type="secondary">Tono: {song.key}</Text>
+                          <Tag color={category === "jubilo" ? "green" : "purple"}>
+                            {category === "jubilo" ? "Júbilo" : "Adoración"}
+                          </Tag>
+                        </Space>
+                      </div>
+                    ))}
+                  </div>
+                )
+              }
+            })} />
         ) : (
           <Empty
             description={isLeader ? "Aún no hay servicios programados" : "No hay servicios programados por ahora"}
