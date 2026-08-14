@@ -1,6 +1,14 @@
 .song-row {
-  padding: 14px 4px !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 4px;
   gap: 16px;
+  border-bottom: 1px solid $header-border;
+
+  &:last-child {
+    border-bottom: none;
+  }
 
   .song-row-main {
     flex: 1;
@@ -31,5 +39,51 @@
     .song-row-meta {
       gap: 8px;
     }
+  }
+}
+
+.nested-song-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid $header-border;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.list-panel {
+  border: 1px solid $header-border;
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 0 16px;
+}
+
+.collapse-panel-list {
+  border: 1px solid $header-border;
+  border-radius: 12px;
+  overflow: hidden;
+
+  .ant-collapse-item {
+    border-bottom: 1px solid $header-border;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .ant-collapse-header {
+    padding: 16px 20px !important;
+    align-items: center !important;
+  }
+
+  .ant-collapse-expand-icon {
+    align-self: center !important;
+  }
+
+  .ant-collapse-body {
+    padding: 4px 44px 16px 44px !important;
   }
 }
