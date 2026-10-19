@@ -136,7 +136,7 @@ const Dashboard = () => {
               <ServiceCard
                 key={service.id} service={service}
                 isNext={index === 0}
-                onOpen={() => navigateTo("/en-curso")}
+                onOpen={() => navigateTo(`/en-curso?servicio=${service.id}`)}
                 onEdit={isLeader ? () => navigateTo(`/servicios?edit=${service.id}`) : undefined}
                 onDelete={isLeader ? () => deleteService(service) : undefined} />
             ))}

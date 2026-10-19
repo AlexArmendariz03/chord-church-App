@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ExpandOutlined, LeftOutlined, MenuFoldOutlined, MenuUnfoldOutlined, RightOutlined } from "@ant-design/icons"
-import { App, Button, Card, Col, Empty, Row, Space, Switch, Typography } from "antd"
+import { App, Button, Card, Col, Empty, Row, Select, Space, Switch, Typography } from "antd"
+import { useRouter, useSearchParams } from "next/navigation"
 import { CategoryTag } from "@/shared/components/category-tag"
 import { formatServiceDate } from "@/shared/utils/dates"
 import type { ServiceWithSongs } from "@/types/services"
@@ -22,8 +23,13 @@ const STACKED_LAYOUT_MAX_WIDTH = "(max-width: 991.98px)"
 const isTypingTarget = (target: EventTarget | null) =>
   target instanceof HTMLElement && (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
 
+// Query param that opens a specific service ("Abrir en vivo" on any service card)
+const SERVICE_QUERY_PARAM = "servicio"
+
 const CurrentServiceComponent = () => {
   const { message } = App.useApp()
+  const router = useRouter()
+  const requestedServiceId = useSearchParams().get(SERVICE_QUERY_PARAM)
   const [services, setServices] = useState<ServiceWithSongs[]>([])
   const [loading, setLoading] = useState(true)
   const [activeServiceSongId, setActiveServiceSongId] = useState<string | null>(null)
@@ -84,13 +90,22 @@ const CurrentServiceComponent = () => {
     fetchServices()
   }, [message])
 
-  // The API returns services from a few hours ago onwards, sorted by date. Prefer the
-  // most recent one that already started (the service happening now) over the next one.
+  // The API returns services from a few hours ago onwards, sorted by date. A service picked
+  // from a card wins; otherwise prefer the most recent one that already started (the service
+  // happening now) over the next one.
   const currentService = useMemo(() => {
+    const requested = services.find(service => service.id === requestedServiceId)
+    if (requested) return requested
     const now = Date.now()
     const started = services.filter(service => new Date(service.eventDate).getTime() <= now)
     return started.at(-1) ?? services[0]
-  }, [services])
+  }, [services, requestedServiceId])
+
+  const changeService = (serviceId: string) => {
+    setActiveServiceSongId(null)
+    setPageIndex(0)
+    router.replace(`/en-curso?${SERVICE_QUERY_PARAM}=${serviceId}`)
+  }
 
   useWakeLock(Boolean(currentService))
 
@@ -246,12 +261,24 @@ const CurrentServiceComponent = () => {
               className="current-service-sidebar-col">
               <Card
                 title="Alabanzas programadas"
-                extra={<Text strong>{formatServiceDate(currentService.eventDate)}</Text>}
+                // With several services the picker already shows each date
+                extra={services.length > 1 ? null : <Text strong>{formatServiceDate(currentService.eventDate)}</Text>}
                 style={{ height: "100%" }}>
                 <Space
                   orientation="vertical" size={8}
                   style={{ width: "100%" }}>
-                  <Title level={4} style={{ marginTop: 0 }}>{currentService.title}</Title>
+                  {services.length > 1 ? (
+                    <Select
+                      className="current-service-picker" size="large"
+                      value={currentService.id} onChange={changeService}
+                      aria-label="Cambiar de evento"
+                      options={services.map(service => ({
+                        value: service.id,
+                        label: `${service.title} · ${formatServiceDate(service.eventDate)}`
+                      }))} />
+                  ) : (
+                    <Title level={4} style={{ marginTop: 0 }}>{currentService.title}</Title>
+                  )}
                   {currentService.songs.map(({ id, song, category, position, isOffering }) => (
                     <div
                       key={id}

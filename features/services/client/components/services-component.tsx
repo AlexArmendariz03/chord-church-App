@@ -248,7 +248,7 @@ const ServicesComponent = () => {
                 <ServiceCard
                   key={service.id} service={service}
                   isNext={index === 0}
-                  onOpen={() => router.push("/en-curso")}
+                  onOpen={() => router.push(`/en-curso?servicio=${service.id}`)}
                   onEdit={isLeader ? () => startEdit(service) : undefined}
                   onDelete={isLeader ? () => deleteService(service) : undefined} />
               ))}
