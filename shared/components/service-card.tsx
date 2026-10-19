@@ -10,7 +10,7 @@ import type { ServiceWithSongs } from "@/types/services"
 
 type ServiceCardProps = {
   service: ServiceWithSongs
-  // The first upcoming service: highlighted, with a shortcut to "En curso"
+  // The first upcoming service: highlighted and with its songs open
   isNext?: boolean
   onOpen?: () => void
   // Leader only: shows the ⋮ menu
@@ -112,9 +112,9 @@ export const ServiceCard = ({ service, isNext = false, onOpen, onEdit, onDelete 
             {expanded ? "Ocultar canciones" : "Ver canciones"} <DownOutlined />
           </Button>
         ) : <span className="service-card-empty">Sin canciones todavía</span>}
-        {isNext && onOpen && (
+        {onOpen && songs.length > 0 && (
           <Button
-            type="primary" icon={<PlayCircleOutlined />}
+            type={isNext ? "primary" : "default"} icon={<PlayCircleOutlined />}
             onClick={onOpen}>
             Abrir en vivo
           </Button>

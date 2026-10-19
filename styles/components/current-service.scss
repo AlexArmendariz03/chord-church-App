@@ -20,6 +20,15 @@
   }
 }
 
+.current-service-picker {
+  width: 100%;
+  margin-bottom: 4px;
+
+  .ant-select-content {
+    font-weight: 600;
+  }
+}
+
 .current-service-song-row {
   display: flex;
   align-items: center;
