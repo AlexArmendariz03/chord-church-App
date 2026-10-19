@@ -3,6 +3,7 @@
 
 $service-jubilo: #22c55e;
 $service-adoracion: #8b5cf6;
+$service-ofrenda: #f59e0b;
 
 .service-list {
   display: flex;
@@ -169,6 +170,10 @@ $service-adoracion: #8b5cf6;
   .is-adoracion {
     background: $service-adoracion;
   }
+
+  .is-ofrenda {
+    background: $service-ofrenda;
+  }
 }
 
 .service-card-mix-label {
@@ -181,6 +186,10 @@ $service-adoracion: #8b5cf6;
 
   &.is-adoracion {
     color: #6d28d9;
+  }
+
+  &.is-ofrenda {
+    color: #b45309;
   }
 }
 
@@ -211,6 +220,26 @@ $service-adoracion: #8b5cf6;
   &.is-adoracion {
     --song-color: #{$service-adoracion};
   }
+
+  // The offering closes the list, set apart from the worship songs
+  &.is-ofrenda {
+    --song-color: #{$service-ofrenda};
+    margin-top: 4px;
+    border-top: 1px dashed $header-border;
+    padding-top: 11px;
+  }
+}
+
+.service-card-song-badge {
+  flex: 0 0 auto;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #b45309;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .service-card-song-number {

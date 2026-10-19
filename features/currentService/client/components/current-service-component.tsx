@@ -252,7 +252,7 @@ const CurrentServiceComponent = () => {
                   orientation="vertical" size={8}
                   style={{ width: "100%" }}>
                   <Title level={4} style={{ marginTop: 0 }}>{currentService.title}</Title>
-                  {currentService.songs.map(({ id, song, category, position }) => (
+                  {currentService.songs.map(({ id, song, category, position, isOffering }) => (
                     <div
                       key={id}
                       role="button" tabIndex={0}
@@ -263,7 +263,7 @@ const CurrentServiceComponent = () => {
                         <span className="current-service-song-name">{position}. {song.name}</span>
                         <span className="current-service-song-meta">Tono {song.key}</span>
                       </span>
-                      <CategoryTag category={category} />
+                      <CategoryTag category={category} offering={isOffering} />
                     </div>
                   ))}
                 </Space>
@@ -288,7 +288,7 @@ const CurrentServiceComponent = () => {
                     <span>{activeSong.position}. {activeSong.song.name}</span>
                   </Space>
                 }
-                extra={<CategoryTag category={activeSong.category} />}>
+                extra={<CategoryTag category={activeSong.category} offering={activeSong.isOffering} />}>
                 <div className="current-service-toolbar">
                   <Space
                     size={12} align="center"

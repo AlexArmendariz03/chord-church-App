@@ -16,6 +16,7 @@ type ServiceFormValues = {
   eventDate: Dayjs
   jubiloSongIds: string[]
   adoracionSongIds: string[]
+  offeringSongId?: string
 }
 
 const ServicesComponent = () => {
@@ -34,6 +35,10 @@ const ServicesComponent = () => {
 
   const jubiloSongs = useMemo(() => songs.filter(song => song.category === "jubilo"), [songs])
   const adoracionSongs = useMemo(() => songs.filter(song => song.category === "adoracion"), [songs])
+  // A song can only be in the service once, so the júbilo list and the offering hide each other's pick
+  const pickedJubilo = Form.useWatch("jubiloSongIds", form)
+  const pickedOffering = Form.useWatch("offeringSongId", form)
+  const toOption = (song: SongWithMeta) => ({ label: `${song.name} (${song.key})`, value: song.id })
   // With no services yet the form is the page; once there are some, it moves into a modal
   // so the list stays in front
   const formInModal = services.length > 0
@@ -59,8 +64,9 @@ const ServicesComponent = () => {
     form.setFieldsValue({
       title: service.title,
       eventDate: dayjs(service.eventDate),
-      jubiloSongIds: service.songs.filter(s => s.category === "jubilo").sort((a, b) => a.position - b.position).map(s => s.songId),
-      adoracionSongIds: service.songs.filter(s => s.category === "adoracion").sort((a, b) => a.position - b.position).map(s => s.songId)
+      jubiloSongIds: service.songs.filter(s => s.category === "jubilo" && !s.isOffering).sort((a, b) => a.position - b.position).map(s => s.songId),
+      adoracionSongIds: service.songs.filter(s => s.category === "adoracion").sort((a, b) => a.position - b.position).map(s => s.songId),
+      offeringSongId: service.songs.find(s => s.isOffering)?.songId
     })
     setFormOpen(true)
   }
@@ -94,7 +100,7 @@ const ServicesComponent = () => {
       const response = await fetch(url, {
         method: editingServiceId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...values, eventDate: values.eventDate.toISOString() })
+        body: JSON.stringify({ ...values, offeringSongId: values.offeringSongId ?? null, eventDate: values.eventDate.toISOString() })
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.message ?? "Error al guardar el servicio")
@@ -154,7 +160,7 @@ const ServicesComponent = () => {
             <Select
               mode="multiple" placeholder="Busca o selecciona alabanzas"
               optionFilterProp="label"
-              options={jubiloSongs.map(song => ({ label: `${song.name} (${song.key})`, value: song.id }))} />
+              options={jubiloSongs.filter(song => song.id !== pickedOffering).map(toOption)} />
           </Form.Item>
         </Col>
         <Col xs={24} md={12}>
@@ -164,7 +170,18 @@ const ServicesComponent = () => {
             <Select
               mode="multiple" placeholder="Busca o selecciona alabanzas"
               optionFilterProp="label"
-              options={adoracionSongs.map(song => ({ label: `${song.name} (${song.key})`, value: song.id }))} />
+              options={adoracionSongs.map(toOption)} />
+          </Form.Item>
+        </Col>
+        <Col xs={24} md={12}>
+          <Form.Item
+            name="offeringSongId" label="Canción de la ofrenda (opcional)"
+            extra="Se toca al terminar las alabanzas. Solo canciones de júbilo.">
+            <Select
+              showSearch allowClear
+              placeholder="Busca o selecciona una de júbilo"
+              optionFilterProp="label"
+              options={jubiloSongs.filter(song => !pickedJubilo?.includes(song.id)).map(toOption)} />
           </Form.Item>
         </Col>
       </Row>
@@ -192,7 +209,7 @@ const ServicesComponent = () => {
               <Title level={2} style={{ margin: 0 }}>Servicios</Title>
               <Paragraph type="secondary" style={{ margin: 0 }}>
                 Elige al menos <Text strong>1 canción de júbilo</Text> y <Text strong>1 de adoración</Text>.
-                El orden en que las selecciones es el orden en que se tocarán.
+                El orden en que las selecciones es el orden en que se tocarán; la ofrenda va al final.
               </Paragraph>
             </Col>
             {isLeader && formInModal && (

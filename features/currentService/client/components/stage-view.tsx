@@ -168,7 +168,7 @@ const StageView = ({
   const themeLabel = STAGE_THEMES.find(option => option.value === stageTheme)?.label
   const upNext = hasNextPage
     ? { label: "Página", detail: `${pageIndex + 2} de ${pageCount}` }
-    : next ? { label: "Sigue", detail: `${next.song.name} · ${next.song.key}` } : null
+    : next ? { label: next.isOffering ? "Sigue · Ofrenda" : "Sigue", detail: `${next.song.name} · ${next.song.key}` } : null
 
   return (
     <ConfigProvider theme={STAGE_THEME}>
@@ -196,7 +196,7 @@ const StageView = ({
           <span className="stage-intro-name">{current.song.name}</span>
           <span className="stage-intro-meta">
             <span className="stage-intro-key">Tono {playedKey}</span>
-            {current.category === "jubilo" ? "Júbilo" : "Adoración"}
+            {current.isOffering ? "Ofrenda" : current.category === "jubilo" ? "Júbilo" : "Adoración"}
           </span>
         </div>
 

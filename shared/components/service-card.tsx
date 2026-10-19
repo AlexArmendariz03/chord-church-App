@@ -32,8 +32,9 @@ export const ServiceCard = ({ service, isNext = false, onOpen, onEdit, onDelete 
   const [expanded, setExpanded] = useState(isNext)
   const date = dayjs(service.eventDate).locale("es")
   const songs = [...service.songs].sort((a, b) => a.position - b.position)
-  const jubiloCount = songs.filter(s => s.category === "jubilo").length
-  const adoracionCount = songs.length - jubiloCount
+  const jubiloCount = songs.filter(s => s.category === "jubilo" && !s.isOffering).length
+  const adoracionCount = songs.filter(s => s.category === "adoracion").length
+  const offering = songs.find(s => s.isOffering)
   const status = relativeLabel(service.eventDate)
   const isSoon = status === "En curso" || status === "Hoy" || status === "Mañana"
 
@@ -63,9 +64,11 @@ export const ServiceCard = ({ service, isNext = false, onOpen, onEdit, onDelete 
               <div className="service-card-mix-bar">
                 <span className="is-jubilo" style={{ flexGrow: jubiloCount }} />
                 <span className="is-adoracion" style={{ flexGrow: adoracionCount }} />
+                {offering && <span className="is-ofrenda" style={{ flexGrow: 1 }} />}
               </div>
               <span className="service-card-mix-label is-jubilo">{jubiloCount} júbilo</span>
               <span className="service-card-mix-label is-adoracion">{adoracionCount} adoración</span>
+              {offering && <span className="service-card-mix-label is-ofrenda">Ofrenda</span>}
             </div>
           )}
         </div>
@@ -89,10 +92,11 @@ export const ServiceCard = ({ service, isNext = false, onOpen, onEdit, onDelete 
 
       {expanded && songs.length > 0 && (
         <ol className="service-card-songs">
-          {songs.map(({ id, song, category, position }) => (
-            <li key={id} className={`service-card-song is-${category}`}>
+          {songs.map(({ id, song, category, position, isOffering }) => (
+            <li key={id} className={`service-card-song is-${isOffering ? "ofrenda" : category}`}>
               <span className="service-card-song-number">{position}</span>
               <span className="service-card-song-name">{song.name}</span>
+              {isOffering && <span className="service-card-song-badge">Ofrenda</span>}
               <span className="service-card-song-key">{song.key}</span>
             </li>
           ))}
