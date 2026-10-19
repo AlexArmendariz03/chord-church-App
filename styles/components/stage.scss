@@ -1,0 +1,689 @@
+// Full screen "stage" view of En curso: readable from a music stand, and good-looking.
+// The lyrics always take the whole screen; the floating control bars slide over them and
+// hide on their own, so showing them never reflows the page. A small HUD stays meanwhile.
+// Themes only swap custom properties; the lyrics viewer reads the same ones.
+
+$stage-surface: rgba(14, 18, 36, 0.62);
+$stage-line: rgba(255, 255, 255, 0.1);
+$stage-text: #f8fafc;
+$stage-muted: #94a3b8;
+$stage-hud-height: 52px;
+$stage-controls-transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease;
+
+.stage {
+  --stage-bg: #070a17;
+  --lyrics-text: #f8fafc;
+  --lyrics-chord: #fcd34d;
+  --section-verse: #94a3b8;
+  --section-chorus: #67e8f9;
+  --section-bridge: #c4b5fd;
+  --section-instrumental: #5eead4;
+  --glow-opacity: 0.34;
+  --glow-a: #6366f1;
+  --glow-b: #a855f7;
+  --glow-c: #06b6d4;
+
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  overflow: hidden;
+  background: var(--stage-bg);
+  color: $stage-text;
+  transition: background 0.6s ease;
+
+  // Aurora: warm glow for júbilo, cool for adoración
+  &[data-category="jubilo"] {
+    --glow-a: #f97316;
+    --glow-b: #ec4899;
+    --glow-c: #eab308;
+  }
+
+  // Noche: pure black (OLED friendly), maximum contrast, no glow
+  &[data-theme="noche"] {
+    --stage-bg: #000000;
+    --lyrics-text: #ffffff;
+    --lyrics-chord: #22d3ee;
+    --section-chorus: #f472b6;
+    --glow-opacity: 0;
+  }
+
+  // Cálido: warm paper-like dark, soft on the eyes in long services
+  &[data-theme="calido"] {
+    --stage-bg: #15100b;
+    --lyrics-text: #fbf1de;
+    --lyrics-chord: #fb923c;
+    --section-verse: #c8b8a0;
+    --section-chorus: #fbbf24;
+    --section-bridge: #f9a8d4;
+    --section-instrumental: #a3e635;
+    --glow-opacity: 0.18;
+    --glow-a: #b45309;
+    --glow-b: #9a3412;
+    --glow-c: #ca8a04;
+  }
+}
+
+.stage-backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: var(--glow-opacity);
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.stage-glow {
+  position: absolute;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  filter: blur(90px);
+  transition: background 1.2s ease;
+  animation: stage-drift 24s ease-in-out infinite alternate;
+
+  &.is-a {
+    top: -25vmax;
+    left: -15vmax;
+    background: var(--glow-a);
+  }
+
+  &.is-b {
+    right: -20vmax;
+    bottom: -30vmax;
+    background: var(--glow-b);
+    animation-delay: -8s;
+  }
+
+  &.is-c {
+    top: 10%;
+    right: 5%;
+    width: 30vmax;
+    height: 30vmax;
+    background: var(--glow-c);
+    opacity: 0.6;
+    animation-delay: -16s;
+  }
+}
+
+@keyframes stage-drift {
+  to {
+    transform: translate(6vmax, 4vmax) scale(1.08);
+  }
+}
+
+// Big title card shown for a moment whenever a new song comes up
+.stage-intro {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  background: color-mix(in srgb, var(--stage-bg) 72%, transparent);
+  backdrop-filter: blur(14px);
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+
+  > * {
+    transform: translateY(6px) scale(0.99);
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  &.is-visible {
+    opacity: 1;
+
+    > * {
+      transform: none;
+    }
+  }
+}
+
+.stage-intro-position {
+  color: $stage-muted;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+.stage-intro-name {
+  max-width: 90vw;
+  color: var(--lyrics-text);
+  font-family: var(--font-sheet), sans-serif !important;
+  font-size: clamp(34px, 6vw, 76px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.stage-intro-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  color: $stage-muted;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.stage-intro-key {
+  padding: 4px 16px;
+  border-radius: 999px;
+  background: var(--lyrics-chord);
+  color: var(--stage-bg);
+  font-weight: 800;
+}
+
+.stage-body {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  padding:
+    calc(#{$stage-hud-height} + env(safe-area-inset-top))
+    calc(clamp(20px, 4vw, 56px) + env(safe-area-inset-right))
+    calc(28px + env(safe-area-inset-bottom))
+    calc(clamp(20px, 4vw, 56px) + env(safe-area-inset-left));
+}
+
+// ---------- Always-visible HUD ----------
+
+.stage-hud {
+  position: absolute;
+  top: calc(10px + env(safe-area-inset-top));
+  left: calc(14px + env(safe-area-inset-left));
+  right: calc(14px + env(safe-area-inset-right));
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 34px;
+  color: $stage-muted;
+  font-size: 14px;
+  pointer-events: none;
+
+  > :not(.stage-hud-page) {
+    flex-shrink: 0;
+  }
+}
+
+.stage-hud-position {
+  padding: 4px 10px;
+  border: 1px solid $stage-line;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.stage-hud-name {
+  flex-shrink: 1 !important;
+  min-width: 0;
+  overflow: hidden;
+  color: #cbd5e1;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stage-hud-key {
+  flex-shrink: 0;
+  padding: 1px 10px;
+  border: 1.5px solid color-mix(in srgb, var(--lyrics-chord) 55%, transparent);
+  border-radius: 999px;
+  color: var(--lyrics-chord);
+  font-weight: 700;
+
+  &.is-transposed {
+    background: var(--lyrics-chord);
+    color: var(--stage-bg);
+  }
+}
+
+.stage-hud-page {
+  margin-left: auto;
+  padding: 4px 10px;
+  border: 1px solid $stage-line;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.stage-progress-line {
+  position: absolute;
+  left: calc(20px + env(safe-area-inset-left));
+  right: calc(20px + env(safe-area-inset-right));
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  display: flex;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.stage-progress-line-song {
+  position: relative;
+  flex: 1 1 0;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgba(148, 163, 184, 0.22);
+
+  &.is-done {
+    background: rgba(129, 140, 248, 0.55);
+  }
+}
+
+.stage-progress-line-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--lyrics-chord);
+  transition: width 0.2s ease;
+}
+
+// ---------- Floating bubble controls ----------
+
+$bubble-size: 46px;
+
+// Groups of bubbles pinned to the corners; they fade and float in over the lyrics
+.stage-cluster {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  pointer-events: none;
+  transition: $stage-controls-transition;
+
+  &.is-top {
+    top: calc(10px + env(safe-area-inset-top));
+    right: calc(14px + env(safe-area-inset-right));
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: calc(100% - 28px);
+    transform: translateY(-14px) scale(0.96);
+  }
+
+  &.is-bottom-left {
+    bottom: calc(22px + env(safe-area-inset-bottom));
+    left: calc(16px + env(safe-area-inset-left));
+    transform: translateY(14px) scale(0.96);
+  }
+
+  &.is-bottom-right {
+    bottom: calc(22px + env(safe-area-inset-bottom));
+    right: calc(16px + env(safe-area-inset-right));
+    transform: translateY(14px) scale(0.96);
+  }
+}
+
+.stage.has-controls .stage-cluster {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+.stage-bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: $bubble-size;
+  height: $bubble-size;
+  padding: 0;
+  border: 1px solid $stage-line;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(16px) saturate(1.4);
+  color: $stage-text;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease, opacity 0.15s ease, color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.16);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.92);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--lyrics-chord);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  // Toggles that are on (chords visible)
+  &.is-active {
+    border-color: color-mix(in srgb, var(--lyrics-chord) 55%, transparent);
+    color: var(--lyrics-chord);
+  }
+
+  &.is-large {
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+  }
+
+  &.is-primary {
+    width: 64px;
+    height: 64px;
+    border-color: transparent;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    box-shadow: 0 12px 32px rgba(99, 102, 241, 0.45);
+    font-size: 22px;
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, #818cf8, #c084fc);
+    }
+  }
+}
+
+// Bubbles that belong together (♭ key ♯, A A) share one glass capsule
+.stage-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid $stage-line;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(16px) saturate(1.4);
+
+  .stage-bubble {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.12);
+    }
+  }
+}
+
+.stage-key {
+  display: inline-flex;
+  gap: 4px;
+  min-width: 44px;
+  height: 34px;
+  padding: 0 12px;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lyrics-chord) 16%, transparent);
+  color: var(--lyrics-chord);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  white-space: nowrap;
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &.is-transposed {
+    background: var(--lyrics-chord);
+    color: var(--stage-bg);
+    cursor: pointer;
+  }
+}
+
+.stage-key-shift {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+.stage-font-glyph {
+  font-size: 20px;
+  font-weight: 800;
+
+  &.is-small {
+    font-size: 14px;
+  }
+}
+
+.stage-chord-glyph {
+  font-size: 15px;
+  font-weight: 800;
+
+  sup {
+    font-size: 10px;
+  }
+}
+
+// Small "what's next" caption next to the next bubble
+.stage-up-next {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: 260px;
+  padding: 8px 14px;
+  border: 1px solid $stage-line;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(16px);
+  text-align: right;
+}
+
+.stage-up-next-label {
+  color: $stage-muted;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.stage-up-next-detail {
+  max-width: 100%;
+  overflow: hidden;
+  color: $stage-text;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Bring-back handle, top center, only while the controls are hidden
+.stage-reveal {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top));
+  left: 50%;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 28px;
+  border: 1px solid $stage-line;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  color: $stage-muted;
+  font-size: 12px;
+  cursor: pointer;
+  transform: translateX(-50%);
+  transition: opacity 0.25s ease, background 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: $stage-text;
+  }
+
+  .stage.has-controls & {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+// The HUD steps aside while the tool bubbles are out, so they never overlap
+.stage.has-controls .stage-hud-page {
+  opacity: 0;
+}
+
+// Faint chevrons that hint the left/right thirds of the lyrics turn the page
+.stage .stage-edge {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.14);
+  font-size: 28px;
+  pointer-events: none;
+
+  &.is-prev {
+    left: calc(10px + env(safe-area-inset-left));
+  }
+
+  &.is-next {
+    right: calc(10px + env(safe-area-inset-right));
+  }
+}
+
+// ---------- Song list drawer ----------
+
+.stage-drawer {
+  .ant-drawer-content {
+    background: #121a2f;
+  }
+}
+
+.stage-drawer-date {
+  margin: 0 0 16px;
+  color: $stage-muted;
+}
+
+.stage-drawer-heading {
+  margin: 28px 0 10px;
+  color: $stage-muted;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.stage-drawer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stage-drawer-song {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid $stage-line;
+  border-left: 3px solid transparent;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: $stage-text;
+  font: inherit;
+  font-size: 16px;
+  text-align: left;
+  cursor: pointer;
+
+  &.is-jubilo {
+    border-left-color: #73d13d;
+  }
+
+  &.is-adoracion {
+    border-left-color: #b37feb;
+  }
+
+  &.is-active {
+    background: #4f46e5;
+    border-color: #4f46e5;
+  }
+}
+
+.stage-drawer-song-key {
+  flex-shrink: 0;
+  color: var(--lyrics-chord);
+  font-weight: 700;
+}
+
+.is-active .stage-drawer-song-key {
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-cluster,
+  .stage-intro > * {
+    transition: opacity 0.15s linear;
+  }
+
+  .stage-glow {
+    animation: none;
+  }
+}
+
+@media (max-width: 720px) {
+  // Below the HUD, so they don't cover the song name on narrow screens
+  .stage-cluster.is-top {
+    top: calc(52px + env(safe-area-inset-top));
+    right: 10px;
+    gap: 8px;
+  }
+
+  .stage-cluster.is-top .stage-bubble {
+    width: 38px;
+    height: 38px;
+    font-size: 15px;
+  }
+
+  .stage-pill .stage-bubble {
+    width: 34px;
+    height: 34px;
+  }
+
+  .stage-key {
+    min-width: 38px;
+    height: 30px;
+    padding: 0 8px;
+  }
+
+  // Theme lives in the song list; hiding the controls is a tap on the lyrics
+  .stage-bubble.is-wide-only {
+    display: none;
+  }
+
+  .stage .stage-edge,
+  .stage-up-next {
+    display: none;
+  }
+
+  // Every pixel of width counts: the longest line sets the font size on phones
+  .stage-body {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .stage-hud {
+    left: 12px;
+    right: 12px;
+  }
+}

@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  leader
+  musico
+}
+
+enum SongCategory {
+  jubilo
+  adoracion
+}
+
+model User {
+  id       Int      @id @default(autoincrement())
+  username String   @unique
+  password String
+  role     UserRole @default(musico)
+}
+
+model Song {
+  id           String        @id @default(cuid())
+  name         String
+  key          String
+  category     SongCategory
+  lyrics       String
+  payload      Json?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  serviceSongs ServiceSong[]
+}
+
+model Service {
+  id        String        @id @default(cuid())
+  title     String
+  eventDate DateTime
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  songs     ServiceSong[]
+}
+
+model ServiceSong {
+  id         String       @id @default(cuid())
+  serviceId  String
+  songId     String
+  category   SongCategory
+  position   Int
+  // The song played during the offering, after the worship set (always a júbilo song)
+  isOffering Boolean      @default(false)
+  service    Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  song       Song         @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceId, songId])
+  @@index([serviceId, category])
+}
