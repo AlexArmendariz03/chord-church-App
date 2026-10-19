@@ -2,11 +2,14 @@
 
 ## Node Version
 
-- Requerido: `v20.18.0` (ver `.nvmrc`)
+- Requerido: Node 22 (ver `.nvmrc`)
 
 ## Getting Started
 
-Ejecuta el servidor de desarrollo:
+1. Copia `.env.examples` a `.env` y completa `DATABASE_URL`, `DIRECT_URL` y `SESSION_SECRET`
+   (genera el secreto con `openssl rand -base64 48`).
+2. Instala dependencias (`npm install` también genera el cliente de Prisma).
+3. Ejecuta el servidor de desarrollo:
 
 ```bash
 npm run dev
@@ -14,19 +17,17 @@ npm run dev
 
 Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-## Credenciales hardcodeadas (no expiran)
+## Usuarios
 
-Para acceso rápido sin depender de la base de datos, existen dos usuarios estáticos en `pages/api/login.ts`:
+Crea o actualiza usuarios en la base de datos con:
 
-- **Leader**
-  - usuario: `leader`
-  - contraseña: `leader123`
-- **Músico**
-  - usuario: `musico`
-  - contraseña: `musico123`
+```bash
+npm run create-user -- <usuario> <contraseña> leader   # o musico
+```
 
-Estas credenciales siempre están disponibles para login.
+En desarrollo (`npm run dev`) existen además dos usuarios de prueba: `leader` y `musico`.
+**En producción están desactivados**: solo pueden entrar usuarios de la base de datos.
 
-## Notas
+## Despliegue
 
-- También puedes seguir usando usuarios guardados en base de datos; el endpoint `/api/login` primero valida usuarios estáticos y luego usuarios en Prisma.
+Configura en el hosting las variables `DATABASE_URL`, `DIRECT_URL` y `SESSION_SECRET`.

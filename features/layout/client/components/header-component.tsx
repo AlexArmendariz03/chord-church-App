@@ -5,8 +5,9 @@ import { Button, Dropdown, Layout as ALayout, Menu, Tooltip, Typography } from "
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { useEffect, useMemo, useState } from "react"
-import { getMenuItems } from "./menu-items"
+import { useMemo } from "react"
+import { getMenuItems, getSelectedMenuKey } from "./menu-items"
+import { useSession } from "./session-provider"
 
 const { Header } = ALayout
 const { Title } = Typography
@@ -14,28 +15,23 @@ const { Title } = Typography
 const HeaderBar = () => {
   const router = useRouter()
   const pathname = usePathname()
-  const [role, setRole] = useState("musico")
-
-  useEffect(() => {
-    setRole(localStorage.getItem("userRole") ?? "musico")
-  }, [])
-
-  const isLeader = role === "leader"
+  const { isLeader } = useSession()
   const menuItems = useMemo(() => getMenuItems(isLeader), [isLeader])
+  const selectedKeys = [getSelectedMenuKey(pathname)]
 
   const handleLogout = async () => {
     try {
       await fetch("/api/logout", { method: "POST" })
     } finally {
-      localStorage.removeItem("userRole")
       router.push("/login")
+      router.refresh()
     }
   }
 
   return (
     <Header className="header">
       <div className="mobile-menu-button">
-        <Dropdown trigger={["click"]} menu={{ items: menuItems, selectedKeys: [pathname] }}>
+        <Dropdown trigger={["click"]} menu={{ items: menuItems, selectedKeys }}>
           <Button icon={<MenuOutlined className="menu-icon" />} type="text" />
         </Dropdown>
       </div>
@@ -48,7 +44,7 @@ const HeaderBar = () => {
       </Link>
       <Menu
         className="nav-menu" mode="horizontal"
-        selectedKeys={[pathname]} items={menuItems} />
+        selectedKeys={selectedKeys} items={menuItems} />
       <div className="user">
         <UserOutlined className="icon" />
         <Title

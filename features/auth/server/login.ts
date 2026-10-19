@@ -13,6 +13,7 @@ type StaticUser = LoginParams & {
   displayName: string
 }
 
+// Development-only shortcuts. In production only database users can sign in.
 export const STATIC_USERS: StaticUser[] = [
   {
     username: "leader",
@@ -30,7 +31,7 @@ export const STATIC_USERS: StaticUser[] = [
 
 export async function loginUser({ username, password }: LoginParams): Promise<{ message: string; role?: UserRole; status: number }> {
   const normalizedUsername = username.trim().toLowerCase()
-  const staticUser = STATIC_USERS.find(candidate => candidate.username === normalizedUsername && candidate.password === password)
+  const staticUser = process.env.NODE_ENV !== "production" && STATIC_USERS.find(candidate => candidate.username === normalizedUsername && candidate.password === password)
 
   if (staticUser) {
     return {
@@ -51,6 +52,6 @@ export async function loginUser({ username, password }: LoginParams): Promise<{ 
 
   return {
     status: 401,
-    message: "Credenciales incorrectas. Usa leader/leader123 o musico/musico123"
+    message: "Usuario o contraseña incorrectos"
   }
 }

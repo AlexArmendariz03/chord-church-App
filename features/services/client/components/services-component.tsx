@@ -5,6 +5,8 @@ import { MoreOutlined } from "@ant-design/icons"
 import { App, Button, Card, Col, Collapse, DatePicker, Dropdown, Empty, Form, Input, Row, Select, Space, Tag, Typography } from "antd"
 import dayjs, { type Dayjs } from "dayjs"
 import { useSearchParams } from "next/navigation"
+import { useSession } from "@/features/layout/client/components/session-provider"
+import { formatServiceDate } from "@/shared/utils/dates"
 import type { ServiceWithSongs, SongWithMeta } from "@/types/services"
 
 const { Title, Paragraph, Text } = Typography
@@ -20,7 +22,7 @@ const ServicesComponent = () => {
   const { modal, message } = App.useApp()
   const searchParams = useSearchParams()
   const [form] = Form.useForm<ServiceFormValues>()
-  const [role, setRole] = useState<string>("musico")
+  const { isLeader } = useSession()
   const [songs, setSongs] = useState<SongWithMeta[]>([])
   const [services, setServices] = useState<ServiceWithSongs[]>([])
   const [loading, setLoading] = useState(false)
@@ -28,7 +30,6 @@ const ServicesComponent = () => {
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null)
   const [urlEditApplied, setUrlEditApplied] = useState(false)
 
-  const isLeader = role === "leader"
   const jubiloSongs = useMemo(() => songs.filter(song => song.category === "jubilo"), [songs])
   const adoracionSongs = useMemo(() => songs.filter(song => song.category === "adoracion"), [songs])
 
@@ -44,7 +45,6 @@ const ServicesComponent = () => {
   }
 
   useEffect(() => {
-    setRole(localStorage.getItem("userRole") ?? "musico")
     fetchData().catch(() => message.error("No se pudo cargar la información"))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -121,11 +121,11 @@ const ServicesComponent = () => {
         orientation="vertical" size={20}
         style={{ width: "100%" }}>
         <Card>
-          <Title level={2}>Servicios</Title>
-          <Paragraph>
-            El líder crea el servicio seleccionando al menos <Text strong>1 canción de júbilo</Text> y <Text strong>1 de adoración</Text>. El músico no edita ni crea alabanzas: solo ve los servicios programados y puede abrir cada alabanza desde En curso.
+          <Title level={2} style={{ margin: 0 }}>Servicios</Title>
+          <Paragraph type="secondary" style={{ margin: 0 }}>
+            Elige al menos <Text strong>1 canción de júbilo</Text> y <Text strong>1 de adoración</Text>.
+            El orden en que las selecciones es el orden en que se tocarán.
           </Paragraph>
-          <Tag color={isLeader ? "gold" : "blue"}>Rol actual: {isLeader ? "Líder" : "Músico"}</Tag>
         </Card>
 
         {isLeader && (
@@ -145,7 +145,9 @@ const ServicesComponent = () => {
                   <Form.Item
                     name="eventDate" label="Fecha del evento"
                     rules={[{ required: true, message: "Selecciona la fecha" }]}>
-                    <DatePicker showTime style={{ width: "100%" }} />
+                    <DatePicker
+                      showTime={{ format: "h:mm a", minuteStep: 5 }} format="DD/MM/YYYY h:mm a"
+                      placeholder="Selecciona fecha y hora" style={{ width: "100%" }} />
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={12}>
@@ -153,7 +155,8 @@ const ServicesComponent = () => {
                     name="jubiloSongIds" label="Canciones de júbilo (mínimo 1)"
                     rules={[{ required: true, type: "array", min: 1, message: "Selecciona al menos 1" }]}>
                     <Select
-                      mode="multiple"
+                      mode="multiple" placeholder="Busca o selecciona alabanzas"
+                      optionFilterProp="label"
                       options={jubiloSongs.map(song => ({ label: `${song.name} (${song.key})`, value: song.id }))} />
                   </Form.Item>
                 </Col>
@@ -162,7 +165,8 @@ const ServicesComponent = () => {
                     name="adoracionSongIds" label="Canciones de adoración (mínimo 1)"
                     rules={[{ required: true, type: "array", min: 1, message: "Selecciona al menos 1" }]}>
                     <Select
-                      mode="multiple"
+                      mode="multiple" placeholder="Busca o selecciona alabanzas"
+                      optionFilterProp="label"
                       options={adoracionSongs.map(song => ({ label: `${song.name} (${song.key})`, value: song.id }))} />
                   </Form.Item>
                 </Col>
@@ -181,7 +185,7 @@ const ServicesComponent = () => {
 
         <Card loading={loading}>
           {services.length === 0 ? (
-            <Empty description="No hay servicios activos" />
+            <Empty description="Aún no hay servicios programados" />
           ) : (
             <Collapse
               ghost
@@ -197,7 +201,7 @@ const ServicesComponent = () => {
                       <br />
                       <Text
                         type="secondary" style={{ fontSize: 13 }}>
-                        {new Date(service.eventDate).toLocaleString()}
+                        {formatServiceDate(service.eventDate)}
                       </Text>
                     </Col>
                     <Col>

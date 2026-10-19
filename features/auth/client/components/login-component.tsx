@@ -23,12 +23,12 @@ const LoginComponent = () => {
         body: JSON.stringify({ username, password })
       })
 
-      const data = (await response.json()) as { message: string; role?: string }
+      const data = (await response.json()) as { message: string }
 
       if (response.ok) {
         message.success(data.message)
-        if (data.role) localStorage.setItem("userRole", data.role)
         router.push("/dashboard")
+        router.refresh()
       } else {
         message.error(data.message)
       }
@@ -67,9 +67,11 @@ const LoginComponent = () => {
             </Form.Item>
           </Form>
         </Card>
-        <Text className="login-dev-note">
-          Modo desarrollo — Líder: leader / leader123 · Músico: musico / musico123
-        </Text>
+        {process.env.NODE_ENV === "development" && (
+          <Text className="login-dev-note">
+            Modo desarrollo — Líder: leader / leader123 · Músico: musico / musico123
+          </Text>
+        )}
       </Col>
     </Row>
   )
