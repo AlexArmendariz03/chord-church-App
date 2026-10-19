@@ -160,3 +160,25 @@
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
+
+// Phones: progress on its own line above, the two buttons share the row below
+@media (max-width: 576px) {
+  .current-service-nav {
+    flex-wrap: wrap;
+
+    > .ant-btn {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+  }
+
+  .current-service-nav-center {
+    order: -1;
+    flex-basis: 100%;
+  }
+
+  // "Página 1 de 2" is already shown above the buttons
+  .current-service-nav-page-word {
+    display: none;
+  }
+}

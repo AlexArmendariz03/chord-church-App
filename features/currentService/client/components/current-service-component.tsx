@@ -354,7 +354,7 @@ const CurrentServiceComponent = () => {
                   <Button
                     size="large" type="primary"
                     disabled={!canNext} onClick={goNext}>
-                    {pageIndex < pageCount - 1 ? "Siguiente página" : "Siguiente"} <RightOutlined />
+                    Siguiente{pageIndex < pageCount - 1 && <span className="current-service-nav-page-word"> página</span>} <RightOutlined />
                   </Button>
                 </div>
               </Card>

@@ -36,6 +36,11 @@
   @media (max-width: 576px) {
     flex-wrap: wrap;
 
+    // Name and preview take the whole first line; tone, tag and menu go below
+    .song-row-main {
+      flex-basis: 100%;
+    }
+
     .song-row-meta {
       gap: 8px;
     }
