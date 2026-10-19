@@ -1,17 +1,16 @@
 "use client"
 
-import { AppstoreAddOutlined, CalendarOutlined, MoreOutlined, PlayCircleOutlined, UnorderedListOutlined } from "@ant-design/icons"
-import { Alert, App, Button, Card, Col, Collapse, Dropdown, Empty, Row, Space, Typography } from "antd"
+import { AppstoreAddOutlined, CalendarOutlined, PlayCircleOutlined, UnorderedListOutlined } from "@ant-design/icons"
+import { Alert, App, Button, Card, Col, Empty, Row, Typography } from "antd"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useSession } from "@/features/layout/client/components/session-provider"
-import { formatServiceDate } from "@/shared/utils/dates"
 import { displayName } from "@/shared/utils/user"
-import { CategoryTag } from "@/shared/components/category-tag"
+import { ServiceCard } from "@/shared/components/service-card"
 import type { ServiceWithSongs } from "@/types/services"
 
 const { Meta } = Card
-const { Title, Paragraph, Text } = Typography
+const { Title, Paragraph } = Typography
 
 const LEADER_SHORTCUTS = [
   {
@@ -132,70 +131,16 @@ const Dashboard = () => {
             title="No se pudieron cargar los servicios"
             action={<Button size="small" onClick={fetchServices}>Reintentar</Button>} />
         ) : services.length ? (
-          <Collapse
-            ghost
-            className="collapse-panel-list"
-            items={services.map(service => {
-              const jubiloCount = service.songs.filter(s => s.category === "jubilo").length
-              const adoracionCount = service.songs.filter(s => s.category === "adoracion").length
-
-              return {
-                key: service.id,
-                label: (
-                  <Row
-                    align="middle" gutter={12}
-                    wrap={false}>
-                    <Col flex="auto">
-                      <Text strong>{service.title}</Text>
-                      <br />
-                      <Text
-                        type="secondary" style={{ fontSize: 13 }}>
-                        {formatServiceDate(service.eventDate)}
-                      </Text>
-                    </Col>
-                    <Col>
-                      <Space size={4}>
-                        <CategoryTag category="jubilo" count={jubiloCount} />
-                        <CategoryTag category="adoracion" count={adoracionCount} />
-                      </Space>
-                    </Col>
-                    {isLeader && (
-                      <Col onClick={e => e.stopPropagation()}>
-                        <Dropdown
-                          trigger={["click"]}
-                          menu={{
-                            items: [
-                              { key: "edit", label: "Editar" },
-                              { key: "delete", label: "Eliminar", danger: true }
-                            ],
-                            onClick: ({ key }) => {
-                              if (key === "edit") navigateTo(`/servicios?edit=${service.id}`)
-                              if (key === "delete") deleteService(service)
-                            }
-                          }}>
-                          <Button
-                            type="text" icon={<MoreOutlined />}
-                            aria-label="Más acciones" />
-                        </Dropdown>
-                      </Col>
-                    )}
-                  </Row>
-                ),
-                children: (
-                  <div>
-                    {[...service.songs].sort((a, b) => a.position - b.position).map(({ id, song, category, position }) => (
-                      <div key={id} className="nested-song-row">
-                        <Text>{position}. {song.name}</Text>
-                        <Space>
-                          <Text type="secondary">Tono: {song.key}</Text>
-                          <CategoryTag category={category} />
-                        </Space>
-                      </div>
-                    ))}
-                  </div>
-                )
-              }
-            })} />
+          <div className="service-list">
+            {services.map((service, index) => (
+              <ServiceCard
+                key={service.id} service={service}
+                isNext={index === 0}
+                onOpen={() => navigateTo("/en-curso")}
+                onEdit={isLeader ? () => navigateTo(`/servicios?edit=${service.id}`) : undefined}
+                onDelete={isLeader ? () => deleteService(service) : undefined} />
+            ))}
+          </div>
         ) : (
           <Empty
             description={isLeader ? "Aún no hay servicios programados" : "No hay servicios programados por ahora"}

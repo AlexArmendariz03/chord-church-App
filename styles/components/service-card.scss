@@ -1,0 +1,330 @@
+// Scheduled service card, shared by Inicio and Servicios.
+// Category colors match CategoryTag (green / purple) and the En curso sidebar.
+
+$service-jubilo: #22c55e;
+$service-adoracion: #8b5cf6;
+
+.service-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.service-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid $header-border;
+  border-radius: 18px;
+  background: #fff;
+  text-align: left;
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    border-color: color-mix(in srgb, $accent-indigo 30%, $header-border);
+    box-shadow: 0 10px 30px rgba(79, 70, 229, 0.08);
+  }
+
+  // The next service stands out: soft indigo wash and a colored edge
+  &.is-next {
+    border-color: color-mix(in srgb, $accent-indigo 35%, $header-border);
+    background:
+      radial-gradient(120% 140% at 0% 0%, rgba(79, 70, 229, 0.08), transparent 55%),
+      #fff;
+    box-shadow: 0 12px 34px rgba(79, 70, 229, 0.1);
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      background: linear-gradient(180deg, $accent-indigo, #a855f7);
+    }
+  }
+}
+
+.service-card-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 18px 18px 12px 20px;
+}
+
+.service-card-date {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  padding: 8px 0 9px;
+  border-radius: 14px;
+  background: #eef2ff;
+  color: $accent-indigo;
+  line-height: 1;
+
+  .is-next & {
+    background: linear-gradient(150deg, $accent-indigo, #7c3aed);
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(79, 70, 229, 0.3);
+  }
+}
+
+.service-card-weekday,
+.service-card-month {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.service-card-day {
+  margin: 4px 0 3px;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.service-card-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.service-card-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.service-card-title {
+  margin: 0;
+  color: $ink-dark;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.service-card-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+
+  &.is-soon {
+    background: #fff7ed;
+    color: #c2410c;
+  }
+}
+
+.service-card-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: service-card-pulse 1.4s ease-in-out infinite;
+}
+
+.service-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 13px;
+
+  .anticon {
+    margin-right: 4px;
+  }
+}
+
+.service-card-mix {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-top: 12px;
+}
+
+.service-card-mix-bar {
+  display: flex;
+  gap: 3px;
+  flex: 0 1 160px;
+  min-width: 90px;
+  height: 6px;
+
+  span {
+    border-radius: 999px;
+  }
+
+  .is-jubilo {
+    background: $service-jubilo;
+  }
+
+  .is-adoracion {
+    background: $service-adoracion;
+  }
+}
+
+.service-card-mix-label {
+  font-size: 12px;
+  font-weight: 600;
+
+  &.is-jubilo {
+    color: #15803d;
+  }
+
+  &.is-adoracion {
+    color: #6d28d9;
+  }
+}
+
+.service-card-menu {
+  flex: 0 0 auto;
+  margin: -4px -6px 0 0;
+}
+
+.service-card-songs {
+  max-width: 640px;
+  margin: 0 18px 4px 106px;
+  padding: 6px 0 0;
+  border-top: 1px dashed $header-border;
+  list-style: none;
+  animation: service-card-songs-in 0.2s ease-out;
+}
+
+.service-card-song {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 0;
+
+  &.is-jubilo {
+    --song-color: #{$service-jubilo};
+  }
+
+  &.is-adoracion {
+    --song-color: #{$service-adoracion};
+  }
+}
+
+.service-card-song-number {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--song-color) 14%, transparent);
+  color: var(--song-color);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.service-card-song-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: $ink-dark;
+  font-size: 14px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.service-card-song-key {
+  flex: 0 0 auto;
+  min-width: 34px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.service-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 18px 14px 100px;
+}
+
+.service-card-toggle {
+  color: $accent-indigo !important;
+  font-weight: 600;
+
+  .anticon {
+    font-size: 10px;
+    transition: transform 0.2s ease;
+  }
+
+  &.is-open .anticon {
+    transform: rotate(180deg);
+  }
+}
+
+.service-card-empty {
+  padding: 0 8px;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+@media (max-width: 576px) {
+  .service-card-main {
+    gap: 14px;
+    padding: 16px 12px 10px 16px;
+  }
+
+  .service-card-date {
+    width: 56px;
+  }
+
+  .service-card-day {
+    font-size: 24px;
+  }
+
+  .service-card-mix-bar {
+    flex-basis: 100%;
+  }
+
+  .service-card-songs {
+    margin: 0 14px 4px 16px;
+  }
+
+  .service-card-footer {
+    flex-wrap: wrap;
+    padding: 4px 14px 14px 10px;
+
+    .ant-btn-primary {
+      width: 100%;
+    }
+  }
+}
+
+@keyframes service-card-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes service-card-songs-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-card-pulse,
+  .service-card-songs {
+    animation: none;
+  }
+}
