@@ -1,11 +1,12 @@
 "use client"
 
 import { AppstoreAddOutlined, CalendarOutlined, MoreOutlined, PlayCircleOutlined, UnorderedListOutlined } from "@ant-design/icons"
-import { Alert, App, Button, Card, Col, Collapse, Dropdown, Empty, Row, Space, Tag, Typography } from "antd"
+import { Alert, App, Button, Card, Col, Collapse, Dropdown, Empty, Row, Space, Typography } from "antd"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useSession } from "@/features/layout/client/components/session-provider"
 import { formatServiceDate } from "@/shared/utils/dates"
+import { CategoryTag } from "@/shared/components/category-tag"
 import type { ServiceWithSongs } from "@/types/services"
 
 const { Meta } = Card
@@ -153,8 +154,8 @@ const Dashboard = () => {
                     </Col>
                     <Col>
                       <Space size={4}>
-                        <Tag color="gold">{jubiloCount} júbilo</Tag>
-                        <Tag color="purple">{adoracionCount} adoración</Tag>
+                        <CategoryTag category="jubilo" count={jubiloCount} />
+                        <CategoryTag category="adoracion" count={adoracionCount} />
                       </Space>
                     </Col>
                     {isLeader && (
@@ -186,9 +187,7 @@ const Dashboard = () => {
                         <Text>{position}. {song.name}</Text>
                         <Space>
                           <Text type="secondary">Tono: {song.key}</Text>
-                          <Tag color={category === "jubilo" ? "green" : "purple"}>
-                            {category === "jubilo" ? "Júbilo" : "Adoración"}
-                          </Tag>
+                          <CategoryTag category={category} />
                         </Space>
                       </div>
                     ))}

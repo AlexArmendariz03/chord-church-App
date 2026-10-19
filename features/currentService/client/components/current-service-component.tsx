@@ -7,9 +7,11 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined
 } from "@ant-design/icons"
-import { App, Button, Card, Col, Empty, Row, Space, Tag, Typography } from "antd"
+import { App, Button, Card, Col, Empty, Row, Space, Typography } from "antd"
+import { CategoryTag } from "@/shared/components/category-tag"
 import { formatServiceDate } from "@/shared/utils/dates"
 import type { ServiceWithSongs } from "@/types/services"
+import { useWakeLock } from "../use-wake-lock"
 
 const { Title, Text } = Typography
 
@@ -122,6 +124,8 @@ const CurrentServiceComponent = () => {
     const started = services.filter(service => new Date(service.eventDate).getTime() <= now)
     return started.at(-1) ?? services[0]
   }, [services])
+
+  useWakeLock(Boolean(currentService))
   const activeSong = useMemo(() => {
     if (!currentService) return null
     return currentService.songs.find(serviceSong => serviceSong.id === activeServiceSongId) ?? currentService.songs[0] ?? null
@@ -272,9 +276,7 @@ const CurrentServiceComponent = () => {
                           <span className="current-service-song-name">{position}. {song.name}</span>
                           <span className="current-service-song-meta">Tono {song.key}</span>
                         </span>
-                        <Tag color={category === "jubilo" ? "green" : "purple"}>
-                          {category === "jubilo" ? "Júbilo" : "Adoración"}
-                        </Tag>
+                        <CategoryTag category={category} />
                       </div>
                     ))}
                   </Space>
@@ -299,7 +301,7 @@ const CurrentServiceComponent = () => {
                       <span>{activeSong.position}. {activeSong.song.name}</span>
                     </Space>
                   }
-                  extra={<Tag color={activeSong.category === "jubilo" ? "green" : "purple"}>{activeSong.category === "jubilo" ? "Júbilo" : "Adoración"}</Tag>}
+                  extra={<CategoryTag category={activeSong.category} />}
                   style={{ minHeight: isPresentationMode ? "100vh" : 620, borderRadius: isPresentationMode ? 0 : 8 }}
                   styles={{ body: { background: isPresentationMode ? "#0f172a" : "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)" } }}>
                   <Space

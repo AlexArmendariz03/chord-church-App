@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { MoreOutlined } from "@ant-design/icons"
-import { App, Button, Card, Col, Collapse, DatePicker, Dropdown, Empty, Form, Input, Row, Select, Space, Tag, Typography } from "antd"
+import { App, Button, Card, Col, Collapse, DatePicker, Dropdown, Empty, Form, Input, Row, Select, Space, Typography } from "antd"
 import dayjs, { type Dayjs } from "dayjs"
 import { useSearchParams } from "next/navigation"
 import { useSession } from "@/features/layout/client/components/session-provider"
 import { formatServiceDate } from "@/shared/utils/dates"
+import { CategoryTag } from "@/shared/components/category-tag"
 import type { ServiceWithSongs, SongWithMeta } from "@/types/services"
 
 const { Title, Paragraph, Text } = Typography
@@ -206,8 +207,8 @@ const ServicesComponent = () => {
                     </Col>
                     <Col>
                       <Space size={4}>
-                        <Tag color="gold">{service.songs.filter(s => s.category === "jubilo").length} júbilo</Tag>
-                        <Tag color="purple">{service.songs.filter(s => s.category === "adoracion").length} adoración</Tag>
+                        <CategoryTag category="jubilo" count={service.songs.filter(s => s.category === "jubilo").length} />
+                        <CategoryTag category="adoracion" count={service.songs.filter(s => s.category === "adoracion").length} />
                       </Space>
                     </Col>
                     {isLeader && (
@@ -239,9 +240,7 @@ const ServicesComponent = () => {
                         <Text>{position}. {song.name}</Text>
                         <Space>
                           <Text type="secondary">Tono: {song.key}</Text>
-                          <Tag color={category === "jubilo" ? "green" : "purple"}>
-                            {category === "jubilo" ? "Júbilo" : "Adoración"}
-                          </Tag>
+                          <CategoryTag category={category} />
                         </Space>
                       </div>
                     ))}

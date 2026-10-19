@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { MoreOutlined, PlusOutlined } from "@ant-design/icons"
-import { App, Button, Card, Dropdown, Empty, Listy, Space, Tabs, Tag, Typography } from "antd"
+import { App, Button, Card, Dropdown, Empty, Listy, Space, Tabs, Typography } from "antd"
 import { useRouter } from "next/navigation"
 import { useSession } from "@/features/layout/client/components/session-provider"
+import { CategoryTag } from "@/shared/components/category-tag"
 import type { SongWithMeta } from "@/types/services"
 
 const { Paragraph, Text, Title } = Typography
@@ -74,9 +75,7 @@ const SongsListComponent = () => {
               </div>
               <div className="song-row-meta">
                 <Text type="secondary">Tono: {song.key}</Text>
-                <Tag color={song.category === "jubilo" ? "green" : "purple"}>
-                  {song.category === "jubilo" ? "Júbilo" : "Adoración"}
-                </Tag>
+                <CategoryTag category={song.category} />
                 <Dropdown
                   trigger={["click"]}
                   menu={{
