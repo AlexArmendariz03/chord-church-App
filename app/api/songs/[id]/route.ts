@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { Prisma } from "@prisma/client"
 import { prisma } from "@/shared/server/prisma"
 import { requireLeader } from "@/shared/server/session"
+import { trimLyrics } from "@/shared/utils/lyrics"
 
 type SongCategory = "jubilo" | "adoracion"
 
@@ -51,7 +52,7 @@ export async function PUT(req: Request, context: RouteContext) {
         name: name.trim(),
         key: key.trim(),
         category,
-        lyrics: lyrics.trim(),
+        lyrics: trimLyrics(lyrics),
         ...(payload === undefined ? {} : { payload: payload as Prisma.InputJsonValue })
       }
     })

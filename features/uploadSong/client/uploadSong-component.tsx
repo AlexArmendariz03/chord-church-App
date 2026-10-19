@@ -29,6 +29,7 @@ import {
     ZoomOutOutlined
 } from "@ant-design/icons"
 import { useSession } from "@/features/layout/client/components/session-provider"
+import { trimLyrics } from "@/shared/utils/lyrics"
 import { BoardConfig, Interfaces, ExtraTextItem, SongPayload } from "@/types/UploadSong/interfaces"
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "./use-unsaved-changes-guard"
 
@@ -145,7 +146,7 @@ const createInitialBlock = (): Interfaces => ({
 })
 
 const buildBlocksFromLyrics = (lyrics: string): Interfaces[] => {
-    const chunks = lyrics.split("\n\n").map(chunk => chunk.trim()).filter(Boolean)
+    const chunks = lyrics.split(/\n[ \t]*\n/).map(trimLyrics).filter(Boolean)
     if (!chunks.length) return [createInitialBlock()]
 
     return chunks.map((text, index) => ({
@@ -383,8 +384,8 @@ export const UploadSongComponent = () => {
 
             // The starter block's sample text is not real lyrics
             const lyrics = contentBlocks
-                .map(block => block.text.trim())
-                .filter(text => text && text !== PLACEHOLDER_LYRICS)
+                .map(block => trimLyrics(block.text))
+                .filter(text => text && text.trim() !== PLACEHOLDER_LYRICS)
                 .join("\n\n")
 
             if (!lyrics.trim()) {
