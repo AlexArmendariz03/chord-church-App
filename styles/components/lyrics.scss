@@ -1,0 +1,182 @@
+// Lyrics viewer shared by the En curso page and the stage (full screen) view.
+// Spacing values mirror STANZA_GAP_EM / COLUMN_GAP_EM in lyrics/paginate.ts.
+// Colors come from custom properties: light defaults here, stage themes in stage.scss.
+
+.lyrics-viewer {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+
+  // globals.scss sets Inter on every element (`*`), so inheriting isn't enough
+  * {
+    font-family: var(--font-sheet), var(--font-inter), sans-serif;
+  }
+
+  &.is-light {
+    --lyrics-text: #{$ink-dark};
+    --lyrics-chord: #{$accent-indigo};
+    --section-verse: #475569;
+    --section-chorus: #0284c7;
+    --section-bridge: #7c3aed;
+    --section-instrumental: #0f766e;
+  }
+}
+
+.lyrics-area {
+  position: absolute;
+  inset: 0;
+}
+
+.lyrics-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2em;
+  height: 100%;
+  animation: lyrics-page-in 0.22s ease-out;
+
+  &.is-scrollable {
+    overflow-y: auto;
+  }
+}
+
+.lyrics-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9em;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.lyrics-stanza {
+  --section-color: var(--section-verse);
+
+  // Every stanza reserves the accent bar's space so left edges line up within a column
+  padding-left: 0.6em;
+  border-left: 0.1em solid transparent;
+
+  // Accent bar so each section can be found at a glance; continued fragments keep it
+  &.has-section {
+    border-left-color: color-mix(in srgb, var(--section-color) 70%, transparent);
+  }
+
+  &.is-chorus {
+    --section-color: var(--section-chorus);
+  }
+
+  &.is-bridge {
+    --section-color: var(--section-bridge);
+  }
+
+  &.is-instrumental {
+    --section-color: var(--section-instrumental);
+  }
+}
+
+// Each segment is a column: the chord on top, anchored to the start of the syllable below.
+// If a chord is wider than its syllable, the segment widens (chords never overlap).
+.lyrics-pair {
+  white-space: nowrap;
+}
+
+.lyrics-seg {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: bottom;
+}
+
+.lyrics-seg-chord {
+  padding-right: 0.4em;
+  color: var(--lyrics-chord);
+  font-size: 0.78em;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  white-space: pre;
+}
+
+.lyrics-seg-text,
+.lyrics-line {
+  color: var(--lyrics-text);
+  font-weight: 600;
+  line-height: 1.28;
+  word-spacing: 0.06em;
+  white-space: pre;
+}
+
+// Chords with no lyric under them (intro bars, instrumental lines)
+.lyrics-chordline {
+  display: flex;
+  gap: 0.9em;
+  color: var(--lyrics-chord);
+  font-size: 0.78em;
+  font-weight: 800;
+  line-height: 1.5;
+  white-space: pre;
+}
+
+.lyrics-section {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  min-width: 0;
+  margin-bottom: 0.2em;
+  line-height: 1.5;
+}
+
+.lyrics-section-label {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0.18em 0.75em;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--section-color) 20%, transparent);
+  color: var(--section-color);
+  font-size: 0.5em;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.lyrics-section-chords {
+  flex: 0 0 auto;
+  color: var(--lyrics-chord);
+  font-size: 0.78em;
+  font-weight: 800;
+  word-spacing: 0.45em;
+  white-space: pre;
+}
+
+// Off-screen copy at a fixed size used to measure every stanza (see LyricsPager)
+.lyrics-measure {
+  position: absolute;
+  top: 0;
+  left: -100000px;
+  visibility: hidden;
+  pointer-events: none;
+
+  .lyrics-stanza,
+  .lyrics-line,
+  .lyrics-pair,
+  .lyrics-chordline,
+  .lyrics-section,
+  .lyrics-section-chords {
+    width: max-content;
+  }
+}
+
+@keyframes lyrics-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lyrics-page {
+    animation: none;
+  }
+}
