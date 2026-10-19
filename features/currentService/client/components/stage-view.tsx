@@ -13,7 +13,7 @@ const CONTROLS_HIDE_DELAY_MS = 3500
 // video player, so moving it over the lyrics doesn't keep them on screen
 const EDGE_REVEAL_PX = 96
 // How long the big "next song" card stays up after changing songs
-const SONG_INTRO_MS = 1800
+const SONG_INTRO_MS = 700
 
 export const STAGE_THEMES = [
   { value: "aurora", label: "Aurora" },

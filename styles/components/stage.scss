@@ -127,11 +127,11 @@ $stage-controls-transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opaci
   text-align: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.18s ease;
 
   > * {
-    transform: translateY(12px) scale(0.98);
-    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transform: translateY(6px) scale(0.99);
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
   &.is-visible {

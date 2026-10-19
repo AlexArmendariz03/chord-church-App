@@ -2,7 +2,8 @@
 // Usage: npm run import-songs -- <archivo.json> [--apply]
 //
 // Each item: { cancion, tono, letra_acordes, categoria: "jubilo" | "adoracion" }
-// (also accepts name / key / lyrics / category). Songs whose name already exists are skipped.
+// (also accepts name / key / lyrics / category, and seccion: "Júbilo" | "Adoración").
+// Songs whose name already exists, or that come without lyrics, are skipped.
 import fs from "node:fs"
 import { PrismaClient } from "@prisma/client"
 
@@ -50,13 +51,12 @@ const songs = items.map((item, index) => {
   const song = {
     name: String(item.cancion ?? item.name ?? "").trim(),
     key: String(item.tono ?? item.key ?? "").trim(),
-    category: item.categoria ?? item.category,
+    category: normalizeName(String(item.categoria ?? item.category ?? item.seccion ?? "")),
     lyrics: normalizeLyrics(String(item.letra_acordes ?? item.lyrics ?? ""))
   }
   const problems = [
     !song.name && "sin nombre",
     !song.key && "sin tono",
-    !song.lyrics && "sin letra",
     !["jubilo", "adoracion"].includes(song.category) && "categoría debe ser jubilo o adoracion"
   ].filter(Boolean)
   if (problems.length) {
@@ -66,13 +66,18 @@ const songs = items.map((item, index) => {
   return song
 })
 
+// The scraper sometimes misses a sheet; skip it instead of failing the whole batch
+const withoutLyrics = songs.filter(song => !song.lyrics)
+const importable = songs.filter(song => song.lyrics)
+
 const prisma = new PrismaClient()
 
 try {
   const existing = new Set((await prisma.song.findMany({ select: { name: true } })).map(song => normalizeName(song.name)))
-  const toCreate = songs.filter(song => !existing.has(normalizeName(song.name)))
+  const toCreate = importable.filter(song => !existing.has(normalizeName(song.name)))
 
-  for (const song of songs) {
+  for (const song of withoutLyrics) console.log(`- ${song.name} | sin letra, se omite`)
+  for (const song of importable) {
     const status = toCreate.includes(song) ? "nueva" : "ya existe, se omite"
     console.log(`- ${song.name} | ${song.category} | tono ${song.key} | ${song.lyrics.split("\n").length} líneas | ${status}`)
   }
