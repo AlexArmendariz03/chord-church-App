@@ -1,17 +1,14 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/shared/server/prisma"
+import { parseServiceBody, type ServiceBody } from "@/features/services/server/service-input"
 import { requireLeader } from "@/shared/server/session"
 
-type CreateServiceBody = {
-  title?: string
-  eventDate?: string
-  jubiloSongIds?: string[]
-  adoracionSongIds?: string[]
-}
+// A service stays listed (and visible in "En curso") for this long after it starts.
+const SERVICE_VISIBLE_AFTER_START_MS = 6 * 60 * 60 * 1000
 
 export async function GET() {
   const services = await prisma.service.findMany({
-    where: { eventDate: { gte: new Date() } },
+    where: { eventDate: { gte: new Date(Date.now() - SERVICE_VISIBLE_AFTER_START_MS) } },
     orderBy: { eventDate: "asc" },
     include: {
       songs: {
@@ -31,36 +28,17 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { title, eventDate, jubiloSongIds = [], adoracionSongIds = [] }: CreateServiceBody = await req.json()
-    const selectedIds = [...jubiloSongIds, ...adoracionSongIds]
-    const parsedDate = eventDate ? new Date(eventDate) : null
-
-    if (!title?.trim() || !parsedDate || Number.isNaN(parsedDate.getTime())) {
-      return NextResponse.json({ message: "Título y fecha del evento son obligatorios" }, { status: 400 })
+    const parsed = await parseServiceBody((await req.json()) as ServiceBody)
+    if (parsed.error !== undefined) {
+      return NextResponse.json({ message: parsed.error }, { status: 400 })
     }
-
-    if (jubiloSongIds.length < 1 || adoracionSongIds.length < 1 || new Set(selectedIds).size !== selectedIds.length) {
-      return NextResponse.json({ message: "Selecciona al menos 1 canción de júbilo y 1 de adoración, sin repetir" }, { status: 400 })
-    }
-
-    const songs = await prisma.song.findMany({ where: { id: { in: selectedIds } } })
-    const validJubilo = songs.filter(song => song.category === "jubilo" && jubiloSongIds.includes(song.id)).length
-    const validAdoracion = songs.filter(song => song.category === "adoracion" && adoracionSongIds.includes(song.id)).length
-
-    if (validJubilo !== jubiloSongIds.length || validAdoracion !== adoracionSongIds.length) {
-      return NextResponse.json({ message: "La selección no coincide con los tipos de canción" }, { status: 400 })
-    }
+    const { title, eventDate, songs } = parsed.data
 
     const service = await prisma.service.create({
       data: {
-        title: title.trim(),
-        eventDate: parsedDate,
-        songs: {
-          create: [
-            ...jubiloSongIds.map((songId, index) => ({ songId, category: "jubilo" as const, position: index + 1 })),
-            ...adoracionSongIds.map((songId, index) => ({ songId, category: "adoracion" as const, position: jubiloSongIds.length + index + 1 }))
-          ]
-        }
+        title,
+        eventDate,
+        songs: { create: songs }
       },
       include: {
         songs: {

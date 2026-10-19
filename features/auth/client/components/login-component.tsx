@@ -1,11 +1,9 @@
 "use client"
 
 import type { LoginFormData } from "@/types/auth"
-import { App, Button, Card, Col, Form, Input, Row, Typography } from "antd"
+import { App, Button, Card, Col, Form, Input, Row } from "antd"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-
-const { Text } = Typography
 
 const LoginComponent = () => {
   const router = useRouter()
@@ -23,12 +21,12 @@ const LoginComponent = () => {
         body: JSON.stringify({ username, password })
       })
 
-      const data = (await response.json()) as { message: string; role?: string }
+      const data = (await response.json()) as { message: string }
 
       if (response.ok) {
         message.success(data.message)
-        if (data.role) localStorage.setItem("userRole", data.role)
         router.push("/dashboard")
+        router.refresh()
       } else {
         message.error(data.message)
       }
@@ -67,9 +65,6 @@ const LoginComponent = () => {
             </Form.Item>
           </Form>
         </Card>
-        <Text className="login-dev-note">
-          Modo desarrollo — Líder: leader / leader123 · Músico: musico / musico123
-        </Text>
       </Col>
     </Row>
   )

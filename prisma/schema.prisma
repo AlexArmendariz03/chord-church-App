@@ -26,14 +26,14 @@ model User {
 }
 
 model Song {
-  id        String       @id @default(cuid())
-  name      String
-  key       String
-  category  SongCategory
-  lyrics    String
-  payload   Json?
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id           String        @id @default(cuid())
+  name         String
+  key          String
+  category     SongCategory
+  lyrics       String
+  payload      Json?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   serviceSongs ServiceSong[]
 }
 
@@ -47,13 +47,15 @@ model Service {
 }
 
 model ServiceSong {
-  id        String       @id @default(cuid())
-  serviceId String
-  songId    String
-  category  SongCategory
-  position  Int
-  service   Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  song      Song         @relation(fields: [songId], references: [id], onDelete: Cascade)
+  id         String       @id @default(cuid())
+  serviceId  String
+  songId     String
+  category   SongCategory
+  position   Int
+  // The song played during the offering, after the worship set (always a júbilo song)
+  isOffering Boolean      @default(false)
+  service    Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  song       Song         @relation(fields: [songId], references: [id], onDelete: Cascade)
 
   @@unique([serviceId, songId])
   @@index([serviceId, category])

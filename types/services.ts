@@ -22,6 +22,8 @@ export type ServiceWithSongs = {
     songId: string
     category: SongCategory
     position: number
+    // Played during the offering, after the worship set (a júbilo song)
+    isOffering: boolean
     song: SongWithMeta
   }>
 }

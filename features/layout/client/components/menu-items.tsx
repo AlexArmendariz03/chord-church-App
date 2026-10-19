@@ -1,16 +1,16 @@
-import { AppstoreAddOutlined, HomeOutlined, PlayCircleOutlined, UnorderedListOutlined, UploadOutlined } from "@ant-design/icons"
+import { AppstoreAddOutlined, HomeOutlined, PlayCircleOutlined, UnorderedListOutlined } from "@ant-design/icons"
 import Link from "next/link"
 
 const LEADER_ONLY_ITEMS = [
   {
-    key: "/uploadPage",
-    icon: <UploadOutlined />,
-    label: <Link href="/uploadPage">Crear alabanzas</Link>
-  },
-  {
     key: "/alabanzas",
     icon: <UnorderedListOutlined />,
-    label: <Link href="/alabanzas">Lista de alabanzas</Link>
+    label: <Link href="/alabanzas">Alabanzas</Link>
+  },
+  {
+    key: "/servicios",
+    icon: <AppstoreAddOutlined />,
+    label: <Link href="/servicios">Servicios</Link>
   }
 ]
 
@@ -22,13 +22,11 @@ export const getMenuItems = (isLeader: boolean) => [
   },
   ...(isLeader ? LEADER_ONLY_ITEMS : []),
   {
-    key: "/servicios",
-    icon: <AppstoreAddOutlined />,
-    label: <Link href="/servicios">Servicios</Link>
-  },
-  {
     key: "/en-curso",
     icon: <PlayCircleOutlined />,
     label: <Link href="/en-curso">En curso</Link>
   }
 ]
+
+// "/alabanzas/nueva" highlights "Alabanzas"
+export const getSelectedMenuKey = (pathname: string) => `/${pathname.split("/")[1] ?? ""}`

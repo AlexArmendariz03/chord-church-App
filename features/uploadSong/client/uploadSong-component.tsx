@@ -20,7 +20,7 @@ import {
     Typography
 } from "antd"
 import {
-    FormatPainterOutlined,
+    ArrowLeftOutlined,
     MinusOutlined,
     PlusOutlined,
     ReloadOutlined,
@@ -28,7 +28,10 @@ import {
     ZoomInOutlined,
     ZoomOutOutlined
 } from "@ant-design/icons"
+import { useSession } from "@/features/layout/client/components/session-provider"
+import { trimLyrics } from "@/shared/utils/lyrics"
 import { BoardConfig, Interfaces, ExtraTextItem, SongPayload } from "@/types/UploadSong/interfaces"
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "./use-unsaved-changes-guard"
 
 const { Title, Text: AntText } = Typography
 const { TextArea } = Input
@@ -85,6 +88,42 @@ const ALIGN_OPTIONS = [
     { label: "Derecha", value: "right" }
 ]
 
+type StylePreset = {
+    key: string
+    name: string
+    background: string
+    border: string
+    lyricsColor: string
+    chordColor: string
+}
+
+const STYLE_PRESETS: StylePreset[] = [
+    {
+        key: "escenario",
+        name: "Escenario",
+        background: "#1f2937",
+        border: "#f59e0b",
+        lyricsColor: "#ffffff",
+        chordColor: "#f59e0b"
+    },
+    {
+        key: "medianoche",
+        name: "Medianoche",
+        background: "#0f172a",
+        border: "#6366f1",
+        lyricsColor: "#f1f5f9",
+        chordColor: "#a5b4fc"
+    },
+    {
+        key: "hoja-clara",
+        name: "Hoja clara",
+        background: "#fdfaf5",
+        border: "#92400e",
+        lyricsColor: "#1f2937",
+        chordColor: "#1d4ed8"
+    }
+]
+
 const createId = () =>
     typeof crypto !== "undefined" && crypto.randomUUID
         ? crypto.randomUUID()
@@ -92,10 +131,12 @@ const createId = () =>
 
 const clampZoom = (value: number) => Math.min(2.5, Math.max(0.35, value))
 
+const PLACEHOLDER_LYRICS = "Escribe aquí la letra de tu canción"
+
 const createInitialBlock = (): Interfaces => ({
     id: createId(),
     type: "content",
-    text: "Escribe aquí la letra de tu canción",
+    text: PLACEHOLDER_LYRICS,
     x: BOARD.x + 24,
     y: BOARD.y + 24,
     width: 340,
@@ -105,7 +146,7 @@ const createInitialBlock = (): Interfaces => ({
 })
 
 const buildBlocksFromLyrics = (lyrics: string): Interfaces[] => {
-    const chunks = lyrics.split("\n\n").map(chunk => chunk.trim()).filter(Boolean)
+    const chunks = lyrics.split(/\n[ \t]*\n/).map(trimLyrics).filter(Boolean)
     if (!chunks.length) return [createInitialBlock()]
 
     return chunks.map((text, index) => ({
@@ -122,13 +163,13 @@ const buildBlocksFromLyrics = (lyrics: string): Interfaces[] => {
 }
 
 export const UploadSongComponent = () => {
-    const { message } = App.useApp()
+    const { message, modal } = App.useApp()
     const router = useRouter()
     const searchParams = useSearchParams()
     const editingId = searchParams.get("id")
     const previewContainerRef = useRef<HTMLDivElement | null>(null)
 
-    const [role, setRole] = useState("musico")
+    const { isLeader } = useSession()
     const [songName, setSongName] = useState("")
     const [songKey, setSongKey] = useState("C")
     const [songCategory, setSongCategory] = useState<"jubilo" | "adoracion">("jubilo")
@@ -137,12 +178,38 @@ export const UploadSongComponent = () => {
     const [extraTexts, setExtraTexts] = useState<ExtraTextItem[]>([])
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [loadingSong, setLoadingSong] = useState(Boolean(editingId))
+    const [showBoardSettings, setShowBoardSettings] = useState(false)
 
-    const isLeader = role === "leader"
+    const stageHeight = Math.max(STAGE.height, BOARD.y + boardConfig.boardHeight + 100)
+
+    // Zoom is a view preference, not song content, so it doesn't count as a change.
+    const snapshot = useMemo(() => {
+        const { zoom: _zoom, ...boardStyle } = boardConfig
+        return JSON.stringify({ songName, songKey, songCategory, boardStyle, contentBlocks, extraTexts })
+    }, [songName, songKey, songCategory, boardConfig, contentBlocks, extraTexts])
+    const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null)
+    const isDirty = savedSnapshot !== null && snapshot !== savedSnapshot
 
     useEffect(() => {
-        setRole(localStorage.getItem("userRole") ?? "musico")
-    }, [])
+        if (!loadingSong && savedSnapshot === null) setSavedSnapshot(snapshot)
+    }, [loadingSong, savedSnapshot, snapshot])
+
+    useUnsavedChangesGuard(isDirty)
+
+    const goBackToList = () => {
+        if (!isDirty) {
+            router.push("/alabanzas")
+            return
+        }
+        modal.confirm({
+            title: "Cambios sin guardar",
+            content: UNSAVED_CHANGES_MESSAGE,
+            okText: "Salir sin guardar",
+            okButtonProps: { danger: true },
+            cancelText: "Seguir editando",
+            onOk: () => router.push("/alabanzas")
+        })
+    }
 
     useEffect(() => {
         if (!editingId) return
@@ -186,6 +253,18 @@ export const UploadSongComponent = () => {
         setBoardConfig(prev => ({ ...prev, [key]: value }))
     }
 
+    const applyStylePreset = (preset: StylePreset) => {
+        setBoardConfig(prev => ({
+            ...prev,
+            backgroundColor: preset.background,
+            borderColor: preset.border,
+            textColor: preset.lyricsColor
+        }))
+        setContentBlocks(prev => prev.map(block => ({ ...block, color: preset.lyricsColor })))
+        setExtraTexts(prev => prev.map(item => ({ ...item, color: preset.chordColor })))
+        message.success(`Estilo "${preset.name}" aplicado`)
+    }
+
     const clearSelection = () => setSelectedId(null)
 
     const constrainPosition = (x: number, y: number, width = 100, height = 40) => {
@@ -216,22 +295,6 @@ export const UploadSongComponent = () => {
         setContentBlocks(prev => [...prev, newItem])
         setSelectedId(newItem.id)
         message.success("Bloque agregado")
-    }
-
-    const handleAddTone = () => {
-        const newItem: ExtraTextItem = {
-            id: createId(),
-            type: "tone",
-            text: "Em",
-            x: BOARD.x + boardConfig.padding + 20,
-            y: BOARD.y + boardConfig.padding - 28,
-            color: "#2563eb",
-            fontSize: 28
-        }
-
-        setExtraTexts(prev => [...prev, newItem])
-        setSelectedId(newItem.id)
-        message.success("Tono agregado")
     }
 
     const updateSelectedItem = (field: string, value: string | number) => {
@@ -293,7 +356,7 @@ export const UploadSongComponent = () => {
     const buildSongPayload = (): SongPayload => ({
         boardConfig: {
             stageWidth: STAGE.width,
-            stageHeight: STAGE.height,
+            stageHeight,
             boardX: BOARD.x,
             boardY: BOARD.y,
             ...boardConfig
@@ -319,7 +382,11 @@ export const UploadSongComponent = () => {
                 return
             }
 
-            const lyrics = contentBlocks.map(block => block.text.trim()).filter(Boolean).join("\n\n")
+            // The starter block's sample text is not real lyrics
+            const lyrics = contentBlocks
+                .map(block => trimLyrics(block.text))
+                .filter(text => text && text.trim() !== PLACEHOLDER_LYRICS)
+                .join("\n\n")
 
             if (!lyrics.trim()) {
                 message.error("La letra de la canción es obligatoria")
@@ -346,10 +413,12 @@ export const UploadSongComponent = () => {
 
             if (editingId) {
                 message.success("Alabanza actualizada con éxito")
+                setSavedSnapshot(snapshot)
                 router.push("/alabanzas")
             } else {
                 message.success("Alabanza guardada con éxito")
                 resetEditor()
+                setSavedSnapshot(null)
             }
         } catch (error) {
             message.error(
@@ -381,34 +450,19 @@ export const UploadSongComponent = () => {
     }
 
     return (
-      <div
-        style={{
-                padding: 16,
-                background: "#f5f7fb",
-                height: "100vh",
-                overflow: "hidden",
-                boxSizing: "border-box"
-            }}>
-        <div
-          style={{
-                    display: "grid",
-                    gridTemplateRows: "auto 1fr",
-                    gap: 16,
-                    height: "100%",
-                    minHeight: 0
-                }}>
+      <div className="upload-editor">
+        <div className="upload-editor-grid">
           <Card style={CARD_STYLE} styles={{ body: { padding: 14 } }}>
             <Row
               gutter={[12, 12]} align="middle"
               justify="space-between">
               <Col flex="auto">
-                <Space size={8} wrap>
-                  <Title level={4} style={{ margin: 0 }}>
-                    {editingId ? "Editando alabanza" : "Editor de alabanza"}
-                  </Title>
-                  <Tag color="blue">Seleccionar</Tag>
-                  <Tag color="purple">Doble click</Tag>
-                </Space>
+                <Title level={4} style={{ margin: 0 }}>
+                  {editingId ? "Editar alabanza" : "Crear alabanza"}
+                </Title>
+                <AntText type="secondary" style={{ fontSize: 13 }}>
+                  Haz clic en un texto del tablero para editarlo. Escribe cada acorde en la línea de arriba de la letra.
+                </AntText>
               </Col>
 
               <Col>
@@ -430,16 +484,8 @@ export const UploadSongComponent = () => {
                                         { label: "Júbilo", value: "jubilo" },
                                         { label: "Adoración", value: "adoracion" }
                                     ]} />
-                  <Button type="primary" onClick={handleSaveSong}>
-                    {editingId ? "Guardar cambios" : "Guardar alabanza"}
-                  </Button>
-                  <Button
-                    type="primary" icon={<PlusOutlined />}
-                    onClick={handleAddContentBlock}>
+                  <Button icon={<PlusOutlined />} onClick={handleAddContentBlock}>
                     Bloque
-                  </Button>
-                  <Button icon={<FormatPainterOutlined />} onClick={handleAddTone}>
-                    Tono
                   </Button>
                   <Button
                     icon={<ReloadOutlined />}
@@ -447,21 +493,59 @@ export const UploadSongComponent = () => {
                     disabled={!contentBlocks.length}>
                     Reordenar
                   </Button>
+                  <Button icon={<ArrowLeftOutlined />} onClick={goBackToList}>
+                    Volver
+                  </Button>
+                  <Button type="primary" onClick={handleSaveSong}>
+                    {editingId ? "Guardar cambios" : "Guardar alabanza"}
+                  </Button>
                 </Space>
               </Col>
             </Row>
           </Card>
 
-          <div
-            style={{
-                        display: "grid",
-                        gridTemplateColumns: "300px minmax(0, 1fr)",
-                        gap: 16,
-                        minHeight: 0,
-                        height: "100%"
-                    }}>
-            <Card style={{ ...CARD_STYLE, height: "100%" }} styles={{ body: { padding: 14, height: "100%" } }}>
-              <div style={{ display: "grid", gridTemplateRows: "auto auto", gap: 14 }}>
+          <div className="upload-editor-main">
+            <Card
+              className="upload-editor-sidebar" style={CARD_STYLE}
+              styles={{ body: { padding: 14, height: "100%" } }}>
+              <div style={{ display: "grid", gridTemplateRows: "auto auto auto", gap: 14 }}>
+                <div style={SECTION_STYLE}>
+                  <Space
+                    orientation="vertical" size={10}
+                    style={{ width: "100%" }}>
+                    <div>
+                      <Title level={5} style={{ margin: 0 }}>
+                        Estilos rápidos
+                      </Title>
+                      <AntText type="secondary" style={{ fontSize: 13 }}>
+                        Aplica hoja, letra y acordes de una vez
+                      </AntText>
+                    </div>
+
+                    <Space
+                      orientation="vertical" size={6}
+                      style={{ width: "100%" }}>
+                      {STYLE_PRESETS.map(preset => (
+                        <Button
+                          key={preset.key} block
+                          onClick={() => applyStylePreset(preset)}
+                          style={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 10 }}>
+                          <span
+                            style={{
+                                                    width: 18,
+                                                    height: 18,
+                                                    borderRadius: "50%",
+                                                    background: preset.background,
+                                                    border: `2px solid ${preset.border}`,
+                                                    flexShrink: 0
+                                                }} />
+                          {preset.name}
+                        </Button>
+                      ))}
+                    </Space>
+                  </Space>
+                </div>
+
                 <div style={SECTION_STYLE}>
                   <Space
                     orientation="vertical" size={10}
@@ -478,7 +562,7 @@ export const UploadSongComponent = () => {
                     {selectedItem ? (
                       <>
                         <Tag color={selectedItem.type === "content" ? "blue" : "purple"}>
-                          {selectedItem.type === "content" ? "Bloque" : "Tono"}
+                          {selectedItem.type === "content" ? "Bloque" : "Acorde"}
                         </Tag>
 
                         <div>
@@ -488,10 +572,10 @@ export const UploadSongComponent = () => {
 
                           {selectedItem.type === "content" ? (
                             <TextArea
-                              rows={4}
+                              autoSize={{ minRows: 4, maxRows: 14 }}
                               value={selectedItem.text}
                               onChange={e => updateSelectedItem("text", e.target.value)}
-                              style={{ marginTop: 6, borderRadius: 10 }} />
+                              style={{ marginTop: 6, borderRadius: 10, fontFamily: "var(--font-mono)" }} />
                                                 ) : (
                                                   <Input
                                                     value={selectedItem.text}
@@ -563,11 +647,15 @@ export const UploadSongComponent = () => {
                   <Space
                     orientation="vertical" size={10}
                     style={{ width: "100%" }}>
-                    <Space size={6}>
-                      <SettingOutlined />
-                      <AntText strong>Tablero</AntText>
-                    </Space>
+                    <Button
+                      type="text" block
+                      icon={<SettingOutlined />}
+                      onClick={() => setShowBoardSettings(prev => !prev)}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "flex-start", paddingInline: 0 }}>
+                      Personalizar diseño del tablero {showBoardSettings ? "▲" : "▼"}
+                    </Button>
 
+                    {showBoardSettings && (
                     <Row gutter={[8, 8]}>
                       <Col span={8}>
                         <AntText style={{ fontSize: 12 }}>Fondo</AntText>
@@ -638,7 +726,7 @@ export const UploadSongComponent = () => {
                         </AntText>
                         <Slider
                           min={180}
-                          max={1100}
+                          max={3500}
                           value={boardConfig.boardHeight}
                           onChange={value => updateBoardConfig("boardHeight", value)}
                           style={{ margin: "4px 0 0" }} />
@@ -656,12 +744,15 @@ export const UploadSongComponent = () => {
                           options={ALIGN_OPTIONS} />
                       </Col>
                     </Row>
+                    )}
                   </Space>
                 </div>
               </div>
             </Card>
 
-            <Card style={{ ...CARD_STYLE, height: "100%" }} styles={{ body: { padding: 14, height: "100%" } }}>
+            <Card
+              className="upload-editor-preview" style={CARD_STYLE}
+              styles={{ body: { padding: 14, height: "100%" } }}>
               <div
                 style={{
                                 display: "grid",
@@ -749,14 +840,14 @@ export const UploadSongComponent = () => {
                   <div
                     style={{
                                         width: STAGE.width * boardConfig.zoom,
-                                        height: STAGE.height * boardConfig.zoom,
+                                        height: stageHeight * boardConfig.zoom,
                                         margin: "0 auto",
                                         transform: `scale(${boardConfig.zoom})`,
                                         transformOrigin: "top left"
                                     }}>
                     <Stage
                       width={STAGE.width}
-                      height={STAGE.height}
+                      height={stageHeight}
                       onMouseDown={e => {
                                             if (e.target === e.target.getStage()) clearSelection()
                                         }}>

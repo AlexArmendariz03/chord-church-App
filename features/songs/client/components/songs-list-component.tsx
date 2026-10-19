@@ -1,9 +1,11 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { MoreOutlined } from "@ant-design/icons"
-import { App, Button, Card, Dropdown, Empty, Listy, Space, Tabs, Tag, Typography } from "antd"
+import { MoreOutlined, PlusOutlined } from "@ant-design/icons"
+import { App, Button, Card, Dropdown, Empty, Listy, Space, Tabs, Typography } from "antd"
 import { useRouter } from "next/navigation"
+import { useSession } from "@/features/layout/client/components/session-provider"
+import { CategoryTag } from "@/shared/components/category-tag"
 import type { SongWithMeta } from "@/types/services"
 
 const { Paragraph, Text, Title } = Typography
@@ -11,11 +13,10 @@ const { Paragraph, Text, Title } = Typography
 const SongsListComponent = () => {
   const { modal, message } = App.useApp()
   const router = useRouter()
-  const [role, setRole] = useState("musico")
+  const { isLeader } = useSession()
   const [songs, setSongs] = useState<SongWithMeta[]>([])
   const [loading, setLoading] = useState(false)
 
-  const isLeader = role === "leader"
   const jubiloSongs = useMemo(() => songs.filter(song => song.category === "jubilo"), [songs])
   const adoracionSongs = useMemo(() => songs.filter(song => song.category === "adoracion"), [songs])
 
@@ -34,7 +35,6 @@ const SongsListComponent = () => {
   }, [message])
 
   useEffect(() => {
-    setRole(localStorage.getItem("userRole") ?? "musico")
     fetchSongs()
   }, [fetchSongs])
 
@@ -75,9 +75,7 @@ const SongsListComponent = () => {
               </div>
               <div className="song-row-meta">
                 <Text type="secondary">Tono: {song.key}</Text>
-                <Tag color={song.category === "jubilo" ? "green" : "purple"}>
-                  {song.category === "jubilo" ? "Júbilo" : "Adoración"}
-                </Tag>
+                <CategoryTag category={song.category} />
                 <Dropdown
                   trigger={["click"]}
                   menu={{
@@ -86,7 +84,7 @@ const SongsListComponent = () => {
                       { key: "delete", label: "Eliminar", danger: true }
                     ],
                     onClick: ({ key }) => {
-                      if (key === "edit") router.push(`/uploadPage?id=${song.id}`)
+                      if (key === "edit") router.push(`/alabanzas/editar?id=${song.id}`)
                       if (key === "delete") deleteSong(song)
                     }
                   }}>
@@ -118,10 +116,19 @@ const SongsListComponent = () => {
         orientation="vertical" size={20}
         style={{ width: "100%" }}>
         <Card>
-          <Title level={2}>Lista de alabanzas</Title>
-          <Paragraph>
-            Crea, edita y elimina alabanzas por categoría. Usa el menú de cada fila para editar en el editor visual o eliminar.
-          </Paragraph>
+          <div className="page-header">
+            <div>
+              <Title level={2} style={{ margin: 0 }}>Alabanzas</Title>
+              <Paragraph type="secondary" style={{ margin: 0 }}>
+                Usa el menú de cada fila para editar o eliminar.
+              </Paragraph>
+            </div>
+            <Button
+              type="primary" icon={<PlusOutlined />}
+              onClick={() => router.push("/alabanzas/nueva")}>
+              Nueva alabanza
+            </Button>
+          </div>
         </Card>
 
         <Card loading={loading}>
