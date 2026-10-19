@@ -7,6 +7,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useMemo } from "react"
 import { getMenuItems, getSelectedMenuKey } from "./menu-items"
+import { displayName } from "@/shared/utils/user"
 import { useSession } from "./session-provider"
 
 const { Header } = ALayout
@@ -15,7 +16,7 @@ const { Title } = Typography
 const HeaderBar = () => {
   const router = useRouter()
   const pathname = usePathname()
-  const { isLeader } = useSession()
+  const { user, isLeader } = useSession()
   const menuItems = useMemo(() => getMenuItems(isLeader), [isLeader])
   const selectedKeys = [getSelectedMenuKey(pathname)]
 
@@ -50,7 +51,7 @@ const HeaderBar = () => {
         <Title
           className="text" level={5}
           style={{ margin: 0 }}>
-          {isLeader ? "Líder" : "Músico"}
+          {displayName(user?.username) || (isLeader ? "Líder" : "Músico")}
         </Title>
         <Tooltip title="Cerrar sesión">
           <Button

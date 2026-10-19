@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useSession } from "@/features/layout/client/components/session-provider"
 import { formatServiceDate } from "@/shared/utils/dates"
+import { displayName } from "@/shared/utils/user"
 import { CategoryTag } from "@/shared/components/category-tag"
 import type { ServiceWithSongs } from "@/types/services"
 
@@ -36,7 +37,7 @@ const LEADER_SHORTCUTS = [
 const Dashboard = () => {
   const router = useRouter()
   const { modal, message } = App.useApp()
-  const { isLeader } = useSession()
+  const { user, isLeader } = useSession()
   const [services, setServices] = useState<ServiceWithSongs[]>([])
   const [loadingService, setLoadingService] = useState(true)
   const [loadError, setLoadError] = useState(false)
@@ -84,7 +85,7 @@ const Dashboard = () => {
       <div className="dashboard-hero">
         <Title
           level={2} style={{ margin: "0 0 6px" }}>
-          Hola, {isLeader ? "Líder" : "Músico"}
+          Hola, {displayName(user?.username) || (isLeader ? "Líder" : "Músico")}
         </Title>
         <Paragraph className="dashboard-subtitle">
           {isLeader ? "Administra alabanzas y arma los próximos servicios." : "Abre el servicio en curso para seguir las letras en vivo."}

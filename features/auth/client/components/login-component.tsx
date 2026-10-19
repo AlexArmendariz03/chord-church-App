@@ -1,11 +1,9 @@
 "use client"
 
 import type { LoginFormData } from "@/types/auth"
-import { App, Button, Card, Col, Form, Input, Row, Typography } from "antd"
+import { App, Button, Card, Col, Form, Input, Row } from "antd"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-
-const { Text } = Typography
 
 const LoginComponent = () => {
   const router = useRouter()
@@ -67,11 +65,6 @@ const LoginComponent = () => {
             </Form.Item>
           </Form>
         </Card>
-        {process.env.NODE_ENV === "development" && (
-          <Text className="login-dev-note">
-            Modo desarrollo — Líder: leader / leader123 · Músico: musico / musico123
-          </Text>
-        )}
       </Col>
     </Row>
   )
