@@ -39,6 +39,12 @@
     white-space: nowrap;
   }
 
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+  }
+
   .nav-menu {
     flex: 1;
     min-width: 0;
@@ -105,7 +111,7 @@
       transform: translate(-50%, -50%);
     }
 
-    .brand-name {
+    .brand-text {
       display: none;
     }
 
@@ -137,51 +143,77 @@
   }
 }
 
-// The logo on an indigo tile: on phones it's the centerpiece of the header
+// The logo in white on the indigo tile; on phones it grows and becomes the header's centerpiece
 .brand-emblem {
-  // Desktop: no tile, the plain logo sits next to the name
-  display: contents;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: $brand-gradient;
+  box-shadow:
+    0 6px 16px rgba(79, 70, 229, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: transform 0.15s ease;
+
+  .brand:active & {
+    transform: scale(0.94);
+  }
+
+  .brand-icon {
+    width: auto;
+    height: 27px;
+    filter: brightness(0) invert(1);
+  }
 
   @media (max-width: 900px) {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
-    background: $brand-gradient;
-    box-shadow:
-      0 8px 20px rgba(79, 70, 229, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.25);
-    transition: transform 0.15s ease;
+    &:not(.is-small) {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      box-shadow:
+        0 8px 20px rgba(79, 70, 229, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
 
-    .brand:active & {
-      transform: scale(0.94);
-    }
-
-    .brand-icon {
-      width: auto;
-      height: 38px;
-      filter: brightness(0) invert(1);
+      .brand-icon {
+        height: 38px;
+      }
     }
   }
+}
 
-  &.is-small {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: $brand-gradient;
+// "by AA" credit under the app name (desktop header, phone menu): small caps, aligned
+// to the end of the name, with a short rule leading into it
+.brand-byline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-end;
+  margin-top: 2px;
+  color: #9ca3af;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
 
-    .brand-icon {
-      width: auto;
-      height: 26px;
-      filter: brightness(0) invert(1);
-    }
+  &::before {
+    content: "";
+    width: 14px;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.7;
   }
+
+}
+
+.mobile-nav-top .brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
 }
 
 .mobile-nav-drawer .ant-drawer-body {

@@ -50,7 +50,10 @@ const HeaderBar = () => {
             width={32} height={49}
             className="brand-icon" priority />
         </span>
-        <span className="brand-name">Chord Church</span>
+        <span className="brand-text">
+          <span className="brand-name">Chord Church</span>
+          <span className="brand-byline">by AA</span>
+        </span>
       </Link>
 
       <Menu
@@ -89,7 +92,10 @@ const HeaderBar = () => {
                 width={32} height={49}
                 className="brand-icon" />
             </span>
-            <span className="mobile-nav-title">Chord Church</span>
+            <span className="brand-text">
+              <span className="mobile-nav-title">Chord Church</span>
+              <span className="brand-byline">by AA</span>
+            </span>
             <Button
               type="text" icon={<CloseOutlined />}
               aria-label="Cerrar menú" onClick={() => setIsMenuOpen(false)} />
