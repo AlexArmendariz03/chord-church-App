@@ -34,7 +34,7 @@
   align-items: flex-start;
   gap: 2em;
   height: 100%;
-  animation: lyrics-page-in 0.22s ease-out;
+  animation: lyrics-page-in 0.18s ease-out;
 
   &.is-scrollable {
     overflow-y: auto;
@@ -171,7 +171,6 @@
 @keyframes lyrics-page-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
   }
 }
 

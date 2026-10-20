@@ -1,4 +1,3 @@
-import { App } from "antd"
 import { Suspense } from "react"
 import Layout from "@/features/layout/client/components/layout"
 import CurrentServiceComponent from "@/features/currentService/client/components/current-service-component"
@@ -6,11 +5,9 @@ import CurrentServiceComponent from "@/features/currentService/client/components
 export default function EnCursoPage() {
   return (
     <Layout>
-      <App>
-        <Suspense fallback={null}>
-          <CurrentServiceComponent />
-        </Suspense>
-      </App>
+      <Suspense fallback={null}>
+        <CurrentServiceComponent />
+      </Suspense>
     </Layout>
   )
 }
