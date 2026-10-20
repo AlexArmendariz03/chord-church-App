@@ -18,16 +18,52 @@
     }
   }
 
-  .ant-image {
-    max-width: 100%;
-    height: auto;
+  .login-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  // Same emblem as the phone header, larger
+  .login-emblem {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 96px;
+    height: 96px;
+    border-radius: 28px;
+    background: $brand-gradient;
+    box-shadow:
+      0 16px 36px rgba(79, 70, 229, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  }
+
+  .login-emblem-icon {
+    width: auto;
+    height: 64px;
+    filter: brightness(0) invert(1);
+  }
+
+  .login-title {
+    margin: 18px 0 4px;
+    color: $ink-dark;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+
+  .login-subtitle {
+    margin: 0;
+    color: $primary-typography;
+    font-size: 14px;
   }
 
   .login-card {
     border-radius: 16px;
     border: 1px solid $header-border;
     box-shadow: 0 12px 32px rgba(17, 24, 39, 0.06);
-    margin-top: 16px;
+    margin-top: 24px;
   }
 
   .ant-form {

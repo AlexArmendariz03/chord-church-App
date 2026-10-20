@@ -42,12 +42,16 @@ const LoginComponent = () => {
       <Col
         xs={24} sm={18}
         md={12} lg={7}>
-        <Row justify="center">
-          <Image
-            width={140} height={140}
-            src="/logo-mark.png" alt="Chord Church"
-            priority />
-        </Row>
+        <div className="login-brand">
+          <span className="login-emblem">
+            <Image
+              src="/logo-icon.png" alt=""
+              width={166} height={253}
+              className="login-emblem-icon" priority />
+          </span>
+          <h1 className="login-title">Chord Church</h1>
+          <p className="login-subtitle">Inicia sesión para ver las alabanzas</p>
+        </div>
         <Card className="login-card">
           <Form layout="vertical" onFinish={onFinish}>
             <Form.Item name="username" rules={[{ required: true, message: "¡Por favor ingrese su usuario!" }]}>

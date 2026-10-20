@@ -39,6 +39,12 @@
     white-space: nowrap;
   }
 
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+  }
+
   .nav-menu {
     flex: 1;
     min-width: 0;
@@ -71,43 +77,225 @@
     width: 100%;
   }
 
-  .mobile-menu-button {
+  .mobile-menu-button,
+  .mobile-avatar {
     display: none;
   }
 
-  .menu-icon{
-    color: $ink-dark;
-  }
-
+  // Phones and tablets: burger | emblem (centered) | user's initial; the menu lives in a drawer
   @media (max-width: 900px) {
-    .nav-menu {
+    .header {
+      position: fixed;
+      height: 64px;
+      padding: 0 12px;
+    }
+
+    .nav-menu,
+    .user {
       display: none;
+    }
+
+    .mobile-menu-button {
+      display: inline-flex;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      color: $ink-dark;
+      font-size: 20px;
+    }
+
+    .brand {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .brand-text {
+      display: none;
+    }
+
+    .mobile-avatar {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border: 1px solid rgba(79, 70, 229, 0.25);
+      border-radius: 50%;
+      background: rgba(79, 70, 229, 0.08);
+      color: $accent-indigo;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .content {
+      padding: 80px 16px 16px;
     }
   }
 
   @media (max-width: 568px) {
-    .brand-name {
-      display: none;
-    }
-
-    .user .text {
-      font-size: 15px;
-      margin-top: 7px;
-    }
-
-    .user .icon {
-      font-size: 20px;
-    }
-
     .content {
       padding: 76px 12px 16px;
-      width: 100%;
-    }
-
-    .mobile-menu-button{
-      display: block;
     }
   }
+}
+
+// The logo in white on the indigo tile; on phones it grows and becomes the header's centerpiece
+.brand-emblem {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: $brand-gradient;
+  box-shadow:
+    0 6px 16px rgba(79, 70, 229, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: transform 0.15s ease;
+
+  .brand:active & {
+    transform: scale(0.94);
+  }
+
+  .brand-icon {
+    width: auto;
+    height: 27px;
+    filter: brightness(0) invert(1);
+  }
+
+  @media (max-width: 900px) {
+    &:not(.is-small) {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      box-shadow:
+        0 8px 20px rgba(79, 70, 229, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+
+      .brand-icon {
+        height: 38px;
+      }
+    }
+  }
+}
+
+// "by AA" credit under the app name (desktop header, phone menu): small caps, aligned
+// to the end of the name, with a short rule leading into it
+.brand-byline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-end;
+  margin-top: 2px;
+  color: #9ca3af;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  &::before {
+    content: "";
+    width: 14px;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.7;
+  }
+
+}
+
+.mobile-nav-top .brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.mobile-nav-drawer .ant-drawer-body {
+  padding: 0;
+}
+
+.mobile-nav {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: calc(14px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom));
+}
+
+.mobile-nav-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 2px 14px;
+
+  .ant-btn {
+    margin-left: auto;
+  }
+}
+
+.mobile-nav-title {
+  color: $ink-dark;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.mobile-nav-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(79, 70, 229, 0.06);
+}
+
+.mobile-nav-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: $accent-indigo;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.mobile-nav-user-name {
+  display: block;
+  color: $ink-dark;
+  font-weight: 600;
+}
+
+.mobile-nav-user-role {
+  display: block;
+  color: $primary-typography;
+  font-size: 13px;
+}
+
+.mobile-nav-menu.ant-menu {
+  flex: 1;
+  border-inline-end: none !important;
+
+  .ant-menu-item {
+    height: 48px;
+    margin-inline: 0;
+    width: 100%;
+    border-radius: 12px;
+    font-size: 16px;
+    line-height: 48px;
+  }
+}
+
+.mobile-nav-logout.ant-btn {
+  margin-top: 12px;
 }
 
 .page-header {

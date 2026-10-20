@@ -1,7 +1,7 @@
 "use client"
 
 import { AntdRegistry } from "@ant-design/nextjs-registry"
-import { ConfigProvider } from "antd"
+import { App, ConfigProvider } from "antd"
 import esES from "antd/locale/es_ES"
 import dayjs from "dayjs"
 import "dayjs/locale/es"
@@ -21,7 +21,9 @@ const ThemeProvider = ({ children }: PropsWithChildren) => (
           fontFamily: "var(--font-inter), sans-serif"
         }
       }}>
-      {children}
+      {/* One App for the whole site: messages and modals survive page changes (a "Bienvenido"
+          fired right before leaving the login, a load error that lands after navigating away) */}
+      <App component={false}>{children}</App>
     </ConfigProvider>
   </AntdRegistry>
 )
