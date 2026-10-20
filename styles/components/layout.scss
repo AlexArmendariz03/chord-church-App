@@ -71,43 +71,199 @@
     width: 100%;
   }
 
-  .mobile-menu-button {
+  .mobile-menu-button,
+  .mobile-avatar {
     display: none;
   }
 
-  .menu-icon{
-    color: $ink-dark;
-  }
-
+  // Phones and tablets: burger | emblem (centered) | user's initial; the menu lives in a drawer
   @media (max-width: 900px) {
-    .nav-menu {
+    .header {
+      position: fixed;
+      height: 64px;
+      padding: 0 12px;
+    }
+
+    .nav-menu,
+    .user {
       display: none;
     }
-  }
 
-  @media (max-width: 568px) {
+    .mobile-menu-button {
+      display: inline-flex;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      color: $ink-dark;
+      font-size: 20px;
+    }
+
+    .brand {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
     .brand-name {
       display: none;
     }
 
-    .user .text {
-      font-size: 15px;
-      margin-top: 7px;
-    }
-
-    .user .icon {
-      font-size: 20px;
+    .mobile-avatar {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border: 1px solid rgba(79, 70, 229, 0.25);
+      border-radius: 50%;
+      background: rgba(79, 70, 229, 0.08);
+      color: $accent-indigo;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
     }
 
     .content {
-      padding: 76px 12px 16px;
-      width: 100%;
-    }
-
-    .mobile-menu-button{
-      display: block;
+      padding: 80px 16px 16px;
     }
   }
+
+  @media (max-width: 568px) {
+    .content {
+      padding: 76px 12px 16px;
+    }
+  }
+}
+
+// The logo on an indigo tile: on phones it's the centerpiece of the header
+.brand-emblem {
+  // Desktop: no tile, the plain logo sits next to the name
+  display: contents;
+
+  @media (max-width: 900px) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: $brand-gradient;
+    box-shadow:
+      0 8px 20px rgba(79, 70, 229, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    transition: transform 0.15s ease;
+
+    .brand:active & {
+      transform: scale(0.94);
+    }
+
+    .brand-icon {
+      width: auto;
+      height: 38px;
+      filter: brightness(0) invert(1);
+    }
+  }
+
+  &.is-small {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: $brand-gradient;
+
+    .brand-icon {
+      width: auto;
+      height: 26px;
+      filter: brightness(0) invert(1);
+    }
+  }
+}
+
+.mobile-nav-drawer .ant-drawer-body {
+  padding: 0;
+}
+
+.mobile-nav {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: calc(14px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom));
+}
+
+.mobile-nav-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 2px 14px;
+
+  .ant-btn {
+    margin-left: auto;
+  }
+}
+
+.mobile-nav-title {
+  color: $ink-dark;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.mobile-nav-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(79, 70, 229, 0.06);
+}
+
+.mobile-nav-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: $accent-indigo;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.mobile-nav-user-name {
+  display: block;
+  color: $ink-dark;
+  font-weight: 600;
+}
+
+.mobile-nav-user-role {
+  display: block;
+  color: $primary-typography;
+  font-size: 13px;
+}
+
+.mobile-nav-menu.ant-menu {
+  flex: 1;
+  border-inline-end: none !important;
+
+  .ant-menu-item {
+    height: 48px;
+    margin-inline: 0;
+    width: 100%;
+    border-radius: 12px;
+    font-size: 16px;
+    line-height: 48px;
+  }
+}
+
+.mobile-nav-logout.ant-btn {
+  margin-top: 12px;
 }
 
 .page-header {
