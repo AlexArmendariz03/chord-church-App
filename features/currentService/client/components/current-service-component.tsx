@@ -255,48 +255,47 @@ const CurrentServiceComponent = () => {
         </Card>
       ) : (
         <Row gutter={[16, 16]}>
-          {!isSongListCollapsed && (
-            <Col
-              xs={24} lg={8}
-              className="current-service-sidebar-col">
-              <Card
-                title="Alabanzas programadas"
-                // With several services the picker already shows each date
-                extra={services.length > 1 ? null : <Text strong>{formatServiceDate(currentService.eventDate)}</Text>}
-                style={{ height: "100%" }}>
-                <Space
-                  orientation="vertical" size={8}
-                  style={{ width: "100%" }}>
-                  {services.length > 1 ? (
-                    <Select
-                      className="current-service-picker" size="large"
-                      value={currentService.id} onChange={changeService}
-                      aria-label="Cambiar de evento"
-                      options={services.map(service => ({
-                        value: service.id,
-                        label: `${service.title} · ${formatServiceDate(service.eventDate)}`
-                      }))} />
-                  ) : (
-                    <Title level={4} style={{ marginTop: 0 }}>{currentService.title}</Title>
-                  )}
-                  {currentService.songs.map(({ id, song, category, position, isOffering }) => (
-                    <div
-                      key={id}
-                      role="button" tabIndex={0}
-                      className={`current-service-song-row is-${category} ${activeSong?.id === id ? "is-active" : ""}`}
-                      onClick={() => selectSongFromList(id)}
-                      onKeyDown={e => e.key === "Enter" && selectSongFromList(id)}>
-                      <span>
-                        <span className="current-service-song-name">{position}. {song.name}</span>
-                        <span className="current-service-song-meta">Tono {song.key}</span>
-                      </span>
-                      <CategoryTag category={category} offering={isOffering} />
-                    </div>
-                  ))}
-                </Space>
-              </Card>
-            </Col>
-          )}
+          {/* Collapsing only applies side by side; stacked (phones, iPad portrait) the list stays below */}
+          <Col
+            xs={24} lg={8}
+            className={`current-service-sidebar-col ${isSongListCollapsed ? "is-collapsed" : ""}`}>
+            <Card
+              title="Alabanzas programadas"
+              // With several services the picker already shows each date
+              extra={services.length > 1 ? null : <Text strong>{formatServiceDate(currentService.eventDate)}</Text>}
+              style={{ height: "100%" }}>
+              <Space
+                orientation="vertical" size={8}
+                style={{ width: "100%" }}>
+                {services.length > 1 ? (
+                  <Select
+                    className="current-service-picker" size="large"
+                    value={currentService.id} onChange={changeService}
+                    aria-label="Cambiar de evento"
+                    options={services.map(service => ({
+                      value: service.id,
+                      label: `${service.title} · ${formatServiceDate(service.eventDate)}`
+                    }))} />
+                ) : (
+                  <Title level={4} style={{ marginTop: 0 }}>{currentService.title}</Title>
+                )}
+                {currentService.songs.map(({ id, song, category, position, isOffering }) => (
+                  <div
+                    key={id}
+                    role="button" tabIndex={0}
+                    className={`current-service-song-row is-${category} ${activeSong?.id === id ? "is-active" : ""}`}
+                    onClick={() => selectSongFromList(id)}
+                    onKeyDown={e => e.key === "Enter" && selectSongFromList(id)}>
+                    <span>
+                      <span className="current-service-song-name">{position}. {song.name}</span>
+                      <span className="current-service-song-meta">Tono {song.key}</span>
+                    </span>
+                    <CategoryTag category={category} offering={isOffering} />
+                  </div>
+                ))}
+              </Space>
+            </Card>
+          </Col>
 
           <Col
             ref={mainColumnRef} xs={24}
@@ -305,15 +304,16 @@ const CurrentServiceComponent = () => {
             {activeSong ? (
               <Card
                 title={
-                  <Space wrap>
+                  <span className="current-service-song-title">
                     <Button
+                      className="current-service-list-toggle"
                       aria-label={isSongListCollapsed ? "Mostrar lista" : "Ocultar lista"}
                       icon={isSongListCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
                       onClick={() => setIsSongListCollapsed(current => !current)}>
                       {isSongListCollapsed ? "Lista" : "Ocultar"}
                     </Button>
-                    <span>{activeSong.position}. {activeSong.song.name}</span>
-                  </Space>
+                    <span className="current-service-song-title-text">{activeSong.position}. {activeSong.song.name}</span>
+                  </span>
                 }
                 extra={<CategoryTag category={activeSong.category} offering={activeSong.isOffering} />}>
                 <div className="current-service-toolbar">
@@ -333,9 +333,7 @@ const CurrentServiceComponent = () => {
                     </Space.Compact>
                     <Text type="secondary">Canción {activeIndex + 1} de {songs.length}</Text>
                   </Space>
-                  <Space
-                    wrap size={8}
-                    align="center">
+                  <div className="current-service-toolbar-actions">
                     <label className="current-service-chords-toggle">
                       <Switch
                         size="small" checked={showChords}
@@ -354,10 +352,10 @@ const CurrentServiceComponent = () => {
                     </Button>
                     <Button
                       type="primary" icon={<ExpandOutlined />}
-                      onClick={enterStage}>
+                      className="current-service-stage-button" onClick={enterStage}>
                       Pantalla completa
                     </Button>
-                  </Space>
+                  </div>
                 </div>
 
                 <div className="current-service-sheet">{renderPager(activeSong, "light")}</div>
@@ -381,7 +379,7 @@ const CurrentServiceComponent = () => {
                   <Button
                     size="large" type="primary"
                     disabled={!canNext} onClick={goNext}>
-                    Siguiente{pageIndex < pageCount - 1 && <span className="current-service-nav-page-word"> página</span>} <RightOutlined />
+                    Siguiente{pageIndex < pageCount - 1 && <span className="current-service-nav-page-word">página</span>} <RightOutlined />
                   </Button>
                 </div>
               </Card>
