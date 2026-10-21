@@ -20,3 +20,6 @@ export const CategoryTag = ({ category, count, offering = false }: CategoryTagPr
   const { label, color } = CATEGORY_META[category]
   return <Tag color={color}>{count === undefined ? label : `${count} ${label.toLowerCase()}`}</Tag>
 }
+
+// Marks songs from the youth group's repertoire
+export const YouthTag = () => <Tag color="magenta">Jóvenes</Tag>
