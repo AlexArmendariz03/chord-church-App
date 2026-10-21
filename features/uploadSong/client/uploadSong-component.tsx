@@ -7,6 +7,7 @@ import {
     App,
     Button,
     Card,
+    Checkbox,
     Col,
     Empty,
     Input,
@@ -173,6 +174,7 @@ export const UploadSongComponent = () => {
     const [songName, setSongName] = useState("")
     const [songKey, setSongKey] = useState("C")
     const [songCategory, setSongCategory] = useState<"jubilo" | "adoracion">("jubilo")
+    const [isYouth, setIsYouth] = useState(false)
     const [boardConfig, setBoardConfig] = useState<BoardConfig>(INITIAL_BOARD_CONFIG)
     const [contentBlocks, setContentBlocks] = useState<Interfaces[]>([createInitialBlock()])
     const [extraTexts, setExtraTexts] = useState<ExtraTextItem[]>([])
@@ -185,8 +187,8 @@ export const UploadSongComponent = () => {
     // Zoom is a view preference, not song content, so it doesn't count as a change.
     const snapshot = useMemo(() => {
         const { zoom: _zoom, ...boardStyle } = boardConfig
-        return JSON.stringify({ songName, songKey, songCategory, boardStyle, contentBlocks, extraTexts })
-    }, [songName, songKey, songCategory, boardConfig, contentBlocks, extraTexts])
+        return JSON.stringify({ songName, songKey, songCategory, isYouth, boardStyle, contentBlocks, extraTexts })
+    }, [songName, songKey, songCategory, isYouth, boardConfig, contentBlocks, extraTexts])
     const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null)
     const isDirty = savedSnapshot !== null && snapshot !== savedSnapshot
 
@@ -220,10 +222,11 @@ export const UploadSongComponent = () => {
                 if (!res.ok) throw new Error("No se pudo cargar la alabanza")
                 return res.json()
             })
-            .then((song: { name: string; key: string; category: "jubilo" | "adoracion"; lyrics: string; payload?: SongPayload | null }) => {
+            .then((song: { name: string; key: string; category: "jubilo" | "adoracion"; isYouth?: boolean; lyrics: string; payload?: SongPayload | null }) => {
                 setSongName(song.name)
                 setSongKey(song.key)
                 setSongCategory(song.category)
+                setIsYouth(Boolean(song.isYouth))
 
                 if (song.payload?.contentBlocks?.length || song.payload?.extraTexts?.length) {
                     setContentBlocks(song.payload.contentBlocks ?? [])
@@ -369,6 +372,7 @@ export const UploadSongComponent = () => {
         setSongName("")
         setSongKey("C")
         setSongCategory("jubilo")
+        setIsYouth(false)
         setBoardConfig(INITIAL_BOARD_CONFIG)
         setContentBlocks([createInitialBlock()])
         setExtraTexts([])
@@ -400,6 +404,7 @@ export const UploadSongComponent = () => {
                     name: songName,
                     key: songKey,
                     category: songCategory,
+                    isYouth,
                     lyrics,
                     payload: buildSongPayload()
                 })
@@ -484,6 +489,9 @@ export const UploadSongComponent = () => {
                                         { label: "Júbilo", value: "jubilo" },
                                         { label: "Adoración", value: "adoracion" }
                                     ]} />
+                  <Checkbox checked={isYouth} onChange={e => setIsYouth(e.target.checked)}>
+                    Jóvenes
+                  </Checkbox>
                   <Button icon={<PlusOutlined />} onClick={handleAddContentBlock}>
                     Bloque
                   </Button>

@@ -32,18 +32,23 @@ model Song {
   category     SongCategory
   lyrics       String
   payload      Json?
+  // Part of the youth group's repertoire: shown with a "Jóvenes" tag
+  isYouth      Boolean       @default(false)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   serviceSongs ServiceSong[]
 }
 
 model Service {
-  id        String        @id @default(cuid())
-  title     String
-  eventDate DateTime
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  songs     ServiceSong[]
+  id            String        @id @default(cuid())
+  title         String
+  eventDate     DateTime
+  // Shown to the leader after the last song: one prayer point per line, then the announcements
+  prayerGuide   String?
+  announcements String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  songs         ServiceSong[]
 }
 
 model ServiceSong {

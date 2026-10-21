@@ -80,6 +80,12 @@
     border-left-color: #722ed1;
   }
 
+  // Leader's prayer and announcements guide, after the last song
+  &.is-guide {
+    border-style: dashed;
+    border-left: 3px solid #1677ff;
+  }
+
   &.is-active {
     background: $accent-indigo;
     border-color: $accent-indigo;
@@ -133,6 +139,15 @@
   justify-content: center;
 }
 
+// While the guide is open the song tools have nothing to act on; full screen stays
+.current-service-toolbar.is-guide {
+  > .ant-space,
+  .current-service-chords-toggle,
+  .current-service-toolbar-actions > .ant-btn:not(.current-service-stage-button) {
+    display: none;
+  }
+}
+
 .current-service-progress-dot {
   width: 8px;
   height: 8px;
@@ -180,6 +195,12 @@
   border-radius: 20px;
   background: #ffffff;
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+// The guide is short text: the card grows to show it whole instead of scrolling inside
+.current-service-sheet:has(.closing-guide) {
+  height: auto;
+  min-height: clamp(360px, calc(100vh - 330px), 900px);
 }
 
 .current-service-nav {

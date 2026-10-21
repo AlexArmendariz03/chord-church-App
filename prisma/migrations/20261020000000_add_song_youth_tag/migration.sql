@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Song" ADD COLUMN "isYouth" BOOLEAN NOT NULL DEFAULT false;

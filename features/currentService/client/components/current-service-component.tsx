@@ -1,15 +1,17 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ExpandOutlined, LeftOutlined, MenuFoldOutlined, MenuUnfoldOutlined, RightOutlined } from "@ant-design/icons"
-import { App, Button, Card, Col, Empty, Row, Select, Space, Switch, Typography } from "antd"
+import { App, Button, Card, Col, Empty, Row, Select, Space, Switch, Tag, Typography } from "antd"
 import { useRouter, useSearchParams } from "next/navigation"
+import { useSession } from "@/features/layout/client/components/session-provider"
 import { CategoryTag } from "@/shared/components/category-tag"
 import { formatServiceDate } from "@/shared/utils/dates"
 import type { ServiceWithSongs } from "@/types/services"
 import { FONT_LIMITS, LyricsPager, type LyricsLayoutInfo } from "../lyrics/lyrics-pager"
 import { displaySemitones, transposeKey } from "../lyrics/transpose"
 import { useWakeLock } from "../use-wake-lock"
+import { ClosingGuide, hasClosingGuide } from "./closing-guide"
 import StageView, { formatSemitones, STAGE_THEMES, type StageTheme } from "./stage-view"
 
 const { Title, Text } = Typography
@@ -29,11 +31,14 @@ const SERVICE_QUERY_PARAM = "servicio"
 const CurrentServiceComponent = () => {
   const { message } = App.useApp()
   const router = useRouter()
+  const { isLeader } = useSession()
   const requestedServiceId = useSearchParams().get(SERVICE_QUERY_PARAM)
   const [services, setServices] = useState<ServiceWithSongs[]>([])
   const [loading, setLoading] = useState(true)
   const [activeServiceSongId, setActiveServiceSongId] = useState<string | null>(null)
   const [pageIndex, setPageIndex] = useState(0)
+  // Leader only: the prayer and announcements guide that follows the last song
+  const [isGuideOpen, setIsGuideOpen] = useState(false)
   const [isSongListCollapsed, setIsSongListCollapsed] = useState(false)
   const [isStageMode, setIsStageMode] = useState(false)
   const [showChords, setShowChords] = useState(true)
@@ -104,6 +109,7 @@ const CurrentServiceComponent = () => {
   const changeService = (serviceId: string) => {
     setActiveServiceSongId(null)
     setPageIndex(0)
+    setIsGuideOpen(false)
     router.replace(`/en-curso?${SERVICE_QUERY_PARAM}=${serviceId}`)
   }
 
@@ -113,6 +119,10 @@ const CurrentServiceComponent = () => {
   const activeIndex = Math.max(0, songs.findIndex(serviceSong => serviceSong.id === activeServiceSongId))
   const activeSong = songs[activeIndex] ?? null
   const { pageCount, fontSize, autoSize } = layout
+  const showsGuide = isLeader && hasClosingGuide(currentService)
+  // The guide follows the worship set: before the offering song, or at the end when there's none
+  const offeringIndex = songs.findIndex(serviceSong => serviceSong.isOffering)
+  const guideAfterIndex = !showsGuide ? -1 : offeringIndex > 0 ? offeringIndex - 1 : songs.length - 1
 
   const handleLayout = useCallback((info: LyricsLayoutInfo) => {
     setLayout(info)
@@ -122,18 +132,37 @@ const CurrentServiceComponent = () => {
   const selectSong = (serviceSongId: string) => {
     setActiveServiceSongId(serviceSongId)
     setPageIndex(0)
+    setIsGuideOpen(false)
   }
 
-  const canPrev = pageIndex > 0 || activeIndex > 0
-  const canNext = pageIndex < pageCount - 1 || activeIndex < songs.length - 1
+  const openGuide = () => {
+    // While the guide is up, the active song is the one before it: "Anterior" goes back there
+    if (activeIndex !== guideAfterIndex) {
+      setActiveServiceSongId(songs[guideAfterIndex]?.id ?? null)
+      setPageIndex(0)
+    }
+    setIsGuideOpen(true)
+  }
+
+  const isAtGuide = showsGuide && activeIndex === guideAfterIndex
+
+  const canPrev = isGuideOpen || pageIndex > 0 || activeIndex > 0
+  const canNext = isGuideOpen
+    ? Boolean(songs[activeIndex + 1])
+    : pageIndex < pageCount - 1 || activeIndex < songs.length - 1 || isAtGuide
 
   const goNext = () => {
-    if (pageIndex < pageCount - 1) setPageIndex(pageIndex + 1)
+    if (isGuideOpen) {
+      if (songs[activeIndex + 1]) selectSong(songs[activeIndex + 1].id)
+    } else if (pageIndex < pageCount - 1) setPageIndex(pageIndex + 1)
+    else if (isAtGuide) setIsGuideOpen(true)
     else if (songs[activeIndex + 1]) selectSong(songs[activeIndex + 1].id)
   }
 
   const goPrev = () => {
-    if (pageIndex > 0) setPageIndex(pageIndex - 1)
+    if (isGuideOpen) setIsGuideOpen(false)
+    else if (pageIndex > 0) setPageIndex(pageIndex - 1)
+    else if (showsGuide && activeIndex === guideAfterIndex + 1) openGuide()
     else if (songs[activeIndex - 1]) selectSong(songs[activeIndex - 1].id)
   }
 
@@ -196,6 +225,13 @@ const CurrentServiceComponent = () => {
     }
   }
 
+  const openGuideFromList = () => {
+    openGuide()
+    if (window.matchMedia(STACKED_LAYOUT_MAX_WIDTH).matches) {
+      mainColumnRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }
+  }
+
   const increaseFont = () => setFontOffset(Math.min(fontSize + FONT_STEP, FONT_LIMITS.max) - autoSize)
   const decreaseFont = () => setFontOffset(Math.max(fontSize - FONT_STEP, FONT_LIMITS.min) - autoSize)
 
@@ -205,7 +241,12 @@ const CurrentServiceComponent = () => {
     if (activeSong) setTransposeBySong(current => ({ ...current, [activeSong.id]: displaySemitones(value) }))
   }
 
-  const renderPager = (song: NonNullable<typeof activeSong>, variant: "light" | "stage") => (
+  const renderPager = (song: NonNullable<typeof activeSong>, variant: "light" | "stage") => isGuideOpen ? (
+    <ClosingGuide
+      prayerGuide={currentService?.prayerGuide}
+      announcements={currentService?.announcements}
+      variant={variant} />
+  ) : (
     <LyricsPager
       lyrics={song.song.lyrics}
       showChords={showChords}
@@ -237,6 +278,9 @@ const CurrentServiceComponent = () => {
         onPrev={goPrev}
         onNext={goNext}
         onSelectSong={selectSong}
+        isGuideOpen={isGuideOpen}
+        guideAfterIndex={guideAfterIndex}
+        onOpenGuide={openGuide}
         onExit={exitStage}
         stageTheme={stageTheme}
         onStageThemeChange={changeStageTheme}>
@@ -279,19 +323,34 @@ const CurrentServiceComponent = () => {
                 ) : (
                   <Title level={4} style={{ marginTop: 0 }}>{currentService.title}</Title>
                 )}
-                {currentService.songs.map(({ id, song, category, position, isOffering }) => (
-                  <div
-                    key={id}
-                    role="button" tabIndex={0}
-                    className={`current-service-song-row is-${category} ${activeSong?.id === id ? "is-active" : ""}`}
-                    onClick={() => selectSongFromList(id)}
-                    onKeyDown={e => e.key === "Enter" && selectSongFromList(id)}>
-                    <span>
-                      <span className="current-service-song-name">{position}. {song.name}</span>
-                      <span className="current-service-song-meta">Tono {song.key}</span>
-                    </span>
-                    <CategoryTag category={category} offering={isOffering} />
-                  </div>
+                {currentService.songs.map(({ id, song, category, position, isOffering }, index) => (
+                  <Fragment key={id}>
+                    <div
+                      role="button" tabIndex={0}
+                      className={`current-service-song-row is-${category} ${activeSong?.id === id && !isGuideOpen ? "is-active" : ""}`}
+                      onClick={() => selectSongFromList(id)}
+                      onKeyDown={e => e.key === "Enter" && selectSongFromList(id)}>
+                      <span>
+                        <span className="current-service-song-name">{position}. {song.name}</span>
+                        <span className="current-service-song-meta">Tono {song.key}</span>
+                      </span>
+                      <CategoryTag category={category} offering={isOffering} />
+                    </div>
+                    {/* Leader only: the guide sits after the worship set, before the offering */}
+                    {index === guideAfterIndex && (
+                      <div
+                        role="button" tabIndex={0}
+                        className={`current-service-song-row is-guide ${isGuideOpen ? "is-active" : ""}`}
+                        onClick={openGuideFromList}
+                        onKeyDown={e => e.key === "Enter" && openGuideFromList()}>
+                        <span>
+                          <span className="current-service-song-name">Oración y anuncios</span>
+                          <span className="current-service-song-meta">Antes de la ofrenda</span>
+                        </span>
+                        <Tag color="blue">Dirigente</Tag>
+                      </div>
+                    )}
+                  </Fragment>
                 ))}
               </Space>
             </Card>
@@ -312,11 +371,13 @@ const CurrentServiceComponent = () => {
                       onClick={() => setIsSongListCollapsed(current => !current)}>
                       {isSongListCollapsed ? "Lista" : "Ocultar"}
                     </Button>
-                    <span className="current-service-song-title-text">{activeSong.position}. {activeSong.song.name}</span>
+                    <span className="current-service-song-title-text">
+                      {isGuideOpen ? "Oración y anuncios" : `${activeSong.position}. ${activeSong.song.name}`}
+                    </span>
                   </span>
                 }
-                extra={<CategoryTag category={activeSong.category} offering={activeSong.isOffering} />}>
-                <div className="current-service-toolbar">
+                extra={isGuideOpen ? <Tag color="blue">Dirigente</Tag> : <CategoryTag category={activeSong.category} offering={activeSong.isOffering} />}>
+                <div className={`current-service-toolbar ${isGuideOpen ? "is-guide" : ""}`}>
                   <Space
                     size={12} align="center"
                     wrap>
@@ -331,7 +392,7 @@ const CurrentServiceComponent = () => {
                       </Button>
                       <Button aria-label="Subir medio tono" onClick={() => transpose(semitones + 1)}>♯</Button>
                     </Space.Compact>
-                    <Text type="secondary">Canción {activeIndex + 1} de {songs.length}</Text>
+                    {!isGuideOpen && <Text type="secondary">Canción {activeIndex + 1} de {songs.length}</Text>}
                   </Space>
                   <div className="current-service-toolbar-actions">
                     <label className="current-service-chords-toggle">
@@ -368,18 +429,19 @@ const CurrentServiceComponent = () => {
                   </Button>
                   <div className="current-service-nav-center">
                     <div className="current-service-progress-dots" aria-hidden="true">
-                      {songs.map(serviceSong => (
-                        <span
-                          key={serviceSong.id}
-                          className={`current-service-progress-dot ${serviceSong.id === activeSong.id ? "is-active" : ""}`} />
+                      {songs.map((serviceSong, index) => (
+                        <Fragment key={serviceSong.id}>
+                          <span className={`current-service-progress-dot ${serviceSong.id === activeSong.id && !isGuideOpen ? "is-active" : ""}`} />
+                          {index === guideAfterIndex && <span className={`current-service-progress-dot is-guide ${isGuideOpen ? "is-active" : ""}`} />}
+                        </Fragment>
                       ))}
                     </div>
-                    {pageCount > 1 && <Text type="secondary" className="current-service-page">Página {pageIndex + 1} de {pageCount}</Text>}
+                    {pageCount > 1 && !isGuideOpen && <Text type="secondary" className="current-service-page">Página {pageIndex + 1} de {pageCount}</Text>}
                   </div>
                   <Button
                     size="large" type="primary"
                     disabled={!canNext} onClick={goNext}>
-                    Siguiente{pageIndex < pageCount - 1 && <span className="current-service-nav-page-word">página</span>} <RightOutlined />
+                    Siguiente{pageIndex < pageCount - 1 && !isGuideOpen && <span className="current-service-nav-page-word">página</span>} <RightOutlined />
                   </Button>
                 </div>
               </Card>

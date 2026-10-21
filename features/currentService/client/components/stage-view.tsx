@@ -1,6 +1,6 @@
 "use client"
 
-import { cloneElement, useCallback, useEffect, useRef, useState, type Dispatch, type ReactElement, type ReactNode } from "react"
+import { cloneElement, Fragment, useCallback, useEffect, useRef, useState, type Dispatch, type ReactElement, type ReactNode } from "react"
 import { BgColorsOutlined, CloseOutlined, DownOutlined, EyeInvisibleOutlined, LeftOutlined, RightOutlined, UnorderedListOutlined } from "@ant-design/icons"
 import { ConfigProvider, Drawer, Segmented, theme } from "antd"
 import { formatServiceDate } from "@/shared/utils/dates"
@@ -41,6 +41,11 @@ type StageViewProps = {
   onPrev: () => void
   onNext: () => void
   onSelectSong: Dispatch<string>
+  // Leader only: the prayer and announcements guide, shown after the song at guideAfterIndex
+  // (the end of the worship set, before the offering); -1 when there's no guide
+  isGuideOpen: boolean
+  guideAfterIndex: number
+  onOpenGuide: () => void
   onExit: () => void
   stageTheme: StageTheme
   onStageThemeChange: Dispatch<StageTheme>
@@ -100,6 +105,9 @@ const StageView = ({
   onPrev,
   onNext,
   onSelectSong,
+  isGuideOpen,
+  guideAfterIndex,
+  onOpenGuide,
   onExit,
   stageTheme,
   onStageThemeChange,
@@ -166,16 +174,18 @@ const StageView = ({
   const playedKey = transposeKey(current.song.key, semitones)
   const isTransposed = displaySemitones(semitones) !== 0
   const themeLabel = STAGE_THEMES.find(option => option.value === stageTheme)?.label
-  const upNext = hasNextPage
-    ? { label: "Página", detail: `${pageIndex + 2} de ${pageCount}` }
-    : next ? { label: next.isOffering ? "Sigue · Ofrenda" : "Sigue", detail: `${next.song.name} · ${next.song.key}` } : null
+  const guideIsNext = !isGuideOpen && !hasNextPage && activeIndex === guideAfterIndex
+  const upNext = hasNextPage && !isGuideOpen ? { label: "Página", detail: `${pageIndex + 2} de ${pageCount}` }
+    : guideIsNext ? { label: "Sigue", detail: "Oración y anuncios" }
+    : next ? { label: next.isOffering ? "Sigue · Ofrenda" : "Sigue", detail: `${next.song.name} · ${next.song.key}` }
+    : null
 
   return (
     <ConfigProvider theme={STAGE_THEME}>
       <div
         className={`stage ${controlsVisible ? "has-controls" : ""}`} role="dialog"
         data-theme={stageTheme} data-category={current.category}
-        aria-label={`Modo escenario: ${current.song.name}`}
+        aria-label={`Modo escenario: ${isGuideOpen ? "Oración y anuncios" : current.song.name}`}
         onMouseMove={event => {
           // Taps also fire mousemove, but without movement
           const moved = event.movementX || event.movementY
@@ -190,7 +200,7 @@ const StageView = ({
         </div>
 
         <div
-          className={`stage-intro ${introSongId === current.id ? "is-visible" : ""}`}
+          className={`stage-intro ${introSongId === current.id && !isGuideOpen ? "is-visible" : ""}`}
           aria-live="polite">
           <span className="stage-intro-position">{activeIndex + 1} / {service.songs.length}</span>
           <span className="stage-intro-name">{current.song.name}</span>
@@ -202,10 +212,16 @@ const StageView = ({
 
         {/* Always visible, even with the controls hidden: where we are and in which key */}
         <div className="stage-hud">
-          <span className="stage-hud-position">{activeIndex + 1}/{service.songs.length}</span>
-          <span className="stage-hud-name">{current.song.name}</span>
-          <span className={`stage-hud-key ${isTransposed ? "is-transposed" : ""}`}>{playedKey}</span>
-          {pageCount > 1 && <span className="stage-hud-page">Pág. {pageIndex + 1}/{pageCount}</span>}
+          {isGuideOpen ? (
+            <span className="stage-hud-name">Oración y anuncios</span>
+          ) : (
+            <>
+              <span className="stage-hud-position">{activeIndex + 1}/{service.songs.length}</span>
+              <span className="stage-hud-name">{current.song.name}</span>
+              <span className={`stage-hud-key ${isTransposed ? "is-transposed" : ""}`}>{playedKey}</span>
+              {pageCount > 1 && <span className="stage-hud-page">Pág. {pageIndex + 1}/{pageCount}</span>}
+            </>
+          )}
         </div>
 
         <main className="stage-body">
@@ -218,8 +234,8 @@ const StageView = ({
           {service.songs.map((serviceSong, index) => (
             <span
               key={serviceSong.id}
-              className={`stage-progress-line-song ${index < activeIndex ? "is-done" : ""}`}>
-              {index === activeIndex && (
+              className={`stage-progress-line-song ${index < activeIndex || (isGuideOpen && index === activeIndex) ? "is-done" : ""}`}>
+              {index === activeIndex && !isGuideOpen && (
                 <span
                   className="stage-progress-line-fill"
                   style={{ width: `${((pageIndex + 1) / pageCount) * 100}%` }} />
@@ -240,40 +256,45 @@ const StageView = ({
         <div
           className="stage-cluster is-top" onPointerDown={showControls}
           inert={!controlsVisible}>
-          <div
-            className="stage-pill" role="group"
-            aria-label="Transponer tono">
-            <Bubble label="Bajar medio tono" onClick={() => onTranspose(semitones - 1)}>♭</Bubble>
-            <button
-              type="button" className={`stage-key ${isTransposed ? "is-transposed" : ""}`}
-              disabled={!isTransposed} onClick={() => onTranspose(0)}
-              title={isTransposed ? `Original: ${current.song.key}. Toca para volver al tono original` : "Tono original"}>
-              {playedKey}
-              {isTransposed && <span className="stage-key-shift">{formatSemitones(semitones)}</span>}
-            </button>
-            <Bubble label="Subir medio tono" onClick={() => onTranspose(semitones + 1)}>♯</Bubble>
-          </div>
+          {/* Song tools: nothing to change while the guide is up */}
+          {!isGuideOpen && (
+            <>
+              <div
+                className="stage-pill" role="group"
+                aria-label="Transponer tono">
+                <Bubble label="Bajar medio tono" onClick={() => onTranspose(semitones - 1)}>♭</Bubble>
+                <button
+                  type="button" className={`stage-key ${isTransposed ? "is-transposed" : ""}`}
+                  disabled={!isTransposed} onClick={() => onTranspose(0)}
+                  title={isTransposed ? `Original: ${current.song.key}. Toca para volver al tono original` : "Tono original"}>
+                  {playedKey}
+                  {isTransposed && <span className="stage-key-shift">{formatSemitones(semitones)}</span>}
+                </button>
+                <Bubble label="Subir medio tono" onClick={() => onTranspose(semitones + 1)}>♯</Bubble>
+              </div>
 
-          <div
-            className="stage-pill" role="group"
-            aria-label="Tamaño de letra">
-            <Bubble
-              label="Reducir letra" disabled={!canDecreaseFont}
-              onClick={onDecreaseFont}>
-              <span className="stage-font-glyph is-small">A</span>
-            </Bubble>
-            <Bubble
-              label="Aumentar letra" disabled={!canIncreaseFont}
-              onClick={onIncreaseFont}>
-              <span className="stage-font-glyph">A</span>
-            </Bubble>
-          </div>
+              <div
+                className="stage-pill" role="group"
+                aria-label="Tamaño de letra">
+                <Bubble
+                  label="Reducir letra" disabled={!canDecreaseFont}
+                  onClick={onDecreaseFont}>
+                  <span className="stage-font-glyph is-small">A</span>
+                </Bubble>
+                <Bubble
+                  label="Aumentar letra" disabled={!canIncreaseFont}
+                  onClick={onIncreaseFont}>
+                  <span className="stage-font-glyph">A</span>
+                </Bubble>
+              </div>
 
-          <Bubble
-            label={showChords ? "Ocultar acordes" : "Mostrar acordes"} active={showChords}
-            onClick={() => onToggleChords(!showChords)}>
-            <span className="stage-chord-glyph">C<sup>7</sup></span>
-          </Bubble>
+              <Bubble
+                label={showChords ? "Ocultar acordes" : "Mostrar acordes"} active={showChords}
+                onClick={() => onToggleChords(!showChords)}>
+                <span className="stage-chord-glyph">C<sup>7</sup></span>
+              </Bubble>
+            </>
+          )}
           <Bubble
             label={`Tema: ${themeLabel}. Cambiar`} hideOnNarrow
             onClick={cycleTheme}>
@@ -309,7 +330,7 @@ const StageView = ({
             </span>
           )}
           <Bubble
-            label={hasNextPage ? "Siguiente página" : canNext ? "Siguiente canción" : "Fin del servicio"} variant="primary"
+            label={hasNextPage && !isGuideOpen ? "Siguiente página" : guideIsNext ? "Oración y anuncios" : next ? "Siguiente canción" : "Fin del servicio"} variant="primary"
             disabled={!canNext} onClick={onNext}>
             <RightOutlined />
           </Bubble>
@@ -323,18 +344,33 @@ const StageView = ({
           <p className="stage-drawer-date">{formatServiceDate(service.eventDate)}</p>
           <ol className="stage-drawer-list">
             {service.songs.map((serviceSong, index) => (
-              <li key={serviceSong.id}>
-                <button
-                  type="button"
-                  className={`stage-drawer-song is-${serviceSong.category} ${index === activeIndex ? "is-active" : ""}`}
-                  onClick={() => {
-                    onSelectSong(serviceSong.id)
-                    setIsListOpen(false)
-                  }}>
-                  <span className="stage-drawer-song-name">{serviceSong.position}. {serviceSong.song.name}</span>
-                  <span className="stage-drawer-song-key">{serviceSong.song.key}</span>
-                </button>
-              </li>
+              <Fragment key={serviceSong.id}>
+                <li>
+                  <button
+                    type="button"
+                    className={`stage-drawer-song is-${serviceSong.category} ${index === activeIndex && !isGuideOpen ? "is-active" : ""}`}
+                    onClick={() => {
+                      onSelectSong(serviceSong.id)
+                      setIsListOpen(false)
+                    }}>
+                    <span className="stage-drawer-song-name">{serviceSong.position}. {serviceSong.song.name}</span>
+                    <span className="stage-drawer-song-key">{serviceSong.song.key}</span>
+                  </button>
+                </li>
+                {index === guideAfterIndex && (
+                  <li>
+                    <button
+                      type="button"
+                      className={`stage-drawer-song is-guide ${isGuideOpen ? "is-active" : ""}`}
+                      onClick={() => {
+                        onOpenGuide()
+                        setIsListOpen(false)
+                      }}>
+                      <span className="stage-drawer-song-name">Oración y anuncios</span>
+                    </button>
+                  </li>
+                )}
+              </Fragment>
             ))}
           </ol>
           <p className="stage-drawer-heading">Apariencia</p>
