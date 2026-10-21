@@ -6,6 +6,8 @@ export type SongWithMeta = {
   key: string
   category: SongCategory
   lyrics: string
+  // Part of the youth group's repertoire
+  isYouth?: boolean
   createdAt?: string
   updatedAt?: string
 }

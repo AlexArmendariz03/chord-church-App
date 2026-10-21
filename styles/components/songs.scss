@@ -31,6 +31,11 @@
     align-items: center;
     gap: 14px;
     flex-shrink: 0;
+
+    // The flex gap already spaces the tags
+    .ant-tag {
+      margin-inline-end: 0;
+    }
   }
 
   @media (max-width: 576px) {
@@ -42,9 +47,20 @@
     }
 
     .song-row-meta {
+      flex-wrap: wrap;
       gap: 8px;
+      width: 100%;
+
+      // The ⋮ menu stays at the right edge
+      > .ant-btn {
+        margin-left: auto;
+      }
     }
   }
+}
+
+.songs-youth-filter {
+  margin-bottom: 4px;
 }
 
 .list-panel {

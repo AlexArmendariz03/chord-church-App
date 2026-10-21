@@ -18,6 +18,7 @@ type UpdateSongBody = {
   category?: unknown
   lyrics?: string
   payload?: unknown
+  isYouth?: unknown
 }
 
 export async function GET(_req: Request, context: RouteContext) {
@@ -40,7 +41,7 @@ export async function PUT(req: Request, context: RouteContext) {
 
   try {
     const { id } = await context.params
-    const { name, key, category, lyrics, payload }: UpdateSongBody = await req.json()
+    const { name, key, category, lyrics, payload, isYouth }: UpdateSongBody = await req.json()
 
     if (!name?.trim() || !key?.trim() || !lyrics?.trim() || !isSongCategory(category)) {
       return NextResponse.json({ message: "Nombre, tono, tipo y letra son obligatorios" }, { status: 400 })
@@ -53,6 +54,7 @@ export async function PUT(req: Request, context: RouteContext) {
         key: key.trim(),
         category,
         lyrics: trimLyrics(lyrics),
+        ...(typeof isYouth === "boolean" ? { isYouth } : {}),
         ...(payload === undefined ? {} : { payload: payload as Prisma.InputJsonValue })
       }
     })

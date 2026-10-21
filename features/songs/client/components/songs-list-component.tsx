@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { MoreOutlined, PlusOutlined } from "@ant-design/icons"
-import { App, Button, Card, Dropdown, Empty, Listy, Space, Tabs, Typography } from "antd"
+import { App, Button, Card, Checkbox, Dropdown, Empty, Grid, Listy, Space, Tabs, Typography } from "antd"
 import { useRouter } from "next/navigation"
 import { useSession } from "@/features/layout/client/components/session-provider"
-import { CategoryTag } from "@/shared/components/category-tag"
+import { CategoryTag, YouthTag } from "@/shared/components/category-tag"
 import type { SongWithMeta } from "@/types/services"
 
 const { Paragraph, Text, Title } = Typography
@@ -16,9 +16,13 @@ const SongsListComponent = () => {
   const { isLeader } = useSession()
   const [songs, setSongs] = useState<SongWithMeta[]>([])
   const [loading, setLoading] = useState(false)
+  const [onlyYouth, setOnlyYouth] = useState(false)
+  // Phones: the filter goes above the tabs so both tabs keep their room
+  const isWide = Grid.useBreakpoint().sm ?? true
 
-  const jubiloSongs = useMemo(() => songs.filter(song => song.category === "jubilo"), [songs])
-  const adoracionSongs = useMemo(() => songs.filter(song => song.category === "adoracion"), [songs])
+  const visibleSongs = useMemo(() => (onlyYouth ? songs.filter(song => song.isYouth) : songs), [songs, onlyYouth])
+  const jubiloSongs = useMemo(() => visibleSongs.filter(song => song.category === "jubilo"), [visibleSongs])
+  const adoracionSongs = useMemo(() => visibleSongs.filter(song => song.category === "adoracion"), [visibleSongs])
 
   const fetchSongs = useCallback(async () => {
     setLoading(true)
@@ -75,6 +79,7 @@ const SongsListComponent = () => {
               </div>
               <div className="song-row-meta">
                 <Text type="secondary">Tono: {song.key}</Text>
+                {song.isYouth && <YouthTag />}
                 <CategoryTag category={song.category} />
                 <Dropdown
                   trigger={["click"]}
@@ -98,6 +103,14 @@ const SongsListComponent = () => {
       </div>
     )
   }
+
+  const youthFilter = (
+    <Checkbox
+      className="songs-youth-filter" checked={onlyYouth}
+      onChange={e => setOnlyYouth(e.target.checked)}>
+      Solo jóvenes
+    </Checkbox>
+  )
 
   if (!isLeader) {
     return (
@@ -132,7 +145,9 @@ const SongsListComponent = () => {
         </Card>
 
         <Card loading={loading}>
+          {!isWide && youthFilter}
           <Tabs
+            tabBarExtraContent={isWide ? youthFilter : undefined}
             items={[
               { key: "jubilo", label: `Júbilo (${jubiloSongs.length})`, children: renderSongs(jubiloSongs) },
               { key: "adoracion", label: `Adoración (${adoracionSongs.length})`, children: renderSongs(adoracionSongs) }
