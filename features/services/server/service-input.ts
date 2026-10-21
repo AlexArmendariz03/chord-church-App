@@ -25,18 +25,30 @@ type ParsedService =
       }
     }
 
+const MAX_TITLE_LENGTH = 200
+const MAX_GUIDE_LENGTH = 5000
+const MAX_SONGS = 50
+
 // Empty or whitespace-only text is stored as null
-const optionalText = (value: unknown) => (typeof value === "string" && value.trim() ? value.trim() : null)
+const optionalText = (value: unknown) =>
+  typeof value === "string" && value.trim() ? value.trim().slice(0, MAX_GUIDE_LENGTH) : null
+
+const isIdList = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.length <= MAX_SONGS && value.every(id => typeof id === "string" && id.length <= 100)
 
 // Shared by create (POST) and edit (PUT): validates the body and builds the ordered song list
 // júbilo → adoración → ofrenda
 export async function parseServiceBody(body: ServiceBody): Promise<ParsedService> {
   const { title, eventDate, jubiloSongIds = [], adoracionSongIds = [] } = body
   const offeringSongId = body.offeringSongId || null
-  const selectedIds = [...jubiloSongIds, ...adoracionSongIds, ...(offeringSongId ? [offeringSongId] : [])]
-  const parsedDate = eventDate ? new Date(eventDate) : null
 
-  if (!title?.trim() || !parsedDate || Number.isNaN(parsedDate.getTime())) {
+  if (!isIdList(jubiloSongIds) || !isIdList(adoracionSongIds) || (offeringSongId !== null && typeof offeringSongId !== "string")) {
+    return { error: "Selección de canciones inválida" }
+  }
+  const selectedIds = [...jubiloSongIds, ...adoracionSongIds, ...(offeringSongId ? [offeringSongId] : [])]
+  const parsedDate = typeof eventDate === "string" && eventDate ? new Date(eventDate) : null
+
+  if (typeof title !== "string" || !title.trim() || title.length > MAX_TITLE_LENGTH || !parsedDate || Number.isNaN(parsedDate.getTime())) {
     return { error: "Título y fecha del evento son obligatorios" }
   }
 

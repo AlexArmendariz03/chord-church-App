@@ -24,6 +24,11 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   return verifySession(cookieStore.get(SESSION_COOKIE_NAME)?.value)
 }
 
+// Route handlers check the session themselves too, so a proxy bypass doesn't expose data
+export async function requireUser(): Promise<SessionUser | null> {
+  return getSessionUser()
+}
+
 export async function requireLeader(): Promise<SessionUser | null> {
   const user = await getSessionUser()
   return user?.role === "leader" ? user : null
