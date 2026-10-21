@@ -12,6 +12,7 @@ import { useSession } from "./session-provider"
 
 const { Header } = ALayout
 const { Title } = Typography
+const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION
 
 const HeaderBar = () => {
   const router = useRouter()
@@ -52,7 +53,7 @@ const HeaderBar = () => {
         </span>
         <span className="brand-text">
           <span className="brand-name">Chord Church</span>
-          <span className="brand-byline">by AA</span>
+          <span className="brand-byline">by AA · v{APP_VERSION}</span>
         </span>
       </Link>
 
@@ -94,7 +95,7 @@ const HeaderBar = () => {
             </span>
             <span className="brand-text">
               <span className="mobile-nav-title">Chord Church</span>
-              <span className="brand-byline">by AA</span>
+              <span className="brand-byline">by AA · v{APP_VERSION}</span>
             </span>
             <Button
               type="text" icon={<CloseOutlined />}
