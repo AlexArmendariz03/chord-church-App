@@ -32,12 +32,11 @@ export async function POST(req: Request) {
     if (parsed.error !== undefined) {
       return NextResponse.json({ message: parsed.error }, { status: 400 })
     }
-    const { title, eventDate, songs } = parsed.data
+    const { songs, ...fields } = parsed.data
 
     const service = await prisma.service.create({
       data: {
-        title,
-        eventDate,
+        ...fields,
         songs: { create: songs }
       },
       include: {

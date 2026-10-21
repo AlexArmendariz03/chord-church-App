@@ -20,15 +20,14 @@ export async function PUT(req: Request, context: RouteContext) {
     if (parsed.error !== undefined) {
       return NextResponse.json({ message: parsed.error }, { status: 400 })
     }
-    const { title, eventDate, songs } = parsed.data
+    const { songs, ...fields } = parsed.data
 
     const [, service] = await prisma.$transaction([
       prisma.serviceSong.deleteMany({ where: { serviceId: id } }),
       prisma.service.update({
         where: { id },
         data: {
-          title,
-          eventDate,
+          ...fields,
           songs: { create: songs }
         },
         include: {

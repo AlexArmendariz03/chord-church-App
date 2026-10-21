@@ -7,6 +7,9 @@ export type ServiceBody = {
   adoracionSongIds?: string[]
   // Optional: one júbilo song played during the offering, after the worship set
   offeringSongId?: string | null
+  // Leader's guide after the last song (optional, one item per line)
+  prayerGuide?: string | null
+  announcements?: string | null
 }
 
 type ParsedService =
@@ -16,9 +19,14 @@ type ParsedService =
       data: {
         title: string
         eventDate: Date
+        prayerGuide: string | null
+        announcements: string | null
         songs: Array<{ songId: string; category: "jubilo" | "adoracion"; position: number; isOffering: boolean }>
       }
     }
+
+// Empty or whitespace-only text is stored as null
+const optionalText = (value: unknown) => (typeof value === "string" && value.trim() ? value.trim() : null)
 
 // Shared by create (POST) and edit (PUT): validates the body and builds the ordered song list
 // júbilo → adoración → ofrenda
@@ -58,6 +66,8 @@ export async function parseServiceBody(body: ServiceBody): Promise<ParsedService
     data: {
       title: title.trim(),
       eventDate: parsedDate,
+      prayerGuide: optionalText(body.prayerGuide),
+      announcements: optionalText(body.announcements),
       songs: ordered.map((song, index) => ({ ...song, position: index + 1 }))
     }
   }

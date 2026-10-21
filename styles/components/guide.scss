@@ -1,0 +1,169 @@
+// Leader's guide after the last song (closing-guide.tsx): prayer points + announcements, in the En curso card
+// and on the stage. Colors come from custom properties: light here, stage themes in stage.scss.
+
+.closing-guide {
+  --guide-text: #{$ink-dark};
+  --guide-muted: #64748b;
+  --guide-accent: #{$accent-indigo};
+  --guide-note: #b45309;
+  --guide-title-size: clamp(24px, 3vw, 32px);
+  --guide-item-size: clamp(17px, 2vw, 21px);
+
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  color: var(--guide-text);
+  animation: closing-guide-in 0.25s ease-out;
+
+  &.is-stage {
+    --guide-text: var(--lyrics-text);
+    --guide-muted: color-mix(in srgb, var(--lyrics-text) 60%, transparent);
+    --guide-accent: var(--lyrics-chord);
+    --guide-note: var(--lyrics-chord);
+    // Readable from the platform, like the lyrics
+    --guide-title-size: clamp(26px, 3.8vw, 52px);
+    --guide-item-size: clamp(19px, 2.5vw, 34px);
+
+    width: 100%;
+    height: 100%;
+    padding: 0 clamp(16px, 5vw, 72px);
+  }
+}
+
+.closing-guide-content {
+  width: 100%;
+  max-width: 980px;
+  // Centered when it fits, scrolls from the top when it doesn't
+  margin: auto;
+  padding: 8px 0;
+
+  // Wide screens: prayer on the left, announcements on the right, so both fit at once
+  @media (min-width: 900px) {
+    &.has-both {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+      align-items: center;
+      gap: 2.5em;
+
+      .closing-guide-note {
+        margin-top: 0;
+      }
+    }
+
+    .is-stage &.has-both {
+      max-width: 1320px;
+    }
+  }
+}
+
+.closing-guide-eyebrow {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--guide-accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+
+  .is-stage & {
+    font-size: clamp(12px, 1.4vw, 16px);
+  }
+}
+
+.closing-guide-title {
+  margin: 0 0 0.5em;
+  color: var(--guide-text);
+  font-size: var(--guide-title-size);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.closing-guide-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55em;
+  font-size: var(--guide-item-size);
+  line-height: 1.35;
+}
+
+.closing-guide-lead {
+  margin: 0.2em 0 0;
+  color: var(--guide-muted);
+  font-weight: 600;
+}
+
+.closing-guide-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6em;
+  margin: 0;
+  font-weight: 600;
+}
+
+.closing-guide-marker {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.6em;
+  height: 1.6em;
+  margin-top: -0.12em;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--guide-accent) 14%, transparent);
+  color: var(--guide-accent);
+  font-size: 0.8em;
+  font-weight: 800;
+}
+
+.closing-guide-note {
+  margin-top: 1.4em;
+  padding: 0.9em 1.1em;
+  border: 1px solid color-mix(in srgb, var(--guide-note) 35%, transparent);
+  border-left: 4px solid var(--guide-note);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--guide-note) 9%, transparent);
+  font-size: var(--guide-item-size);
+
+  .closing-guide-lines {
+    gap: 0.35em;
+    font-size: 0.92em;
+  }
+
+  .closing-guide-marker {
+    width: auto;
+    height: auto;
+    margin-top: 0;
+    background: none;
+    color: var(--guide-note);
+  }
+}
+
+.closing-guide-note-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  margin-bottom: 0.4em;
+  color: var(--guide-note);
+  font-size: 0.72em;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+// Last dot of the En curso progress: the guide
+.current-service-progress-dot.is-guide {
+  border-radius: 2px;
+}
+
+@keyframes closing-guide-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .closing-guide {
+    animation: none;
+  }
+}

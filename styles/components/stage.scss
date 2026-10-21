@@ -634,6 +634,11 @@ $bubble-size: 46px;
     border-left-color: #b37feb;
   }
 
+  &.is-guide {
+    border-style: dashed;
+    border-left: 3px solid #69b1ff;
+  }
+
   &.is-active {
     background: #4f46e5;
     border-color: #4f46e5;

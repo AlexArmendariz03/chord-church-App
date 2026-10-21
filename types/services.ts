@@ -16,6 +16,9 @@ export type ServiceWithSongs = {
   id: string
   title: string
   eventDate: string
+  // Leader's guide after the last song: one item per line; a line ending in ":" is a heading
+  prayerGuide?: string | null
+  announcements?: string | null
   createdAt: string
   updatedAt: string
   songs: Array<{

@@ -17,7 +17,12 @@ type ServiceFormValues = {
   jubiloSongIds: string[]
   adoracionSongIds: string[]
   offeringSongId?: string
+  prayerGuide?: string
+  announcements?: string
 }
+
+const PRAYER_PLACEHOLDER = "Vamos a orar por:\nLa iglesia local\nNuestro pastor\nNuestros obreros y misioneros"
+const ANNOUNCEMENTS_PLACEHOLDER = "Dar los anuncios del día de mañana:\nSeminarios a las 9:00 a. m."
 
 const ServicesComponent = () => {
   const { modal, message } = App.useApp()
@@ -66,7 +71,9 @@ const ServicesComponent = () => {
       eventDate: dayjs(service.eventDate),
       jubiloSongIds: service.songs.filter(s => s.category === "jubilo" && !s.isOffering).sort((a, b) => a.position - b.position).map(s => s.songId),
       adoracionSongIds: service.songs.filter(s => s.category === "adoracion").sort((a, b) => a.position - b.position).map(s => s.songId),
-      offeringSongId: service.songs.find(s => s.isOffering)?.songId
+      offeringSongId: service.songs.find(s => s.isOffering)?.songId,
+      prayerGuide: service.prayerGuide ?? undefined,
+      announcements: service.announcements ?? undefined
     })
     setFormOpen(true)
   }
@@ -182,6 +189,22 @@ const ServicesComponent = () => {
               placeholder="Busca o selecciona una de júbilo"
               optionFilterProp="label"
               options={jubiloSongs.filter(song => !pickedJubilo?.includes(song.id)).map(toOption)} />
+          </Form.Item>
+        </Col>
+        <Col span={24}>
+          <Text strong>Guía para el dirigente (opcional)</Text>
+          <Paragraph type="secondary" style={{ marginBottom: 12 }}>
+            Solo la ve el dirigente, después de la adoración y antes de la ofrenda. Escribe un punto por línea; una línea que termina en &quot;:&quot; sirve de título.
+          </Paragraph>
+        </Col>
+        <Col xs={24} md={12}>
+          <Form.Item name="prayerGuide" label="Oración">
+            <Input.TextArea autoSize={{ minRows: 4, maxRows: 10 }} placeholder={PRAYER_PLACEHOLDER} />
+          </Form.Item>
+        </Col>
+        <Col xs={24} md={12}>
+          <Form.Item name="announcements" label="Anuncios">
+            <Input.TextArea autoSize={{ minRows: 4, maxRows: 10 }} placeholder={ANNOUNCEMENTS_PLACEHOLDER} />
           </Form.Item>
         </Col>
       </Row>
