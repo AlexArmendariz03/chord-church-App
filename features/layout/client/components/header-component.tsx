@@ -1,7 +1,7 @@
 "use client"
 
-import { CloseOutlined, LogoutOutlined, MenuOutlined, UserOutlined } from "@ant-design/icons"
-import { Button, Drawer, Layout as ALayout, Menu, Tooltip, Typography } from "antd"
+import { CloseOutlined, CrownFilled, CustomerServiceFilled, DownOutlined, LogoutOutlined, MenuOutlined } from "@ant-design/icons"
+import { Button, Drawer, Dropdown, Layout as ALayout, Menu, type MenuProps } from "antd"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
@@ -11,7 +11,7 @@ import { displayName } from "@/shared/utils/user"
 import { useSession } from "./session-provider"
 
 const { Header } = ALayout
-const { Title } = Typography
+const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION
 
 const HeaderBar = () => {
   const router = useRouter()
@@ -22,6 +22,15 @@ const HeaderBar = () => {
   const selectedKeys = [getSelectedMenuKey(pathname)]
   const name = displayName(user?.username) || (isLeader ? "Líder" : "Músico")
   const roleLabel = isLeader ? "Dirigente" : "Músico"
+  const roleClass = isLeader ? "is-leader" : "is-musician"
+  // Shared accounts are named after their role ("dirigente"): show the badge alone, not the name twice
+  const nameIsRole = name.toLowerCase() === roleLabel.toLowerCase()
+  const roleBadge = (
+    <span className={`role-badge ${roleClass} ${nameIsRole ? "is-large" : ""}`}>
+      {isLeader ? <CrownFilled /> : <CustomerServiceFilled />}
+      {roleLabel}
+    </span>
+  )
 
   const handleLogout = async () => {
     setIsMenuOpen(false)
@@ -32,6 +41,12 @@ const HeaderBar = () => {
       router.refresh()
     }
   }
+
+  const userMenuItems: MenuProps["items"] = [
+    { key: "logout", icon: <LogoutOutlined />, label: "Cerrar sesión", onClick: handleLogout },
+    { type: "divider" },
+    { key: "version", label: <span className="user-menu-version">Versión {APP_VERSION}</span>, disabled: true }
+  ]
 
   return (
     <Header className="header">
@@ -60,19 +75,20 @@ const HeaderBar = () => {
         className="nav-menu" mode="horizontal"
         selectedKeys={selectedKeys} items={menuItems} />
 
-      <div className="user">
-        <UserOutlined className="icon" />
-        <Title
-          className="text" level={5}
-          style={{ margin: 0 }}>
-          {name}
-        </Title>
-        <Tooltip title="Cerrar sesión">
-          <Button
-            aria-label="Cerrar sesión" icon={<LogoutOutlined />}
-            type="text" onClick={handleLogout} />
-        </Tooltip>
-      </div>
+      <Dropdown
+        menu={{ items: userMenuItems }} trigger={["click"]}
+        placement="bottomRight" rootClassName="user-menu">
+        <button
+          type="button" className="user"
+          aria-label={`${name}, ${roleLabel}: abrir menú de usuario`}>
+          <span className={`user-avatar ${roleClass}`}>{name.charAt(0)}</span>
+          <span className="user-text">
+            {!nameIsRole && <span className="user-name">{name}</span>}
+            {roleBadge}
+          </span>
+          <DownOutlined className="user-caret" />
+        </button>
+      </Dropdown>
 
       <button
         type="button" className="mobile-avatar"
@@ -102,10 +118,10 @@ const HeaderBar = () => {
           </div>
 
           <div className="mobile-nav-user">
-            <span className="mobile-nav-avatar">{name.charAt(0)}</span>
+            <span className={`mobile-nav-avatar user-avatar ${roleClass}`}>{name.charAt(0)}</span>
             <span>
-              <span className="mobile-nav-user-name">Hola, {name}</span>
-              <span className="mobile-nav-user-role">{roleLabel}</span>
+              <span className="mobile-nav-user-name">{nameIsRole ? "¡Hola!" : `Hola, ${name}`}</span>
+              {roleBadge}
             </span>
           </div>
 
@@ -120,6 +136,7 @@ const HeaderBar = () => {
             onClick={handleLogout}>
             Cerrar sesión
           </Button>
+          <span className="mobile-nav-version">Versión {APP_VERSION}</span>
         </div>
       </Drawer>
     </Header>

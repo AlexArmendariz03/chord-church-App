@@ -53,20 +53,59 @@
     justify-content: center;
   }
 
+  // Desktop: initial, name and role; opens the user menu (logout, version)
   .user {
     display: flex;
     align-items: center;
-    color: $ink-dark;
+    gap: 10px;
     flex-shrink: 0;
+    padding: 6px 12px 6px 7px;
+    border: 1px solid $header-border;
+    border-radius: 999px;
+    background: $header-bg;
+    color: $ink-dark;
+    font: inherit;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
 
-    .text {
-      margin-left: 8px;
-      color: $ink-dark;
+    &:hover,
+    &[aria-expanded="true"] {
+      border-color: rgba(79, 70, 229, 0.35);
+      box-shadow: 0 2px 8px rgba(79, 70, 229, 0.12);
     }
 
-    .icon {
-      font-size: 22px;
+    &:focus-visible {
+      outline: 2px solid $accent-indigo;
+      outline-offset: 2px;
     }
+  }
+
+  .user-avatar {
+    width: 34px;
+    height: 34px;
+    font-size: 15px;
+  }
+
+  .user-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    line-height: 1.15;
+  }
+
+  .user-name {
+    max-width: 160px;
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .user-caret {
+    color: $primary-typography;
+    font-size: 10px;
   }
 
   .content {
@@ -274,10 +313,93 @@
   font-weight: 600;
 }
 
-.mobile-nav-user-role {
-  display: block;
-  color: $primary-typography;
-  font-size: 13px;
+// Role colors: leader in indigo → violet, musician in teal → emerald
+$leader-gradient: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);
+$musician-gradient: linear-gradient(135deg, #14b8a6 0%, #059669 100%);
+
+// Initial in a circle, ringed with the role's color (header chip and phone menu)
+.user-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+
+  &.is-leader {
+    background: $leader-gradient;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(124, 58, 237, 0.35);
+  }
+
+  &.is-musician {
+    background: $musician-gradient;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(5, 150, 105, 0.35);
+  }
+}
+
+// Role label with its icon: crown for the leader, headphones for musicians
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px 2px 7px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 16px;
+  text-transform: uppercase;
+
+  .anticon {
+    font-size: 11px;
+  }
+
+  &.is-leader {
+    background: $leader-gradient;
+    box-shadow: 0 2px 6px rgba(124, 58, 237, 0.3);
+
+    .anticon {
+      color: #fde68a;
+    }
+  }
+
+  &.is-musician {
+    background: $musician-gradient;
+    box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);
+  }
+
+  // Alone in the header chip, when the account is named after its role
+  &.is-large {
+    gap: 6px;
+    padding: 5px 13px 5px 10px;
+    font-size: 12.5px;
+
+    .anticon {
+      font-size: 14px;
+    }
+  }
+}
+
+.mobile-nav-user .role-badge.is-large {
+  padding: 3px 11px 3px 9px;
+  font-size: 11.5px;
+}
+
+.mobile-nav-user .role-badge {
+  margin-top: 3px;
+}
+
+.user-menu {
+  .ant-dropdown-menu {
+    min-width: 190px;
+  }
+
+  .user-menu-version {
+    font-size: 12px;
+  }
 }
 
 .mobile-nav-menu.ant-menu {
@@ -296,6 +418,15 @@
 
 .mobile-nav-logout.ant-btn {
   margin-top: 12px;
+}
+
+.mobile-nav-version {
+  display: block;
+  margin-top: 10px;
+  font-size: 12px;
+  text-align: center;
+  color: $primary-typography;
+  opacity: 0.7;
 }
 
 .page-header {
