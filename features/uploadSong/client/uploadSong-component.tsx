@@ -698,7 +698,7 @@ export const UploadSongComponent = () => {
 
                       <Col span={12}>
                         <AntText strong style={{ fontSize: 12 }}>
-                          Padding
+                          Margen interno
                         </AntText>
                         <Slider
                           min={8}
@@ -770,7 +770,7 @@ export const UploadSongComponent = () => {
                         Vista previa
                       </Title>
                       <AntText type="secondary" style={{ fontSize: 13 }}>
-                        Click para seleccionar
+                        Haz clic para seleccionar
                       </AntText>
                     </div>
                   </Col>
@@ -821,7 +821,7 @@ export const UploadSongComponent = () => {
                       <Button
                         size="small" icon={<MinusOutlined />}
                         onClick={handleFitZoom}>
-                        Fit
+                        Ajustar
                       </Button>
                     </Space>
                   </Col>

@@ -54,17 +54,17 @@ const LoginComponent = () => {
         </div>
         <Card className="login-card">
           <Form layout="vertical" onFinish={onFinish}>
-            <Form.Item name="username" rules={[{ required: true, message: "¡Por favor ingrese su usuario!" }]}>
+            <Form.Item name="username" rules={[{ required: true, message: "Escribe tu usuario" }]}>
               <Input placeholder="Usuario" autoComplete="username" />
             </Form.Item>
-            <Form.Item name="password" rules={[{ required: true, message: "¡Por favor ingrese su contraseña!" }]}>
+            <Form.Item name="password" rules={[{ required: true, message: "Escribe tu contraseña" }]}>
               <Input.Password placeholder="Contraseña" autoComplete="current-password" />
             </Form.Item>
             <Form.Item style={{ marginBottom: 0 }}>
               <Button
                 type="primary" htmlType="submit"
                 block>
-                Iniciar Sesión
+                Iniciar sesión
               </Button>
             </Form.Item>
           </Form>
