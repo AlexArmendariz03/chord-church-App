@@ -40,12 +40,15 @@ model Song {
 }
 
 model Service {
-  id        String        @id @default(cuid())
-  title     String
-  eventDate DateTime
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  songs     ServiceSong[]
+  id            String        @id @default(cuid())
+  title         String
+  eventDate     DateTime
+  // Shown to the leader after the last song: one prayer point per line, then the announcements
+  prayerGuide   String?
+  announcements String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  songs         ServiceSong[]
 }
 
 model ServiceSong {
