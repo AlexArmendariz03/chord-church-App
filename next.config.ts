@@ -1,11 +1,16 @@
 import path from "path"
 import type { NextConfig } from "next"
+import { version } from "./package.json"
 
 const nextConfig: NextConfig = {
   sassOptions: {
     includePaths: [path.join(process.cwd(), "styles")]
   },
   reactStrictMode: true,
+  // Only the version number reaches the browser, not the whole package.json (dependency list)
+  env: {
+    NEXT_PUBLIC_APP_VERSION: version.replace(/\.0$/, "")
+  },
   poweredByHeader: false,
   async headers() {
     return [
