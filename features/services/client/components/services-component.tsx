@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { PlusOutlined } from "@ant-design/icons"
-import { App, Button, Card, Col, DatePicker, Empty, Form, Input, Modal, Row, Select, Space, Typography } from "antd"
+import { App, Button, Card, Col, DatePicker, Empty, Form, Input, Modal, Row, Select, Space, Tabs, Typography } from "antd"
 import dayjs, { type Dayjs } from "dayjs"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "@/features/layout/client/components/session-provider"
@@ -33,6 +33,10 @@ const ServicesComponent = () => {
   const { isLeader } = useSession()
   const [songs, setSongs] = useState<SongWithMeta[]>([])
   const [services, setServices] = useState<ServiceWithSongs[]>([])
+  // Services that already left the upcoming list; loaded the first time the tab opens
+  const [pastServices, setPastServices] = useState<ServiceWithSongs[] | null>(null)
+  const [loadingPast, setLoadingPast] = useState(false)
+  const [listTab, setListTab] = useState<"upcoming" | "past">("upcoming")
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null)
@@ -64,19 +68,49 @@ const ServicesComponent = () => {
     }
   }
 
+  const fetchPast = async () => {
+    setLoadingPast(true)
+    try {
+      const response = await fetch("/api/services?periodo=anteriores")
+      setPastServices(await response.json())
+    } catch {
+      message.error("No se pudieron cargar los servicios anteriores")
+    } finally {
+      setLoadingPast(false)
+    }
+  }
+
+  const changeListTab = (key: string) => {
+    setListTab(key as "upcoming" | "past")
+    if (key === "past" && pastServices === null) fetchPast()
+  }
+
   useEffect(() => {
     fetchData().catch(() => message.error("No se pudo cargar la información"))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const songFields = (service: ServiceWithSongs) => ({
+    jubiloSongIds: service.songs.filter(s => s.category === "jubilo" && !s.isOffering).sort((a, b) => a.position - b.position).map(s => s.songId),
+    adoracionSongIds: service.songs.filter(s => s.category === "adoracion").sort((a, b) => a.position - b.position).map(s => s.songId),
+    offeringSongId: service.songs.find(s => s.isOffering)?.songId
+  })
+
+  // A past service as the starting point of a new one: same name and songs, new date
+  const startReuse = (service: ServiceWithSongs) => {
+    setEditingServiceId(null)
+    form.resetFields()
+    form.setFieldsValue({ title: service.title, ...songFields(service) })
+    setFormOpen(true)
+    if (!formInModal) window.scrollTo({ top: 0, behavior: "smooth" })
+  }
 
   const startEdit = (service: ServiceWithSongs) => {
     setEditingServiceId(service.id)
     form.setFieldsValue({
       title: service.title,
       eventDate: dayjs(service.eventDate),
-      jubiloSongIds: service.songs.filter(s => s.category === "jubilo" && !s.isOffering).sort((a, b) => a.position - b.position).map(s => s.songId),
-      adoracionSongIds: service.songs.filter(s => s.category === "adoracion").sort((a, b) => a.position - b.position).map(s => s.songId),
-      offeringSongId: service.songs.find(s => s.isOffering)?.songId,
+      ...songFields(service),
       prayerGuide: service.prayerGuide ?? undefined,
       announcements: service.announcements ?? undefined
     })
@@ -147,7 +181,11 @@ const ServicesComponent = () => {
         if (!response.ok) throw new Error(data.message ?? "Error al eliminar")
         message.success("Servicio eliminado")
         if (editingServiceId === service.id) closeForm()
-        await fetchData()
+        if (pastServices?.some(past => past.id === service.id)) {
+          setPastServices(past => past?.filter(item => item.id !== service.id) ?? null)
+        } else {
+          await fetchData()
+        }
       }
     })
   }
@@ -287,21 +325,45 @@ const ServicesComponent = () => {
           </Modal>
         )}
 
-        <Card loading={loading}>
-          {services.length === 0 ? (
-            <Empty description="Aún no hay servicios programados" />
-          ) : (
-            <div className="service-list">
-              {services.map((service, index) => (
-                <ServiceCard
-                  key={service.id} service={service}
-                  isNext={index === 0}
-                  onOpen={() => router.push(`/en-curso?servicio=${service.id}`)}
-                  onEdit={isLeader ? () => startEdit(service) : undefined}
-                  onDelete={isLeader ? () => deleteService(service) : undefined} />
-              ))}
-            </div>
-          )}
+        <Card>
+          <Tabs
+            activeKey={listTab} onChange={changeListTab}
+            items={[
+              {
+                key: "upcoming",
+                label: loading ? "Próximos" : `Próximos (${services.length})`,
+                children: loading ? <Card loading variant="borderless" /> : services.length === 0 ? (
+                  <Empty description="Aún no hay servicios programados" />
+                ) : (
+                  <div className="service-list">
+                    {services.map((service, index) => (
+                      <ServiceCard
+                        key={service.id} service={service}
+                        isNext={index === 0}
+                        onOpen={() => router.push(`/en-curso?servicio=${service.id}`)}
+                        onEdit={isLeader ? () => startEdit(service) : undefined}
+                        onDelete={isLeader ? () => deleteService(service) : undefined} />
+                    ))}
+                  </div>
+                )
+              },
+              {
+                key: "past",
+                label: "Anteriores",
+                children: loadingPast || pastServices === null ? <Card loading variant="borderless" /> : pastServices.length === 0 ? (
+                  <Empty description="Todavía no hay servicios anteriores" />
+                ) : (
+                  <div className="service-list">
+                    {pastServices.map(service => (
+                      <ServiceCard
+                        key={service.id} service={service}
+                        onReuse={isLeader ? () => startReuse(service) : undefined}
+                        onDelete={isLeader ? () => deleteService(service) : undefined} />
+                    ))}
+                  </div>
+                )
+              }
+            ]} />
         </Card>
       </Space>
     </div>

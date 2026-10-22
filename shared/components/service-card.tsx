@@ -15,20 +15,31 @@ type ServiceCardProps = {
   onOpen?: () => void
   // Leader only: shows the ⋮ menu
   onEdit?: () => void
+  // Past services: start a new one with the same songs
+  onReuse?: () => void
   onDelete?: () => void
 }
 
-// "Hoy", "Mañana", "En 5 días"; "En curso" once it has started (the API keeps it listed a few hours)
+// Same window as the API: a service is "En curso" for this long after it starts, then it's past
+const IN_PROGRESS_HOURS = 6
+
+// "Hoy", "Mañana", "En 5 días"; "En curso" once it has started; "Ayer", "Hace 3 días" once it's over
 const relativeLabel = (eventDate: string) => {
   const date = dayjs(eventDate)
-  if (!date.isAfter(dayjs())) return "En curso"
-  const days = date.startOf("day").diff(dayjs().startOf("day"), "day")
+  const now = dayjs()
+  const days = date.startOf("day").diff(now.startOf("day"), "day")
+  if (date.isBefore(now.subtract(IN_PROGRESS_HOURS, "hour"))) {
+    if (days === 0) return "Terminó hoy"
+    if (days === -1) return "Ayer"
+    return `Hace ${-days} días`
+  }
+  if (!date.isAfter(now)) return "En curso"
   if (days === 0) return "Hoy"
   if (days === 1) return "Mañana"
   return `En ${days} días`
 }
 
-export const ServiceCard = ({ service, isNext = false, onOpen, onEdit, onDelete }: ServiceCardProps) => {
+export const ServiceCard = ({ service, isNext = false, onOpen, onEdit, onReuse, onDelete }: ServiceCardProps) => {
   const [expanded, setExpanded] = useState(isNext)
   const date = dayjs(service.eventDate).locale("es")
   const songs = [...service.songs].sort((a, b) => a.position - b.position)
@@ -73,15 +84,20 @@ export const ServiceCard = ({ service, isNext = false, onOpen, onEdit, onDelete 
           )}
         </div>
 
-        {(onEdit || onDelete) && (
+        {(onEdit || onReuse || onDelete) && (
           <Dropdown
             trigger={["click"]}
             menu={{
               items: [
                 ...(onEdit ? [{ key: "edit", label: "Editar" }] : []),
+                ...(onReuse ? [{ key: "reuse", label: "Usar de nuevo" }] : []),
                 ...(onDelete ? [{ key: "delete", label: "Eliminar", danger: true }] : [])
               ],
-              onClick: ({ key }) => (key === "edit" ? onEdit?.() : onDelete?.())
+              onClick: ({ key }) => {
+                if (key === "edit") onEdit?.()
+                else if (key === "reuse") onReuse?.()
+                else onDelete?.()
+              }
             }}>
             <Button
               className="service-card-menu" type="text"
