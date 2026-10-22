@@ -66,7 +66,7 @@ export const ServiceCard = ({ service, isNext = false, onOpen, onEdit, onDelete 
                 <span className="is-adoracion" style={{ flexGrow: adoracionCount }} />
                 {offering && <span className="is-ofrenda" style={{ flexGrow: 1 }} />}
               </div>
-              <span className="service-card-mix-label is-jubilo">{jubiloCount} júbilo</span>
+              {jubiloCount > 0 && <span className="service-card-mix-label is-jubilo">{jubiloCount} júbilo</span>}
               <span className="service-card-mix-label is-adoracion">{adoracionCount} adoración</span>
               {offering && <span className="service-card-mix-label is-ofrenda">Ofrenda</span>}
             </div>

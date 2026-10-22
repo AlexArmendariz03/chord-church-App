@@ -1,4 +1,5 @@
 import { prisma } from "@/shared/server/prisma"
+import { isSingleWorshipEvent } from "@/shared/utils/service-rules"
 
 export type ServiceBody = {
   title?: string
@@ -52,8 +53,18 @@ export async function parseServiceBody(body: ServiceBody): Promise<ParsedService
     return { error: "Título y fecha del evento son obligatorios" }
   }
 
-  if (jubiloSongIds.length < 1 || adoracionSongIds.length < 1 || new Set(selectedIds).size !== selectedIds.length) {
+  // Studies, seminars and the weekend 9:45 gathering: one worship song, no júbilo, offering or leader's guide
+  const singleWorship = isSingleWorshipEvent(title, parsedDate)
+  if (singleWorship) {
+    if (jubiloSongIds.length > 0 || adoracionSongIds.length !== 1 || offeringSongId) {
+      return { error: "Este evento lleva solo 1 canción de adoración, sin júbilo ni ofrenda" }
+    }
+  } else if (jubiloSongIds.length < 1 || adoracionSongIds.length < 1) {
     return { error: "Selecciona al menos 1 canción de júbilo y 1 de adoración, sin repetir" }
+  }
+
+  if (new Set(selectedIds).size !== selectedIds.length) {
+    return { error: "No repitas canciones en el servicio" }
   }
 
   const songs = await prisma.song.findMany({ where: { id: { in: selectedIds } }, select: { id: true, category: true } })
@@ -78,8 +89,8 @@ export async function parseServiceBody(body: ServiceBody): Promise<ParsedService
     data: {
       title: title.trim(),
       eventDate: parsedDate,
-      prayerGuide: optionalText(body.prayerGuide),
-      announcements: optionalText(body.announcements),
+      prayerGuide: singleWorship ? null : optionalText(body.prayerGuide),
+      announcements: singleWorship ? null : optionalText(body.announcements),
       songs: ordered.map((song, index) => ({ ...song, position: index + 1 }))
     }
   }

@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "@/features/layout/client/components/session-provider"
 import { ServiceCard } from "@/shared/components/service-card"
 import type { ServiceWithSongs, SongWithMeta } from "@/types/services"
+import { isSingleWorshipEvent } from "@/shared/utils/service-rules"
 
 const { Title, Paragraph, Text } = Typography
 
@@ -43,6 +44,10 @@ const ServicesComponent = () => {
   // A song can only be in the service once, so the júbilo list and the offering hide each other's pick
   const pickedJubilo = Form.useWatch("jubiloSongIds", form)
   const pickedOffering = Form.useWatch("offeringSongId", form)
+  // Studies and the weekend 9:45 gathering: one worship song for the whole event
+  const watchedTitle = Form.useWatch("title", form)
+  const watchedDate = Form.useWatch("eventDate", form)
+  const singleWorship = isSingleWorshipEvent(watchedTitle, watchedDate?.toDate())
   const toOption = (song: SongWithMeta) => ({ label: `${song.name} (${song.key})${song.isYouth ? " · Jóvenes" : ""}${song.isService ? " · Servicios" : ""}`, value: song.id })
   // With no services yet the form is the page; once there are some, it moves into a modal
   // so the list stays in front
@@ -107,7 +112,15 @@ const ServicesComponent = () => {
       const response = await fetch(url, {
         method: editingServiceId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...values, offeringSongId: values.offeringSongId ?? null, eventDate: values.eventDate.toISOString() })
+        body: JSON.stringify({
+          ...values,
+          jubiloSongIds: singleWorship ? [] : values.jubiloSongIds,
+          adoracionSongIds: singleWorship ? values.adoracionSongIds.slice(0, 1) : values.adoracionSongIds,
+          offeringSongId: singleWorship ? null : values.offeringSongId ?? null,
+          prayerGuide: singleWorship ? null : values.prayerGuide,
+          announcements: singleWorship ? null : values.announcements,
+          eventDate: values.eventDate.toISOString()
+        })
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.message ?? "Error al guardar el servicio")
@@ -160,62 +173,75 @@ const ServicesComponent = () => {
               placeholder="Selecciona fecha y hora" style={{ width: "100%" }} />
           </Form.Item>
         </Col>
+        {!singleWorship && (
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="jubiloSongIds" label="Canciones de júbilo (mínimo 1)"
+              rules={[{ required: true, type: "array", min: 1, message: "Selecciona al menos 1" }]}>
+              <Select
+                mode="multiple" placeholder="Busca o selecciona alabanzas"
+                optionFilterProp="label"
+                options={jubiloSongs.filter(song => song.id !== pickedOffering).map(toOption)} />
+            </Form.Item>
+          </Col>
+        )}
         <Col xs={24} md={12}>
           <Form.Item
-            name="jubiloSongIds" label="Canciones de júbilo (mínimo 1)"
-            rules={[{ required: true, type: "array", min: 1, message: "Selecciona al menos 1" }]}>
+            name="adoracionSongIds"
+            label={singleWorship ? "Canción de adoración (solo 1)" : "Canciones de adoración (mínimo 1)"}
+            rules={[
+              { required: true, type: "array", min: 1, message: "Selecciona al menos 1" },
+              ...(singleWorship ? [{ type: "array" as const, max: 1, message: "Este evento lleva solo 1" }] : [])
+            ]}>
             <Select
-              mode="multiple" placeholder="Busca o selecciona alabanzas"
-              optionFilterProp="label"
-              options={jubiloSongs.filter(song => song.id !== pickedOffering).map(toOption)} />
-          </Form.Item>
-        </Col>
-        <Col xs={24} md={12}>
-          <Form.Item
-            name="adoracionSongIds" label="Canciones de adoración (mínimo 1)"
-            rules={[{ required: true, type: "array", min: 1, message: "Selecciona al menos 1" }]}>
-            <Select
-              mode="multiple" placeholder="Busca o selecciona alabanzas"
+              mode="multiple" maxCount={singleWorship ? 1 : undefined}
+              placeholder="Busca o selecciona alabanzas"
               optionFilterProp="label"
               options={adoracionSongs.map(toOption)} />
           </Form.Item>
         </Col>
-        <Col xs={24} md={12}>
-          <Form.Item
-            name="offeringSongId" label="Canción de la ofrenda (opcional)"
-            extra="Se toca al terminar las alabanzas. Solo canciones de júbilo.">
-            <Select
-              showSearch allowClear
-              placeholder="Busca o selecciona una de júbilo"
-              optionFilterProp="label"
-              options={jubiloSongs.filter(song => !pickedJubilo?.includes(song.id)).map(toOption)} />
-          </Form.Item>
-        </Col>
-        <Col span={24}>
-          <Text strong>Guía para el dirigente (opcional)</Text>
-          <Paragraph type="secondary" style={{ marginBottom: 12 }}>
-            Solo la ve el dirigente, después de la adoración y antes de la ofrenda. Escribe un punto por línea; una línea que termina en &quot;:&quot; sirve de título.
-          </Paragraph>
-        </Col>
-        <Col xs={24} md={12}>
-          <Form.Item name="prayerGuide" label="Oración">
-            <Input.TextArea autoSize={{ minRows: 4, maxRows: 10 }} placeholder={PRAYER_PLACEHOLDER} />
-          </Form.Item>
-        </Col>
-        <Col xs={24} md={12}>
-          <Form.Item name="announcements" label="Anuncios">
-            <Input.TextArea autoSize={{ minRows: 4, maxRows: 10 }} placeholder={ANNOUNCEMENTS_PLACEHOLDER} />
-          </Form.Item>
-        </Col>
+        {!singleWorship && (
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="offeringSongId" label="Canción de la ofrenda (opcional)"
+              extra="Se toca al terminar las alabanzas. Solo canciones de júbilo.">
+              <Select
+                showSearch allowClear
+                placeholder="Busca o selecciona una de júbilo"
+                optionFilterProp="label"
+                options={jubiloSongs.filter(song => !pickedJubilo?.includes(song.id)).map(toOption)} />
+            </Form.Item>
+          </Col>
+        )}
+        {!singleWorship && (
+          <>
+            <Col span={24}>
+              <Text strong>Guía para el dirigente (opcional)</Text>
+              <Paragraph type="secondary" style={{ marginBottom: 12 }}>
+                Solo la ve el dirigente, después de la adoración y antes de la ofrenda. Escribe un punto por línea; una línea que termina en &quot;:&quot; sirve de título.
+              </Paragraph>
+            </Col>
+            <Col xs={24} md={12}>
+              <Form.Item name="prayerGuide" label="Oración">
+                <Input.TextArea autoSize={{ minRows: 4, maxRows: 10 }} placeholder={PRAYER_PLACEHOLDER} />
+              </Form.Item>
+            </Col>
+            <Col xs={24} md={12}>
+              <Form.Item name="announcements" label="Anuncios">
+                <Input.TextArea autoSize={{ minRows: 4, maxRows: 10 }} placeholder={ANNOUNCEMENTS_PLACEHOLDER} />
+              </Form.Item>
+            </Col>
+          </>
+        )}
       </Row>
-      <Space>
+      <div className="service-form-actions">
+        {formInModal && <Button onClick={closeForm}>Cancelar</Button>}
         <Button
           type="primary" htmlType="submit"
           loading={saving}>
           {editingServiceId ? "Guardar cambios" : "Guardar servicio"}
         </Button>
-        {formInModal && <Button onClick={closeForm}>Cancelar</Button>}
-      </Space>
+      </div>
     </Form>
   )
 
@@ -231,8 +257,8 @@ const ServicesComponent = () => {
             <Col flex="1 1 320px">
               <Title level={2} style={{ margin: 0 }}>Servicios</Title>
               <Paragraph type="secondary" style={{ margin: 0 }}>
-                Elige al menos <Text strong>1 canción de júbilo</Text> y <Text strong>1 de adoración</Text>.
-                El orden en que las selecciones es el orden en que se tocarán; la ofrenda va al final.
+                Las canciones se tocan en el orden en que las eliges.
+                Estudios y seminarios llevan solo 1 de adoración.
               </Paragraph>
             </Col>
             {isLeader && formInModal && (
