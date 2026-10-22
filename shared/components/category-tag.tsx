@@ -23,3 +23,6 @@ export const CategoryTag = ({ category, count, offering = false }: CategoryTagPr
 
 // Marks songs from the youth group's repertoire
 export const YouthTag = () => <Tag color="magenta">Jóvenes</Tag>
+
+// Marks songs from the church's service songbook
+export const ServiceTag = () => <Tag color="cyan">Servicios</Tag>

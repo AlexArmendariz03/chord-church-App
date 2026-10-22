@@ -43,7 +43,7 @@ const ServicesComponent = () => {
   // A song can only be in the service once, so the júbilo list and the offering hide each other's pick
   const pickedJubilo = Form.useWatch("jubiloSongIds", form)
   const pickedOffering = Form.useWatch("offeringSongId", form)
-  const toOption = (song: SongWithMeta) => ({ label: `${song.name} (${song.key})${song.isYouth ? " · Jóvenes" : ""}`, value: song.id })
+  const toOption = (song: SongWithMeta) => ({ label: `${song.name} (${song.key})${song.isYouth ? " · Jóvenes" : ""}${song.isService ? " · Servicios" : ""}`, value: song.id })
   // With no services yet the form is the page; once there are some, it moves into a modal
   // so the list stays in front
   const formInModal = services.length > 0
