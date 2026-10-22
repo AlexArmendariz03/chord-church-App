@@ -1,17 +1,19 @@
 "use client"
 
-import { CloseOutlined, CrownFilled, CustomerServiceFilled, DownOutlined, LogoutOutlined, MenuOutlined } from "@ant-design/icons"
-import { Button, Drawer, Dropdown, Layout as ALayout, Menu, type MenuProps } from "antd"
+import { CloseOutlined, DownOutlined, LogoutOutlined, MenuOutlined, UserOutlined } from "@ant-design/icons"
+import { Avatar, Button, Drawer, Dropdown, Layout as ALayout, Menu, type MenuProps } from "antd"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
 import { getMenuItems, getSelectedMenuKey } from "./menu-items"
 import { displayName } from "@/shared/utils/user"
+import { version } from "@/package.json"
 import { useSession } from "./session-provider"
 
 const { Header } = ALayout
-const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION
+// "1.5.0" → "1.5"; shown in the user menu to check which version is deployed
+const APP_VERSION = version.replace(/\.0$/, "")
 
 const HeaderBar = () => {
   const router = useRouter()
@@ -23,14 +25,13 @@ const HeaderBar = () => {
   const name = displayName(user?.username) || (isLeader ? "Líder" : "Músico")
   const roleLabel = isLeader ? "Dirigente" : "Músico"
   const roleClass = isLeader ? "is-leader" : "is-musician"
-  // Shared accounts are named after their role ("dirigente"): show the badge alone, not the name twice
-  const nameIsRole = name.toLowerCase() === roleLabel.toLowerCase()
-  const roleBadge = (
-    <span className={`role-badge ${roleClass} ${nameIsRole ? "is-large" : ""}`}>
-      {isLeader ? <CrownFilled /> : <CustomerServiceFilled />}
-      {roleLabel}
-    </span>
+  // antd icon avatar in the role's color
+  const userAvatar = (size: number) => (
+    <Avatar size={size} icon={<UserOutlined />} className={`user-avatar ${roleClass}`} />
   )
+  // Shared accounts are named after their role ("dirigente"): no badge repeating the name
+  const nameIsRole = name.toLowerCase() === roleLabel.toLowerCase()
+  const roleBadge = nameIsRole ? null : <span className={`role-badge ${roleClass}`}>{roleLabel}</span>
 
   const handleLogout = async () => {
     setIsMenuOpen(false)
@@ -81,9 +82,9 @@ const HeaderBar = () => {
         <button
           type="button" className="user"
           aria-label={`${name}, ${roleLabel}: abrir menú de usuario`}>
-          <span className={`user-avatar ${roleClass}`}>{name.charAt(0)}</span>
+          {userAvatar(34)}
           <span className="user-text">
-            {!nameIsRole && <span className="user-name">{name}</span>}
+            <span className="user-name">{name}</span>
             {roleBadge}
           </span>
           <DownOutlined className="user-caret" />
@@ -93,7 +94,7 @@ const HeaderBar = () => {
       <button
         type="button" className="mobile-avatar"
         aria-label={`${name}: abrir menú`} onClick={() => setIsMenuOpen(true)}>
-        {name.charAt(0)}
+        {userAvatar(38)}
       </button>
 
       <Drawer
@@ -118,9 +119,9 @@ const HeaderBar = () => {
           </div>
 
           <div className="mobile-nav-user">
-            <span className={`mobile-nav-avatar user-avatar ${roleClass}`}>{name.charAt(0)}</span>
+            {userAvatar(40)}
             <span>
-              <span className="mobile-nav-user-name">{nameIsRole ? "¡Hola!" : `Hola, ${name}`}</span>
+              <span className="mobile-nav-user-name">{nameIsRole ? name : `Hola, ${name}`}</span>
               {roleBadge}
             </span>
           </div>
