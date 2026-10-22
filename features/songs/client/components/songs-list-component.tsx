@@ -2,13 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { MoreOutlined, PlusOutlined } from "@ant-design/icons"
-import { App, Button, Card, Checkbox, Dropdown, Empty, Grid, Listy, Space, Tabs, Typography } from "antd"
+import { App, Button, Card, Dropdown, Empty, Grid, Listy, Segmented, Space, Tabs, Typography } from "antd"
 import { useRouter } from "next/navigation"
 import { useSession } from "@/features/layout/client/components/session-provider"
-import { CategoryTag, YouthTag } from "@/shared/components/category-tag"
+import { CategoryTag, ServiceTag, YouthTag } from "@/shared/components/category-tag"
 import type { SongWithMeta } from "@/types/services"
 
 const { Paragraph, Text, Title } = Typography
+
+type TagFilter = "all" | "youth" | "service"
 
 const SongsListComponent = () => {
   const { modal, message } = App.useApp()
@@ -16,11 +18,15 @@ const SongsListComponent = () => {
   const { isLeader } = useSession()
   const [songs, setSongs] = useState<SongWithMeta[]>([])
   const [loading, setLoading] = useState(false)
-  const [onlyYouth, setOnlyYouth] = useState(false)
+  const [tagFilter, setTagFilter] = useState<TagFilter>("all")
   // Phones: the filter goes above the tabs so both tabs keep their room
   const isWide = Grid.useBreakpoint().sm ?? true
 
-  const visibleSongs = useMemo(() => (onlyYouth ? songs.filter(song => song.isYouth) : songs), [songs, onlyYouth])
+  const visibleSongs = useMemo(() => {
+    if (tagFilter === "youth") return songs.filter(song => song.isYouth)
+    if (tagFilter === "service") return songs.filter(song => song.isService)
+    return songs
+  }, [songs, tagFilter])
   const jubiloSongs = useMemo(() => visibleSongs.filter(song => song.category === "jubilo"), [visibleSongs])
   const adoracionSongs = useMemo(() => visibleSongs.filter(song => song.category === "adoracion"), [visibleSongs])
 
@@ -80,6 +86,7 @@ const SongsListComponent = () => {
               <div className="song-row-meta">
                 <Text type="secondary">Tono: {song.key}</Text>
                 {song.isYouth && <YouthTag />}
+                {song.isService && <ServiceTag />}
                 <CategoryTag category={song.category} />
                 <Dropdown
                   trigger={["click"]}
@@ -104,12 +111,15 @@ const SongsListComponent = () => {
     )
   }
 
-  const youthFilter = (
-    <Checkbox
-      className="songs-youth-filter" checked={onlyYouth}
-      onChange={e => setOnlyYouth(e.target.checked)}>
-      Solo jóvenes
-    </Checkbox>
+  const tagFilterControl = (
+    <Segmented<TagFilter>
+      className="songs-tag-filter" size="small"
+      value={tagFilter} onChange={setTagFilter}
+      options={[
+        { label: "Todas", value: "all" },
+        { label: "Jóvenes", value: "youth" },
+        { label: "Servicios", value: "service" }
+      ]} />
   )
 
   if (!isLeader) {
@@ -145,9 +155,9 @@ const SongsListComponent = () => {
         </Card>
 
         <Card loading={loading}>
-          {!isWide && youthFilter}
+          {!isWide && tagFilterControl}
           <Tabs
-            tabBarExtraContent={isWide ? youthFilter : undefined}
+            tabBarExtraContent={isWide ? tagFilterControl : undefined}
             items={[
               { key: "jubilo", label: `Júbilo (${jubiloSongs.length})`, children: renderSongs(jubiloSongs) },
               { key: "adoracion", label: `Adoración (${adoracionSongs.length})`, children: renderSongs(adoracionSongs) }

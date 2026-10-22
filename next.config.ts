@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     includePaths: [path.join(process.cwd(), "styles")]
   },
   reactStrictMode: true,
-  // Shown next to the brand, to check which version is deployed
+  // Only the version number reaches the browser, not the whole package.json (dependency list)
   env: {
     NEXT_PUBLIC_APP_VERSION: version.replace(/\.0$/, "")
   },

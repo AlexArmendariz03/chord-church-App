@@ -3,6 +3,7 @@
 import type { LoginFormData } from "@/types/auth"
 import { App, Button, Card, Col, Form, Input, Row } from "antd"
 import Image from "next/image"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 const LoginComponent = () => {
@@ -69,6 +70,9 @@ const LoginComponent = () => {
             </Form.Item>
           </Form>
         </Card>
+        <p className="login-terms">
+          Al iniciar sesión aceptas los <Link href="/terminos">Términos y condiciones</Link>.
+        </p>
       </Col>
     </Row>
   )

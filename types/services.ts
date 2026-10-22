@@ -8,6 +8,8 @@ export type SongWithMeta = {
   lyrics: string
   // Part of the youth group's repertoire
   isYouth?: boolean
+  // From the church's service songbook
+  isService?: boolean
   createdAt?: string
   updatedAt?: string
 }

@@ -89,3 +89,58 @@
 }
 
 
+
+// Terms page: one readable column, same background as the login
+.terms-page {
+  min-height: 100vh;
+  padding: 32px 16px;
+  background: $page-bg;
+}
+
+.terms-card {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 28px 24px;
+  border: 1px solid $header-border;
+  border-radius: 16px;
+  background: #fff;
+  color: $primary-typography;
+  font-size: 15px;
+  line-height: 1.65;
+
+  h1 {
+    margin: 12px 0 4px;
+    color: $ink-dark;
+    font-size: 26px;
+  }
+
+  h2 {
+    margin: 24px 0 6px;
+    color: $ink-dark;
+    font-size: 17px;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.terms-updated {
+  font-size: 13px;
+}
+
+.terms-back {
+  color: $accent-indigo;
+  font-size: 14px;
+}
+
+.login-terms {
+  margin: 14px 0 0;
+  color: $primary-typography;
+  font-size: 12.5px;
+  text-align: center;
+
+  a {
+    color: $accent-indigo;
+  }
+}
