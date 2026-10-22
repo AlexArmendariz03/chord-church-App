@@ -203,8 +203,7 @@ const ServicesComponent = () => {
         {!singleWorship && (
           <Col xs={24} md={12}>
             <Form.Item
-              name="offeringSongId" label="Canción de la ofrenda (opcional)"
-              extra="Se toca al terminar las alabanzas. Solo canciones de júbilo.">
+              name="offeringSongId" label="Canción de la ofrenda (opcional)">
               <Select
                 showSearch allowClear
                 placeholder="Busca o selecciona una de júbilo"
@@ -218,7 +217,7 @@ const ServicesComponent = () => {
             <Col span={24}>
               <Text strong>Guía para el dirigente (opcional)</Text>
               <Paragraph type="secondary" style={{ marginBottom: 12 }}>
-                Solo la ve el dirigente, después de la adoración y antes de la ofrenda. Escribe un punto por línea; una línea que termina en &quot;:&quot; sirve de título.
+                Escribe un punto por línea; una línea que termina en &quot;:&quot; sirve de título.
               </Paragraph>
             </Col>
             <Col xs={24} md={12}>
