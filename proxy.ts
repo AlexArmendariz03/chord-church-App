@@ -3,6 +3,8 @@ import { SESSION_COOKIE_NAME, verifySession } from "@/shared/server/session-toke
 
 const PUBLIC_PAGES = ["/login"]
 const PUBLIC_API = ["/api/login", "/api/logout"]
+// Open to everyone, with or without a session
+const OPEN_PAGES = ["/terminos"]
 const LEADER_PAGES = ["/alabanzas", "/servicios"]
 
 const matches = (pathname: string, paths: string[]) =>
@@ -17,6 +19,8 @@ export async function proxy(request: NextRequest) {
     if (matches(pathname, PUBLIC_API) || user) return NextResponse.next()
     return NextResponse.json({ message: "Tu sesión expiró. Vuelve a iniciar sesión." }, { status: 401 })
   }
+
+  if (matches(pathname, OPEN_PAGES)) return NextResponse.next()
 
   if (matches(pathname, PUBLIC_PAGES)) {
     return user ? redirectTo("/dashboard") : NextResponse.next()

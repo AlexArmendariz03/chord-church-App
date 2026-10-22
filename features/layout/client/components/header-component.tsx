@@ -8,12 +8,11 @@ import { usePathname, useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
 import { getMenuItems, getSelectedMenuKey } from "./menu-items"
 import { displayName } from "@/shared/utils/user"
-import { version } from "@/package.json"
 import { useSession } from "./session-provider"
 
 const { Header } = ALayout
-// "1.5.0" → "1.5"; shown in the user menu to check which version is deployed
-const APP_VERSION = version.replace(/\.0$/, "")
+// "1.6" (set in next.config.ts from package.json); shown in the user menu to check which version is deployed
+const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION
 
 const HeaderBar = () => {
   const router = useRouter()
@@ -44,6 +43,7 @@ const HeaderBar = () => {
   }
 
   const userMenuItems: MenuProps["items"] = [
+    { key: "terms", label: <Link href="/terminos">Términos y condiciones</Link> },
     { key: "logout", icon: <LogoutOutlined />, label: "Cerrar sesión", onClick: handleLogout },
     { type: "divider" },
     { key: "version", label: <span className="user-menu-version">Versión {APP_VERSION}</span>, disabled: true }
@@ -137,7 +137,9 @@ const HeaderBar = () => {
             onClick={handleLogout}>
             Cerrar sesión
           </Button>
-          <span className="mobile-nav-version">Versión {APP_VERSION}</span>
+          <span className="mobile-nav-version">
+            Versión {APP_VERSION} · <Link href="/terminos" onClick={() => setIsMenuOpen(false)}>Términos</Link>
+          </span>
         </div>
       </Drawer>
     </Header>
