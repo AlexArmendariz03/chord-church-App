@@ -21,6 +21,7 @@ type CreateSongBody = {
   lyrics?: unknown
   payload?: unknown
   isYouth?: unknown
+  isService?: unknown
 }
 
 export async function GET() {
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { name, key, category, lyrics, payload, isYouth }: CreateSongBody = await req.json()
+    const { name, key, category, lyrics, payload, isYouth, isService }: CreateSongBody = await req.json()
 
     if (!isText(name, MAX_FIELD_LENGTH) || !isText(key, MAX_FIELD_LENGTH) || !isText(lyrics, MAX_LYRICS_LENGTH) || !isSongCategory(category)) {
       return NextResponse.json({ message: "Nombre, tono, tipo y letra son obligatorios" }, { status: 400 })
@@ -58,6 +59,7 @@ export async function POST(req: Request) {
         category,
         lyrics: trimLyrics(lyrics),
         isYouth: isYouth === true,
+        isService: isService === true,
         payload: payload === undefined ? Prisma.JsonNull : (payload as Prisma.InputJsonValue)
       }
     })

@@ -34,6 +34,8 @@ model Song {
   payload      Json?
   // Part of the youth group's repertoire: shown with a "Jóvenes" tag
   isYouth      Boolean       @default(false)
+  // From the church's service songbook: shown with a "Servicios" tag
+  isService    Boolean       @default(false)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   serviceSongs ServiceSong[]

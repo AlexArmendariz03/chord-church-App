@@ -357,3 +357,10 @@ $service-ofrenda: #f59e0b;
     animation: none;
   }
 }
+
+// Service form: Cancelar then Guardar, both on the right
+.service-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
