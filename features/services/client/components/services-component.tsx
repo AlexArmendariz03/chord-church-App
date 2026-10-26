@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { PlusOutlined } from "@ant-design/icons"
-import { Alert, App, Button, Card, Col, DatePicker, Empty, Form, Input, Modal, Row, Select, Space, Tabs, Typography } from "antd"
+import { ExclamationCircleOutlined, PlusOutlined } from "@ant-design/icons"
+import { App, Button, Card, Col, DatePicker, Empty, Form, Input, Modal, Row, Select, Space, Tabs, Typography } from "antd"
 import dayjs, { type Dayjs } from "dayjs"
 import "dayjs/locale/es"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -111,23 +111,38 @@ const ServicesComponent = () => {
     return () => { cancelled = true }
   }, [isLeader, watchedMonth, monthUsage?.month])
 
-  // Alabanzas elegidas que ya se usaron REPEAT_WARNING_COUNT veces o más en otros servicios del mes
-  const repeatedSongs = useMemo(() => {
-    if (!monthUsage || monthUsage.month !== watchedMonth) return []
-    const picked = [
-      ...(singleWorship ? [] : pickedJubilo ?? []),
-      ...(pickedAdoracion ?? []),
-      ...(!singleWorship && pickedOffering ? [pickedOffering] : [])
-    ]
-    return picked.flatMap(songId => {
-      const dates = monthUsage.services
-        .filter(service => service.id !== editingServiceId && service.songIds.includes(songId))
-        .map(service => dayjs(service.eventDate).locale("es").format("D MMM"))
+  // Fechas de otros servicios del mes en que ya se tocó cada alabanza; sin la del servicio que se edita
+  const datesBySong = useMemo(() => {
+    const result = new Map<string, string[]>()
+    if (!monthUsage || monthUsage.month !== watchedMonth) return result
+    for (const service of monthUsage.services) {
+      if (service.id === editingServiceId) continue
+      for (const songId of service.songIds) {
+        result.set(songId, [...(result.get(songId) ?? []), dayjs(service.eventDate).locale("es").format("D MMM")])
+      }
+    }
+    return result
+  }, [monthUsage, watchedMonth, editingServiceId])
+  const monthName = watchedDate ? watchedDate.locale("es").format("MMMM") : ""
+
+  // Nota bajo el campo cuando alguna de sus alabanzas ya se usó REPEAT_WARNING_COUNT veces o más en el mes
+  const repeatNote = (songIds?: string[]) => {
+    const repeated = (songIds ?? []).flatMap(songId => {
+      const dates = datesBySong.get(songId) ?? []
       const song = songs.find(candidate => candidate.id === songId)
       return song && dates.length >= REPEAT_WARNING_COUNT ? [{ name: song.name, dates }] : []
     })
-  }, [monthUsage, watchedMonth, singleWorship, pickedJubilo, pickedAdoracion, pickedOffering, editingServiceId, songs])
-  const monthName = watchedDate ? watchedDate.locale("es").format("MMMM") : ""
+    if (!repeated.length) return undefined
+    return (
+      <span className="service-repeat-note">
+        {repeated.map(({ name, dates }) => (
+          <span key={name}>
+            <ExclamationCircleOutlined /> {name} ya se usó {dates.length} veces en {monthName} ({DATE_LIST.format(dates)})
+          </span>
+        ))}
+      </span>
+    )
+  }
 
   useEffect(() => {
     fetchData().catch(() => message.error("No se pudo cargar la información"))
@@ -259,6 +274,7 @@ const ServicesComponent = () => {
           <Col xs={24} md={12}>
             <Form.Item
               name="jubiloSongIds" label="Canciones de júbilo (mínimo 1)"
+              extra={repeatNote(pickedJubilo)}
               rules={[{ required: true, type: "array", min: 1, message: "Selecciona al menos 1" }]}>
               <Select
                 mode="multiple" placeholder="Busca o selecciona alabanzas"
@@ -270,6 +286,7 @@ const ServicesComponent = () => {
         <Col xs={24} md={12}>
           <Form.Item
             name="adoracionSongIds"
+            extra={repeatNote(pickedAdoracion)}
             label={singleWorship ? "Canción de adoración (solo 1)" : "Canciones de adoración (mínimo 1)"}
             rules={[
               { required: true, type: "array", min: 1, message: "Selecciona al menos 1" },
@@ -285,30 +302,14 @@ const ServicesComponent = () => {
         {!singleWorship && (
           <Col xs={24} md={12}>
             <Form.Item
-              name="offeringSongId" label="Canción de la ofrenda (opcional)">
+              name="offeringSongId" label="Canción de la ofrenda (opcional)"
+              extra={repeatNote(pickedOffering ? [pickedOffering] : [])}>
               <Select
                 showSearch allowClear
                 placeholder="Busca o selecciona una de júbilo"
                 optionFilterProp="label"
                 options={jubiloSongs.filter(song => !pickedJubilo?.includes(song.id)).map(toOption)} />
             </Form.Item>
-          </Col>
-        )}
-        {repeatedSongs.length > 0 && (
-          <Col span={24}>
-            <Alert
-              type="warning" showIcon
-              className="service-repeat-alert"
-              title={repeatedSongs.length === 1 ? "Esta alabanza ya se usó varias veces este mes" : "Estas alabanzas ya se usaron varias veces este mes"}
-              description={
-                <ul className="service-repeat-list">
-                  {repeatedSongs.map(({ name, dates }) => (
-                    <li key={name}>
-                      <strong>{name}</strong>: {dates.length} veces en {monthName} ({DATE_LIST.format(dates)})
-                    </li>
-                  ))}
-                </ul>
-              } />
           </Col>
         )}
         {!singleWorship && (
