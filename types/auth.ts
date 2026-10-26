@@ -5,5 +5,5 @@ export type LoginFormData = {
 
 export type AuthApiResponse = {
   message: string
-  role?: "leader" | "musico"
+  role?: "leader" | "musico" | "proyeccion"
 }

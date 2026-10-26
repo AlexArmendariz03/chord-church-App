@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs"
 import { prisma } from "@/shared/server/prisma"
 
-export type UserRole = "leader" | "musico"
+export type UserRole = "leader" | "musico" | "proyeccion"
 
 type LoginParams = {
   username: string

@@ -11,6 +11,8 @@ datasource db {
 enum UserRole {
   leader
   musico
+  // Quien proyecta las letras: solo ve la lista de servicios con sus alabanzas
+  proyeccion
 }
 
 enum SongCategory {

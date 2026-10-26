@@ -13,5 +13,5 @@ export const SessionProvider = ({ user, children }: SessionProviderProps) => (
 
 export const useSession = () => {
   const user = useContext(SessionContext)
-  return { user, isLeader: user?.role === "leader" }
+  return { user, isLeader: user?.role === "leader", isProjection: user?.role === "proyeccion" }
 }

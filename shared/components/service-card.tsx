@@ -5,6 +5,7 @@ import { Button, Dropdown } from "antd"
 import dayjs from "dayjs"
 import "dayjs/locale/es"
 import { useState } from "react"
+import { useSession } from "@/features/layout/client/components/session-provider"
 import { formatServiceDate } from "@/shared/utils/dates"
 import type { ServiceWithSongs } from "@/types/services"
 
@@ -40,7 +41,9 @@ const relativeLabel = (eventDate: string) => {
 }
 
 export const ServiceCard = ({ service, isNext = false, onOpen, onEdit, onReuse, onDelete }: ServiceCardProps) => {
-  const [expanded, setExpanded] = useState(isNext)
+  // Proyección no toca: la lista va sin tonos y abierta en todos los servicios, que es lo único que ve
+  const { isProjection } = useSession()
+  const [expanded, setExpanded] = useState(isNext || isProjection)
   const date = dayjs(service.eventDate).locale("es")
   const songs = [...service.songs].sort((a, b) => a.position - b.position)
   const jubiloCount = songs.filter(s => s.category === "jubilo" && !s.isOffering).length
@@ -113,7 +116,7 @@ export const ServiceCard = ({ service, isNext = false, onOpen, onEdit, onReuse, 
               <span className="service-card-song-number">{position}</span>
               <span className="service-card-song-name">{song.name}</span>
               {isOffering && <span className="service-card-song-badge">Ofrenda</span>}
-              <span className="service-card-song-key">{song.key}</span>
+              {!isProjection && <span className="service-card-song-key">{song.key}</span>}
             </li>
           ))}
         </ol>

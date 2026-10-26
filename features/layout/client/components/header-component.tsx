@@ -17,13 +17,13 @@ const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION
 const HeaderBar = () => {
   const router = useRouter()
   const pathname = usePathname()
-  const { user, isLeader } = useSession()
+  const { user, isLeader, isProjection } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const menuItems = useMemo(() => getMenuItems(isLeader), [isLeader])
+  const menuItems = useMemo(() => getMenuItems(isLeader, !isProjection), [isLeader, isProjection])
   const selectedKeys = [getSelectedMenuKey(pathname)]
-  const name = displayName(user?.username) || (isLeader ? "Líder" : "Músico")
-  const roleLabel = isLeader ? "Dirigente" : "Músico"
-  const roleClass = isLeader ? "is-leader" : "is-musician"
+  const roleLabel = isLeader ? "Dirigente" : isProjection ? "Proyección" : "Músico"
+  const name = displayName(user?.username) || (isLeader ? "Líder" : roleLabel)
+  const roleClass = isLeader ? "is-leader" : isProjection ? "is-projection" : "is-musician"
   // antd icon avatar in the role's color
   const userAvatar = (size: number) => (
     <Avatar size={size} icon={<UserOutlined />} className={`user-avatar ${roleClass}`} />

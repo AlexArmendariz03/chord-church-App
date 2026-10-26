@@ -14,18 +14,19 @@ const LEADER_ONLY_ITEMS = [
   }
 ]
 
-export const getMenuItems = (isLeader: boolean) => [
+// canGoLive: proyección solo ve la lista de servicios, sin En curso
+export const getMenuItems = (isLeader: boolean, canGoLive = true) => [
   {
     key: "/dashboard",
     icon: <HomeOutlined />,
     label: <Link href="/dashboard">Inicio</Link>
   },
   ...(isLeader ? LEADER_ONLY_ITEMS : []),
-  {
+  ...(canGoLive ? [{
     key: "/en-curso",
     icon: <PlayCircleOutlined />,
     label: <Link href="/en-curso">En curso</Link>
-  }
+  }] : [])
 ]
 
 // "/alabanzas/nueva" highlights "Alabanzas"

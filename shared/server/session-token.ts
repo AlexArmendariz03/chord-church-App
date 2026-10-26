@@ -1,7 +1,9 @@
 // Signed session token: base64url(payload).base64url(HMAC-SHA256(payload)).
 // Uses Web Crypto so it works both in route handlers and in proxy.ts.
 
-export type SessionRole = "leader" | "musico"
+export type SessionRole = "leader" | "musico" | "proyeccion"
+
+const SESSION_ROLES: SessionRole[] = ["leader", "musico", "proyeccion"]
 
 export type SessionUser = {
   username: string
@@ -50,7 +52,7 @@ export async function verifySession(token: string | undefined): Promise<SessionU
 
     const payload = JSON.parse(decoder.decode(fromBase64Url(body))) as Partial<SessionPayload>
     if (!payload.exp || payload.exp < Date.now()) return null
-    if (!payload.username || (payload.role !== "leader" && payload.role !== "musico")) return null
+    if (!payload.username || !payload.role || !SESSION_ROLES.includes(payload.role)) return null
 
     return { username: payload.username, role: payload.role }
   } catch {
