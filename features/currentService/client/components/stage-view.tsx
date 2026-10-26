@@ -28,6 +28,8 @@ type StageViewProps = {
   activeIndex: number
   pageIndex: number
   pageCount: number
+  // Key, font size and chords; off in the leader's view, which shows no lyrics
+  songTools: boolean
   showChords: boolean
   onToggleChords: Dispatch<boolean>
   semitones: number
@@ -92,6 +94,7 @@ const StageView = ({
   activeIndex,
   pageIndex,
   pageCount,
+  songTools,
   showChords,
   onToggleChords,
   semitones,
@@ -200,7 +203,8 @@ const StageView = ({
         </div>
 
         <div
-          className={`stage-intro ${introSongId === current.id && !isGuideOpen ? "is-visible" : ""}`}
+          // The leader's slide already shows the name this large
+          className={`stage-intro ${introSongId === current.id && !isGuideOpen && songTools ? "is-visible" : ""}`}
           aria-live="polite">
           <span className="stage-intro-position">{activeIndex + 1} / {service.songs.length}</span>
           <span className="stage-intro-name">{current.song.name}</span>
@@ -257,7 +261,7 @@ const StageView = ({
           className="stage-cluster is-top" onPointerDown={showControls}
           inert={!controlsVisible}>
           {/* Song tools: nothing to change while the guide is up */}
-          {!isGuideOpen && (
+          {!isGuideOpen && songTools && (
             <>
               <div
                 className="stage-pill" role="group"
@@ -323,7 +327,8 @@ const StageView = ({
         <div
           className="stage-cluster is-bottom-right" onPointerDown={showControls}
           inert={!controlsVisible}>
-          {upNext && (
+          {/* The leader's view shows only the song at hand */}
+          {upNext && songTools && (
             <span className="stage-up-next">
               <span className="stage-up-next-label">{upNext.label}</span>
               <span className="stage-up-next-detail">{upNext.detail}</span>

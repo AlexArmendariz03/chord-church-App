@@ -1,7 +1,7 @@
 "use client"
 
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { ExpandOutlined, LeftOutlined, MenuFoldOutlined, MenuUnfoldOutlined, RightOutlined } from "@ant-design/icons"
+import { ExpandOutlined, LeftOutlined, MenuFoldOutlined, MenuUnfoldOutlined, OrderedListOutlined, ReadOutlined, RightOutlined } from "@ant-design/icons"
 import { App, Button, Card, Col, Empty, Row, Select, Space, Switch, Tag, Typography } from "antd"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "@/features/layout/client/components/session-provider"
@@ -12,6 +12,7 @@ import { FONT_LIMITS, LyricsPager, type LyricsLayoutInfo } from "../lyrics/lyric
 import { displaySemitones, transposeKey } from "../lyrics/transpose"
 import { useWakeLock } from "../use-wake-lock"
 import { ClosingGuide, hasClosingGuide } from "./closing-guide"
+import { LeaderSlide } from "./leader-slide"
 import StageView, { formatSemitones, STAGE_THEMES, type StageTheme } from "./stage-view"
 
 const { Title, Text } = Typography
@@ -19,6 +20,7 @@ const { Title, Text } = Typography
 const FONT_STEP = 4
 const SHOW_CHORDS_STORAGE_KEY = "chord-church:show-chords"
 const STAGE_THEME_STORAGE_KEY = "chord-church:stage-theme"
+const LEADER_LYRICS_STORAGE_KEY = "chord-church:leader-lyrics"
 // Matches the breakpoint in current-service.scss where the list moves below the lyrics.
 const STACKED_LAYOUT_MAX_WIDTH = "(max-width: 991.98px)"
 
@@ -43,6 +45,8 @@ const CurrentServiceComponent = () => {
   const [isStageMode, setIsStageMode] = useState(false)
   const [showChords, setShowChords] = useState(true)
   const [stageTheme, setStageTheme] = useState<StageTheme>("aurora")
+  // The leader sees each song's name instead of its lyrics and chords, unless they ask for the lyrics
+  const [leaderWantsLyrics, setLeaderWantsLyrics] = useState(false)
   // A+/A− shift the automatic size, so the adjustment survives song changes and rotations
   const [fontOffset, setFontOffset] = useState(0)
   // Per song of this service, only for this session: the written key in the database stays as is
@@ -55,6 +59,7 @@ const CurrentServiceComponent = () => {
       setShowChords(localStorage.getItem(SHOW_CHORDS_STORAGE_KEY) !== "false")
       const savedTheme = STAGE_THEMES.find(option => option.value === localStorage.getItem(STAGE_THEME_STORAGE_KEY))
       if (savedTheme) setStageTheme(savedTheme.value)
+      setLeaderWantsLyrics(localStorage.getItem(LEADER_LYRICS_STORAGE_KEY) === "true")
     } catch {
       // Storage unavailable (private mode): keep chords visible
     }
@@ -64,6 +69,16 @@ const CurrentServiceComponent = () => {
     setShowChords(value)
     try {
       localStorage.setItem(SHOW_CHORDS_STORAGE_KEY, String(value))
+    } catch {
+      // Preference just won't be remembered
+    }
+  }
+
+  const toggleLeaderLyrics = (value: boolean) => {
+    setLeaderWantsLyrics(value)
+    setPageIndex(0)
+    try {
+      localStorage.setItem(LEADER_LYRICS_STORAGE_KEY, String(value))
     } catch {
       // Preference just won't be remembered
     }
@@ -118,7 +133,9 @@ const CurrentServiceComponent = () => {
   const songs = currentService?.songs ?? []
   const activeIndex = Math.max(0, songs.findIndex(serviceSong => serviceSong.id === activeServiceSongId))
   const activeSong = songs[activeIndex] ?? null
-  const { pageCount, fontSize, autoSize } = layout
+  const isLeaderView = isLeader && !leaderWantsLyrics
+  // The leader's slide is a single page per song
+  const { pageCount, fontSize, autoSize } = isLeaderView ? { ...layout, pageCount: 1 } : layout
   const showsGuide = isLeader && hasClosingGuide(currentService)
   // The guide follows the worship set: before the offering song, or at the end when there's none
   const offeringIndex = songs.findIndex(serviceSong => serviceSong.isOffering)
@@ -246,6 +263,11 @@ const CurrentServiceComponent = () => {
       prayerGuide={currentService?.prayerGuide}
       announcements={currentService?.announcements}
       variant={variant} />
+  ) : isLeaderView ? (
+    <LeaderSlide
+      song={song} number={activeIndex + 1}
+      total={songs.length}
+      variant={variant} />
   ) : (
     <LyricsPager
       lyrics={song.song.lyrics}
@@ -265,6 +287,7 @@ const CurrentServiceComponent = () => {
         activeIndex={activeIndex}
         pageIndex={pageIndex}
         pageCount={pageCount}
+        songTools={!isLeaderView}
         showChords={showChords}
         onToggleChords={toggleChords}
         semitones={semitones}
@@ -381,7 +404,7 @@ const CurrentServiceComponent = () => {
                   <Space
                     size={12} align="center"
                     wrap>
-                    <Space.Compact>
+                    {!isLeaderView && <Space.Compact>
                       <Button aria-label="Bajar medio tono" onClick={() => transpose(semitones - 1)}>♭</Button>
                       <Button
                         className={`current-service-key-badge ${isTransposed ? "is-transposed" : ""}`}
@@ -391,26 +414,37 @@ const CurrentServiceComponent = () => {
                         {isTransposed && <span className="current-service-key-shift">{formatSemitones(semitones)}</span>}
                       </Button>
                       <Button aria-label="Subir medio tono" onClick={() => transpose(semitones + 1)}>♯</Button>
-                    </Space.Compact>
+                    </Space.Compact>}
                     {!isGuideOpen && <Text type="secondary">Canción {activeIndex + 1} de {songs.length}</Text>}
                   </Space>
                   <div className="current-service-toolbar-actions">
-                    <label className="current-service-chords-toggle">
-                      <Switch
-                        size="small" checked={showChords}
-                        onChange={toggleChords} />
-                      Acordes
-                    </label>
-                    <Button
-                      aria-label="Reducir letra" disabled={fontSize <= FONT_LIMITS.min}
-                      onClick={decreaseFont}>
-                      A−
-                    </Button>
-                    <Button
-                      aria-label="Aumentar letra" disabled={fontSize >= FONT_LIMITS.max}
-                      onClick={increaseFont}>
-                      A+
-                    </Button>
+                    {isLeader && (
+                      <Button
+                        icon={isLeaderView ? <ReadOutlined /> : <OrderedListOutlined />}
+                        onClick={() => toggleLeaderLyrics(isLeaderView)}>
+                        {isLeaderView ? "Ver letras" : "Vista del dirigente"}
+                      </Button>
+                    )}
+                    {!isLeaderView && (
+                      <>
+                        <label className="current-service-chords-toggle">
+                          <Switch
+                            size="small" checked={showChords}
+                            onChange={toggleChords} />
+                          Acordes
+                        </label>
+                        <Button
+                          aria-label="Reducir letra" disabled={fontSize <= FONT_LIMITS.min}
+                          onClick={decreaseFont}>
+                          A−
+                        </Button>
+                        <Button
+                          aria-label="Aumentar letra" disabled={fontSize >= FONT_LIMITS.max}
+                          onClick={increaseFont}>
+                          A+
+                        </Button>
+                      </>
+                    )}
                     <Button
                       type="primary" icon={<ExpandOutlined />}
                       className="current-service-stage-button" onClick={enterStage}>
