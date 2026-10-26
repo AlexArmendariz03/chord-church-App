@@ -364,3 +364,13 @@ $service-ofrenda: #f59e0b;
   justify-content: flex-end;
   gap: 8px;
 }
+
+// Formulario de servicio: alabanzas elegidas que ya se usaron varias veces en el mismo mes
+.ant-alert.service-repeat-alert {
+  margin-bottom: 24px;
+}
+
+.service-repeat-list {
+  margin: 0;
+  padding-left: 18px;
+}

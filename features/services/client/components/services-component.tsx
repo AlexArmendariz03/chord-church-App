@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { PlusOutlined } from "@ant-design/icons"
-import { App, Button, Card, Col, DatePicker, Empty, Form, Input, Modal, Row, Select, Space, Tabs, Typography } from "antd"
+import { Alert, App, Button, Card, Col, DatePicker, Empty, Form, Input, Modal, Row, Select, Space, Tabs, Typography } from "antd"
 import dayjs, { type Dayjs } from "dayjs"
+import "dayjs/locale/es"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "@/features/layout/client/components/session-provider"
 import { ServiceCard } from "@/shared/components/service-card"
@@ -21,6 +22,14 @@ type ServiceFormValues = {
   prayerGuide?: string
   announcements?: string
 }
+
+// Servicios del mes del evento y las alabanzas que usó cada uno (GET /api/services/usage)
+type MonthUsage = { month: string; services: Array<{ id: string; eventDate: string; songIds: string[] }> }
+
+// Si una alabanza ya está en esta cantidad de otros servicios del mes, se avisa al elegirla otra vez
+const REPEAT_WARNING_COUNT = 2
+// "6 dic y 13 dic"
+const DATE_LIST = new Intl.ListFormat("es", { type: "conjunction" })
 
 const PRAYER_PLACEHOLDER = "Vamos a orar por:\nLa iglesia local\nNuestro pastor\nNuestros obreros y misioneros"
 const ANNOUNCEMENTS_PLACEHOLDER = "Dar los anuncios del día de mañana:\nSeminarios a las 9:00 a. m."
@@ -42,6 +51,7 @@ const ServicesComponent = () => {
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [urlEditApplied, setUrlEditApplied] = useState(false)
+  const [monthUsage, setMonthUsage] = useState<MonthUsage | null>(null)
 
   const jubiloSongs = useMemo(() => songs.filter(song => song.category === "jubilo"), [songs])
   const adoracionSongs = useMemo(() => songs.filter(song => song.category === "adoracion"), [songs])
@@ -52,6 +62,8 @@ const ServicesComponent = () => {
   const watchedTitle = Form.useWatch("title", form)
   const watchedDate = Form.useWatch("eventDate", form)
   const singleWorship = isSingleWorshipEvent(watchedTitle, watchedDate?.toDate())
+  const pickedAdoracion = Form.useWatch("adoracionSongIds", form)
+  const watchedMonth = watchedDate ? watchedDate.format("YYYY-MM") : null
   const toOption = (song: SongWithMeta) => ({ label: `${song.name} (${song.key})${song.isYouth ? " · Jóvenes" : ""}${song.isService ? " · Servicios" : ""}`, value: song.id })
   // With no services yet the form is the page; once there are some, it moves into a modal
   // so the list stays in front
@@ -84,6 +96,38 @@ const ServicesComponent = () => {
     setListTab(key as "upcoming" | "past")
     if (key === "past" && pastServices === null) fetchPast()
   }
+
+  // El mes es el mes del calendario del evento, según el dispositivo (la hora de la iglesia)
+  useEffect(() => {
+    if (!isLeader || !watchedMonth || monthUsage?.month === watchedMonth) return
+    let cancelled = false
+    const start = dayjs(`${watchedMonth}-01`)
+    const query = new URLSearchParams({ desde: start.toISOString(), hasta: start.add(1, "month").toISOString() })
+    fetch(`/api/services/usage?${query}`)
+      .then(response => (response.ok ? response.json() : Promise.reject(new Error())))
+      .then((services: MonthUsage["services"]) => !cancelled && setMonthUsage({ month: watchedMonth, services }))
+      // Es solo un aviso: sin él, el formulario funciona igual
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [isLeader, watchedMonth, monthUsage?.month])
+
+  // Alabanzas elegidas que ya se usaron REPEAT_WARNING_COUNT veces o más en otros servicios del mes
+  const repeatedSongs = useMemo(() => {
+    if (!monthUsage || monthUsage.month !== watchedMonth) return []
+    const picked = [
+      ...(singleWorship ? [] : pickedJubilo ?? []),
+      ...(pickedAdoracion ?? []),
+      ...(!singleWorship && pickedOffering ? [pickedOffering] : [])
+    ]
+    return picked.flatMap(songId => {
+      const dates = monthUsage.services
+        .filter(service => service.id !== editingServiceId && service.songIds.includes(songId))
+        .map(service => dayjs(service.eventDate).locale("es").format("D MMM"))
+      const song = songs.find(candidate => candidate.id === songId)
+      return song && dates.length >= REPEAT_WARNING_COUNT ? [{ name: song.name, dates }] : []
+    })
+  }, [monthUsage, watchedMonth, singleWorship, pickedJubilo, pickedAdoracion, pickedOffering, editingServiceId, songs])
+  const monthName = watchedDate ? watchedDate.locale("es").format("MMMM") : ""
 
   useEffect(() => {
     fetchData().catch(() => message.error("No se pudo cargar la información"))
@@ -248,6 +292,23 @@ const ServicesComponent = () => {
                 optionFilterProp="label"
                 options={jubiloSongs.filter(song => !pickedJubilo?.includes(song.id)).map(toOption)} />
             </Form.Item>
+          </Col>
+        )}
+        {repeatedSongs.length > 0 && (
+          <Col span={24}>
+            <Alert
+              type="warning" showIcon
+              className="service-repeat-alert"
+              title={repeatedSongs.length === 1 ? "Esta alabanza ya se usó varias veces este mes" : "Estas alabanzas ya se usaron varias veces este mes"}
+              description={
+                <ul className="service-repeat-list">
+                  {repeatedSongs.map(({ name, dates }) => (
+                    <li key={name}>
+                      <strong>{name}</strong>: {dates.length} veces en {monthName} ({DATE_LIST.format(dates)})
+                    </li>
+                  ))}
+                </ul>
+              } />
           </Col>
         )}
         {!singleWorship && (
