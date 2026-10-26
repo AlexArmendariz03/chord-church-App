@@ -1,12 +1,12 @@
 // Creates or updates a user in the database.
-// Usage: npm run create-user -- <usuario> <contraseña> [leader|musico]
+// Usage: npm run create-user -- <usuario> <contraseña> [leader|musico|proyeccion]
 import bcrypt from "bcryptjs"
 import { PrismaClient } from "@prisma/client"
 
 const [username, password, role = "musico"] = process.argv.slice(2)
 
-if (!username || !password || !["leader", "musico"].includes(role)) {
-  console.error("Uso: npm run create-user -- <usuario> <contraseña> [leader|musico]")
+if (!username || !password || !["leader", "musico", "proyeccion"].includes(role)) {
+  console.error("Uso: npm run create-user -- <usuario> <contraseña> [leader|musico|proyeccion]")
   process.exit(1)
 }
 

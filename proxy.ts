@@ -6,6 +6,8 @@ const PUBLIC_API = ["/api/login", "/api/logout"]
 // Open to everyone, with or without a session
 const OPEN_PAGES = ["/terminos"]
 const LEADER_PAGES = ["/alabanzas", "/servicios"]
+// Proyección solo ve la lista de servicios en Inicio
+const LIVE_PAGES = ["/en-curso"]
 
 const matches = (pathname: string, paths: string[]) =>
   paths.some(path => pathname === path || pathname.startsWith(`${path}/`))
@@ -28,6 +30,7 @@ export async function proxy(request: NextRequest) {
 
   if (!user) return redirectTo("/login")
   if (matches(pathname, LEADER_PAGES) && user.role !== "leader") return redirectTo("/dashboard")
+  if (matches(pathname, LIVE_PAGES) && user.role === "proyeccion") return redirectTo("/dashboard")
 
   return NextResponse.next()
 }

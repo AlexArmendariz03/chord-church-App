@@ -36,7 +36,7 @@ const LEADER_SHORTCUTS = [
 const Dashboard = () => {
   const router = useRouter()
   const { modal, message } = App.useApp()
-  const { user, isLeader } = useSession()
+  const { user, isLeader, isProjection } = useSession()
   const [services, setServices] = useState<ServiceWithSongs[]>([])
   const [loadingService, setLoadingService] = useState(true)
   const [loadError, setLoadError] = useState(false)
@@ -84,10 +84,14 @@ const Dashboard = () => {
       <div className="dashboard-hero">
         <Title
           level={2} style={{ margin: "0 0 6px" }}>
-          Hola, {displayName(user?.username) || (isLeader ? "Líder" : "Músico")}
+          Hola, {displayName(user?.username) || (isLeader ? "Líder" : isProjection ? "Proyección" : "Músico")}
         </Title>
         <Paragraph className="dashboard-subtitle">
-          {isLeader ? "Administra alabanzas y arma los próximos servicios." : "Abre el servicio en curso para seguir las letras en vivo."}
+          {isLeader
+            ? "Administra alabanzas y arma los próximos servicios."
+            : isProjection
+              ? "Aquí están las alabanzas de cada servicio, en el orden en que se proyectan."
+              : "Abre el servicio en curso para seguir las letras en vivo."}
         </Paragraph>
 
         {isLeader ? (
@@ -109,7 +113,7 @@ const Dashboard = () => {
               </Col>
             ))}
           </Row>
-        ) : (
+        ) : !isProjection && (
           <Button
             type="primary" size="large"
             icon={<PlayCircleOutlined />} onClick={() => navigateTo("/en-curso")}>
@@ -136,7 +140,7 @@ const Dashboard = () => {
               <ServiceCard
                 key={service.id} service={service}
                 isNext={index === 0}
-                onOpen={() => navigateTo(`/en-curso?servicio=${service.id}`)}
+                onOpen={isProjection ? undefined : () => navigateTo(`/en-curso?servicio=${service.id}`)}
                 onEdit={isLeader ? () => navigateTo(`/servicios?edit=${service.id}`) : undefined}
                 onDelete={isLeader ? () => deleteService(service) : undefined} />
             ))}
