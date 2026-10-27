@@ -291,6 +291,7 @@
 // Role colors: leader in indigo → violet, musician in teal → emerald
 $leader-gradient: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);
 $musician-gradient: linear-gradient(135deg, #14b8a6 0%, #059669 100%);
+$projection-gradient: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
 
 // Initial in a circle, ringed with the role's color (header chip and phone menu)
 .user-avatar.ant-avatar {
@@ -306,6 +307,12 @@ $musician-gradient: linear-gradient(135deg, #14b8a6 0%, #059669 100%);
   &.is-musician {
     background: $musician-gradient;
     box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(5, 150, 105, 0.35);
+  }
+
+  // Naranja para proyección
+  &.is-projection {
+    background: $projection-gradient;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(234, 88, 12, 0.35);
   }
 }
 
@@ -330,6 +337,12 @@ $musician-gradient: linear-gradient(135deg, #14b8a6 0%, #059669 100%);
   &.is-musician {
     background: $musician-gradient;
     box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);
+  }
+
+  // Naranja para proyección
+  &.is-projection {
+    background: $projection-gradient;
+    box-shadow: 0 2px 6px rgba(234, 88, 12, 0.3);
   }
 }
 
@@ -363,6 +376,15 @@ $musician-gradient: linear-gradient(135deg, #14b8a6 0%, #059669 100%);
 
 .mobile-nav-logout.ant-btn {
   margin-top: 12px;
+}
+
+// Tour guiado va justo antes de Cerrar sesión
+.mobile-nav-help.ant-btn {
+  margin-top: 12px;
+
+  & + .mobile-nav-logout.ant-btn {
+    margin-top: 8px;
+  }
 }
 
 .mobile-nav-version {

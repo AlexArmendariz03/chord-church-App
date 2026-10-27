@@ -1,0 +1,75 @@
+// The leader's slide (leader-slide.tsx): the song's name in place of the lyrics, in the En curso
+// card and on the stage. Like the guide, colors come from custom properties so the stage
+// themes (stage.scss) apply to it as well.
+
+.leader-slide {
+  --slide-text: #{$ink-dark};
+  --slide-muted: #64748b;
+  --slide-accent: #52c41a;
+  --slide-name-size: clamp(32px, 5vw, 56px);
+
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  color: var(--slide-text);
+  text-align: center;
+  animation: leader-slide-in 0.25s ease-out;
+
+  &.is-adoracion { --slide-accent: #722ed1; }
+  &.is-ofrenda { --slide-accent: #d48806; }
+
+  &.is-stage {
+    --slide-text: var(--lyrics-text);
+    --slide-muted: color-mix(in srgb, var(--lyrics-text) 60%, transparent);
+    --slide-accent: var(--lyrics-chord);
+    // Readable from across the platform
+    --slide-name-size: clamp(40px, 8vw, 112px);
+
+    width: 100%;
+    height: 100%;
+    padding: 0 clamp(16px, 5vw, 72px);
+  }
+}
+
+.leader-slide-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6em;
+  max-width: 1100px;
+  // Centered in whatever room the card or the stage leaves
+  margin: auto;
+}
+
+.leader-slide-eyebrow {
+  color: var(--slide-accent);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+
+  .is-stage & {
+    font-size: clamp(13px, 1.6vw, 20px);
+  }
+}
+
+.leader-slide-name {
+  margin: 0;
+  color: var(--slide-text);
+  font-size: var(--slide-name-size);
+  font-weight: 800;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+@keyframes leader-slide-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leader-slide {
+    animation: none;
+  }
+}

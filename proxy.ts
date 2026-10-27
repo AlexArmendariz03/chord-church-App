@@ -1,11 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server"
+import { can, type Permission } from "@/shared/auth/permissions"
 import { SESSION_COOKIE_NAME, verifySession } from "@/shared/server/session-token"
 
 const PUBLIC_PAGES = ["/login"]
 const PUBLIC_API = ["/api/login", "/api/logout"]
 // Open to everyone, with or without a session
 const OPEN_PAGES = ["/terminos"]
-const LEADER_PAGES = ["/alabanzas", "/servicios"]
+// Páginas que piden un permiso; sin él, el usuario vuelve a Inicio
+const PAGE_PERMISSIONS: [string, Permission][] = [
+  ["/alabanzas", "manageSongs"],
+  ["/servicios", "manageServices"],
+  ["/en-curso", "goLive"]
+]
 
 const matches = (pathname: string, paths: string[]) =>
   paths.some(path => pathname === path || pathname.startsWith(`${path}/`))
@@ -27,7 +33,8 @@ export async function proxy(request: NextRequest) {
   }
 
   if (!user) return redirectTo("/login")
-  if (matches(pathname, LEADER_PAGES) && user.role !== "leader") return redirectTo("/dashboard")
+  const denied = PAGE_PERMISSIONS.some(([path, permission]) => matches(pathname, [path]) && !can(user.role, permission))
+  if (denied) return redirectTo("/dashboard")
 
   return NextResponse.next()
 }

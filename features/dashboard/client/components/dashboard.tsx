@@ -1,16 +1,26 @@
 "use client"
 
 import { AppstoreAddOutlined, CalendarOutlined, PlayCircleOutlined, UnorderedListOutlined } from "@ant-design/icons"
-import { Alert, App, Button, Card, Col, Empty, Row, Typography } from "antd"
+import { Alert, Button, Card, Col, Empty, Row, Typography } from "antd"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useSession } from "@/features/layout/client/components/session-provider"
+import { ServiceCard } from "@/features/services/client/components/service-card"
+import { servicesApi } from "@/features/services/client/services-api"
+import { ROLE_LABELS, type Role } from "@/shared/auth/permissions"
+import { useConfirmDelete } from "@/shared/client/use-confirm-delete"
 import { displayName } from "@/shared/utils/user"
-import { ServiceCard } from "@/shared/components/service-card"
-import type { ServiceWithSongs } from "@/types/services"
+import type { ServiceSummary } from "@/types/services"
 
 const { Meta } = Card
 const { Title, Paragraph } = Typography
+
+// Lo que cada rol hace en la app, bajo el saludo
+const SUBTITLES: Record<Role, string> = {
+  leader: "Administra alabanzas y arma los próximos servicios.",
+  musico: "Abre el servicio en curso para seguir las letras en vivo.",
+  proyeccion: "Aquí están las alabanzas de cada servicio, en el orden en que se proyectan."
+}
 
 const LEADER_SHORTCUTS = [
   {
@@ -35,63 +45,58 @@ const LEADER_SHORTCUTS = [
 
 const Dashboard = () => {
   const router = useRouter()
-  const { modal, message } = App.useApp()
-  const { user, isLeader } = useSession()
-  const [services, setServices] = useState<ServiceWithSongs[]>([])
+  const confirmDelete = useConfirmDelete()
+  const { user, role, can } = useSession()
+  const canManage = can("manageServices")
+  const canGoLive = can("goLive")
+  const [services, setServices] = useState<ServiceSummary[]>([])
   const [loadingService, setLoadingService] = useState(true)
   const [loadError, setLoadError] = useState(false)
 
-  const fetchServices = () => {
-    setLoadingService(true)
-    setLoadError(false)
-    fetch("/api/services")
-      .then(res => {
-        if (!res.ok) throw new Error()
-        return res.json()
+  const loadServices = useCallback(() => {
+    servicesApi.upcoming()
+      .then(data => {
+        setServices(data)
+        setLoadError(false)
       })
-      .then((data: ServiceWithSongs[]) => setServices(data))
       .catch(() => setLoadError(true))
       .finally(() => setLoadingService(false))
-  }
+  }, [])
 
   useEffect(() => {
-    fetchServices()
-  }, [])
+    loadServices()
+  }, [loadServices])
+
+  const retry = () => {
+    setLoadingService(true)
+    loadServices()
+  }
 
   const navigateTo = (path: string) => {
     router.push(path)
   }
 
-  const deleteService = (service: ServiceWithSongs) => {
-    modal.confirm({
-      title: "Eliminar servicio",
-      content: `¿Seguro que deseas eliminar "${service.title}"? Esta acción no se puede deshacer.`,
-      okText: "Eliminar",
-      okButtonProps: { danger: true },
-      cancelText: "Cancelar",
-      async onOk() {
-        const response = await fetch(`/api/services/${service.id}`, { method: "DELETE" })
-        const data = await response.json()
-        if (!response.ok) throw new Error(data.message ?? "Error al eliminar")
-        message.success("Servicio eliminado")
-        fetchServices()
-      }
-    })
-  }
+  const deleteService = (service: ServiceSummary) => confirmDelete({
+    title: "Eliminar servicio",
+    content: `¿Seguro que deseas eliminar "${service.title}"? Esta acción no se puede deshacer.`,
+    remove: () => servicesApi.remove(service.id),
+    success: "Servicio eliminado",
+    onDeleted: loadServices
+  })
 
   return (
     <div className="dashboard">
       <div className="dashboard-hero">
         <Title
           level={2} style={{ margin: "0 0 6px" }}>
-          Hola, {displayName(user?.username) || (isLeader ? "Líder" : "Músico")}
+          Hola, {displayName(user?.username) || (role && ROLE_LABELS[role])}
         </Title>
         <Paragraph className="dashboard-subtitle">
-          {isLeader ? "Administra alabanzas y arma los próximos servicios." : "Abre el servicio en curso para seguir las letras en vivo."}
+          {role && SUBTITLES[role]}
         </Paragraph>
 
-        {isLeader ? (
-          <Row gutter={[20, 20]}>
+        {canManage ? (
+          <Row gutter={[20, 20]} data-tour="atajos">
             {LEADER_SHORTCUTS.map(({ path, title, description, icon }) => (
               <Col
                 key={path} xs={24}
@@ -109,17 +114,19 @@ const Dashboard = () => {
               </Col>
             ))}
           </Row>
-        ) : (
+        ) : canGoLive && (
           <Button
             type="primary" size="large"
-            icon={<PlayCircleOutlined />} onClick={() => navigateTo("/en-curso")}>
+            icon={<PlayCircleOutlined />} data-tour="abrir-en-curso"
+            onClick={() => navigateTo("/en-curso")}>
             Abrir servicio en curso
           </Button>
         )}
       </div>
 
       <Card
-        className="next-service-card" loading={loadingService}
+        className="next-service-card" data-tour="proximos"
+        loading={loadingService}
         title={(
           <span className="next-service-title">
             <CalendarOutlined /> Próximos servicios
@@ -129,23 +136,23 @@ const Dashboard = () => {
           <Alert
             type="error" showIcon
             title="No se pudieron cargar los servicios"
-            action={<Button size="small" onClick={fetchServices}>Reintentar</Button>} />
+            action={<Button size="small" onClick={retry}>Reintentar</Button>} />
         ) : services.length ? (
           <div className="service-list">
             {services.map((service, index) => (
               <ServiceCard
                 key={service.id} service={service}
                 isNext={index === 0}
-                onOpen={() => navigateTo(`/en-curso?servicio=${service.id}`)}
-                onEdit={isLeader ? () => navigateTo(`/servicios?edit=${service.id}`) : undefined}
-                onDelete={isLeader ? () => deleteService(service) : undefined} />
+                onOpen={!canGoLive ? undefined : () => navigateTo(`/en-curso?servicio=${service.id}`)}
+                onEdit={canManage ? () => navigateTo(`/servicios?edit=${service.id}`) : undefined}
+                onDelete={canManage ? () => deleteService(service) : undefined} />
             ))}
           </div>
         ) : (
           <Empty
-            description={isLeader ? "Aún no hay servicios programados" : "No hay servicios programados por ahora"}
+            description={canManage ? "Aún no hay servicios programados" : "No hay servicios programados por ahora"}
             image={Empty.PRESENTED_IMAGE_SIMPLE}>
-            {isLeader && (
+            {canManage && (
               <Button
                 type="primary" onClick={() => navigateTo("/servicios")}>
                 Crear el primero

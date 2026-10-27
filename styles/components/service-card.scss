@@ -364,3 +364,13 @@ $service-ofrenda: #f59e0b;
   justify-content: flex-end;
   gap: 8px;
 }
+
+// Formulario de servicio: nota bajo el campo cuando una alabanza ya se usó varias veces en el mes
+.service-repeat-note {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+  color: #d46b08;
+  font-size: 13px;
+}

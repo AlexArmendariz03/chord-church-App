@@ -1,3 +1,4 @@
+import type { SongCategory } from "@/generated/prisma/client"
 import { prisma } from "@/shared/server/prisma"
 import { isSingleWorshipEvent } from "@/shared/utils/service-rules"
 
@@ -13,18 +14,16 @@ export type ServiceBody = {
   announcements?: string | null
 }
 
-type ParsedService =
-  | { error: string }
-  | {
-      error?: undefined
-      data: {
-        title: string
-        eventDate: Date
-        prayerGuide: string | null
-        announcements: string | null
-        songs: Array<{ songId: string; category: "jubilo" | "adoracion"; position: number; isOffering: boolean }>
-      }
-    }
+// Un servicio ya validado, listo para guardarse (service-queries.ts)
+export type ServiceInput = {
+  title: string
+  eventDate: Date
+  prayerGuide: string | null
+  announcements: string | null
+  songs: Array<{ songId: string; category: SongCategory; position: number; isOffering: boolean }>
+}
+
+type ParsedService = { error: string } | { error?: undefined, data: ServiceInput }
 
 const MAX_TITLE_LENGTH = 200
 const MAX_GUIDE_LENGTH = 5000
@@ -69,7 +68,7 @@ export async function parseServiceBody(body: ServiceBody): Promise<ParsedService
 
   const songs = await prisma.song.findMany({ where: { id: { in: selectedIds } }, select: { id: true, category: true } })
   const categoryOf = new Map(songs.map(song => [song.id, song.category]))
-  const matches = (ids: string[], category: "jubilo" | "adoracion") => ids.every(id => categoryOf.get(id) === category)
+  const matches = (ids: string[], category: SongCategory) => ids.every(id => categoryOf.get(id) === category)
 
   if (!matches(jubiloSongIds, "jubilo") || !matches(adoracionSongIds, "adoracion")) {
     return { error: "La selección no coincide con los tipos de canción" }

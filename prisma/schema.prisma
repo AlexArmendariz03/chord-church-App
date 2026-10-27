@@ -1,16 +1,18 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
+// Las conexiones están en prisma.config.ts (migraciones) y en shared/server/prisma.ts (la app)
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 enum UserRole {
   leader
   musico
+  // Quien proyecta las letras: solo ve la lista de servicios con sus alabanzas
+  proyeccion
 }
 
 enum SongCategory {

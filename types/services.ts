@@ -1,36 +1,44 @@
-export type SongCategory = "jubilo" | "adoracion"
+import type { Prisma, Song, SongCategory as SchemaSongCategory } from "@/generated/prisma/client"
+import type { Serialized } from "./serialized"
 
-export type SongWithMeta = {
-  id: string
-  name: string
-  key: string
-  category: SongCategory
-  lyrics: string
-  // Part of the youth group's repertoire
-  isYouth?: boolean
-  // From the church's service songbook
-  isService?: boolean
-  createdAt?: string
-  updatedAt?: string
+// Tipos de alabanzas y servicios tal como los recibe la interfaz. Salen del esquema de Prisma,
+// así que un campo nuevo en la base aparece aquí solo. Cada vista pide solo lo que muestra.
+
+export type SongCategory = SchemaSongCategory
+
+// Una alabanza en las listas (Alabanzas y el formulario de servicios): sin la letra completa ni el
+// payload del editor, solo el inicio de la letra
+export const SONG_LIST_SELECT = {
+  id: true,
+  name: true,
+  key: true,
+  category: true,
+  isYouth: true,
+  isService: true
+} as const satisfies Prisma.SongSelect
+
+export type SongListItem = Serialized<Prisma.SongGetPayload<{ select: typeof SONG_LIST_SELECT }>> & {
+  preview: string
 }
 
-export type ServiceWithSongs = {
-  id: string
-  title: string
-  eventDate: string
-  // Leader's guide after the last song: one item per line; a line ending in ":" is a heading
-  prayerGuide?: string | null
-  announcements?: string | null
-  createdAt: string
-  updatedAt: string
-  songs: Array<{
-    id: string
-    serviceId: string
-    songId: string
-    category: SongCategory
-    position: number
-    // Played during the offering, after the worship set (a júbilo song)
-    isOffering: boolean
-    song: SongWithMeta
-  }>
-}
+// Una alabanza completa, para editarla (incluye el payload del editor de lienzo)
+export type SongDetail = Serialized<Song>
+
+// Un servicio con sus alabanzas en orden y la letra de cada una, para En curso
+export const SERVICE_WITH_LYRICS = {
+  songs: {
+    orderBy: { position: "asc" },
+    include: { song: { omit: { payload: true } } }
+  }
+} as const satisfies Prisma.ServiceInclude
+
+// Lo que muestran las tarjetas de servicio: sin las letras
+export const SERVICE_SUMMARY = {
+  songs: {
+    orderBy: { position: "asc" },
+    include: { song: { select: SONG_LIST_SELECT } }
+  }
+} as const satisfies Prisma.ServiceInclude
+
+export type ServiceWithSongs = Serialized<Prisma.ServiceGetPayload<{ include: typeof SERVICE_WITH_LYRICS }>>
+export type ServiceSummary = Serialized<Prisma.ServiceGetPayload<{ include: typeof SERVICE_SUMMARY }>>

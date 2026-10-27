@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs"
+import type { Role } from "@/shared/auth/permissions"
 import { prisma } from "@/shared/server/prisma"
-
-export type UserRole = "leader" | "musico"
 
 type LoginParams = {
   username: string
@@ -11,7 +10,7 @@ type LoginParams = {
 // Compared when the user doesn't exist, so the answer takes as long as a wrong password
 const DUMMY_HASH = bcrypt.hashSync("chord-church-dummy-password", 10)
 
-export async function loginUser({ username, password }: LoginParams): Promise<{ message: string; role?: UserRole; status: number }> {
+export async function loginUser({ username, password }: LoginParams): Promise<{ message: string; role?: Role; status: number }> {
   const normalizedUsername = username.trim().toLowerCase()
   const dbUser = await prisma.user.findUnique({ where: { username: normalizedUsername } })
   const isValid = await bcrypt.compare(password, dbUser?.password ?? DUMMY_HASH)
