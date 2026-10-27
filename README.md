@@ -65,13 +65,32 @@ Aplica las migraciones **antes** de publicar el código que las usa.
 ## Estructura
 
 ```
-app/        Páginas y rutas de la API (App Router)
-features/   Cada funcionalidad con su parte client/ y server/
-shared/     Código común: auth y permisos, componentes, servidor (Prisma, sesión) y utilidades
-types/      Tipos compartidos entre cliente y servidor
-styles/     Estilos globales y de cada componente (SCSS)
-prisma/     Esquema, migraciones y scripts de usuarios e importación
+app/            Páginas y rutas de la API (App Router), sin lógica: solo llaman a features/
+  (app)/        Páginas con sesión; su layout pone el encabezado, el menú y el recorrido
+  api/          Rutas de la API: revisan permisos, validan y llaman a las consultas
+features/       Cada funcionalidad con su parte client/ y server/
+  auth/         Inicio de sesión
+  dashboard/    Inicio
+  layout/       Encabezado, menú, sesión y tema
+  live/         En curso: letras con acordes, transposición, paginación y modo escenario
+  services/     Servicios: lista, formulario, tarjetas y sus consultas
+  songs/        Alabanzas: lista, editor y sus consultas
+  tour/         Recorrido de ayuda
+shared/         Código común
+  auth/         Roles y permisos
+  client/       Llamadas a la API y hooks del navegador
+  server/       Prisma, sesión y respuestas de la API
+  components/   Componentes que usan varias funcionalidades
+  utils/        Funciones puras (fechas, reglas de servicios)
+types/          Tipos compartidos entre cliente y servidor, derivados de Prisma
+styles/         Estilos globales y de cada componente (SCSS)
+prisma/         Esquema, migraciones y scripts de usuarios e importación
 ```
+
+Para agregar una funcionalidad: su carpeta en `features/` con `client/` (componentes, hooks y su
+`*-api.ts` para llamar a la API) y `server/` (validación `*-input.ts` y consultas `*-queries.ts`),
+y en `app/` solo la página o ruta que la usa. Las listas piden solo los campos que muestran
+(`types/services.ts`).
 
 ## Despliegue
 
