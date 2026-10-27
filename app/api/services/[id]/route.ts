@@ -1,69 +1,30 @@
 import { NextResponse } from "next/server"
-import { Prisma } from "@prisma/client"
-import { prisma } from "@/shared/server/prisma"
 import { parseServiceBody, type ServiceBody } from "@/features/services/server/service-input"
+import { deleteService, updateService } from "@/features/services/server/service-queries"
+import { errorResponse, forbidden, handle } from "@/shared/server/http"
 import { requirePermission } from "@/shared/server/session"
 
 type RouteContext = {
   params: Promise<{ id: string }>
 }
 
+const NOT_FOUND = "Servicio no encontrado"
+
 export async function PUT(req: Request, context: RouteContext) {
-  const leader = await requirePermission("manageServices")
-  if (!leader) {
-    return NextResponse.json({ message: "Solo el líder puede editar servicios" }, { status: 403 })
-  }
+  if (!(await requirePermission("manageServices"))) return forbidden("Solo el líder puede editar servicios")
 
-  try {
-    const { id } = await context.params
+  return handle(async () => {
     const parsed = await parseServiceBody((await req.json()) as ServiceBody)
-    if (parsed.error !== undefined) {
-      return NextResponse.json({ message: parsed.error }, { status: 400 })
-    }
-    const { songs, ...fields } = parsed.data
-
-    const [, service] = await prisma.$transaction([
-      prisma.serviceSong.deleteMany({ where: { serviceId: id } }),
-      prisma.service.update({
-        where: { id },
-        data: {
-          ...fields,
-          songs: { create: songs }
-        },
-        include: {
-          songs: {
-            orderBy: { position: "asc" },
-            include: { song: true }
-          }
-        }
-      })
-    ])
-
-    return NextResponse.json(service)
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
-      return NextResponse.json({ message: "Servicio no encontrado" }, { status: 404 })
-    }
-    console.error("Error updating service:", error)
-    return NextResponse.json({ message: "Error al actualizar el servicio" }, { status: 500 })
-  }
+    if (parsed.error !== undefined) return errorResponse(parsed.error, 400)
+    return NextResponse.json(await updateService((await context.params).id, parsed.data))
+  }, { notFound: NOT_FOUND, failed: "Error al actualizar el servicio" })
 }
 
 export async function DELETE(_req: Request, context: RouteContext) {
-  const leader = await requirePermission("manageServices")
-  if (!leader) {
-    return NextResponse.json({ message: "Solo el líder puede eliminar servicios" }, { status: 403 })
-  }
+  if (!(await requirePermission("manageServices"))) return forbidden("Solo el líder puede eliminar servicios")
 
-  try {
-    const { id } = await context.params
-    await prisma.service.delete({ where: { id } })
+  return handle(async () => {
+    await deleteService((await context.params).id)
     return NextResponse.json({ message: "Servicio eliminado correctamente" })
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
-      return NextResponse.json({ message: "Servicio no encontrado" }, { status: 404 })
-    }
-    console.error("Error deleting service:", error)
-    return NextResponse.json({ message: "Error al eliminar el servicio" }, { status: 500 })
-  }
+  }, { notFound: NOT_FOUND, failed: "Error al eliminar el servicio" })
 }

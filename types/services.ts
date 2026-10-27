@@ -1,36 +1,20 @@
-export type SongCategory = "jubilo" | "adoracion"
+import type { Prisma, Song, SongCategory as SchemaSongCategory } from "@prisma/client"
+import type { Serialized } from "./serialized"
 
-export type SongWithMeta = {
-  id: string
-  name: string
-  key: string
-  category: SongCategory
-  lyrics: string
-  // Part of the youth group's repertoire
-  isYouth?: boolean
-  // From the church's service songbook
-  isService?: boolean
-  createdAt?: string
-  updatedAt?: string
-}
+// Tipos de alabanzas y servicios tal como los recibe la interfaz. Salen del esquema de Prisma,
+// así que un campo nuevo en la base aparece aquí solo.
 
-export type ServiceWithSongs = {
-  id: string
-  title: string
-  eventDate: string
-  // Leader's guide after the last song: one item per line; a line ending in ":" is a heading
-  prayerGuide?: string | null
-  announcements?: string | null
-  createdAt: string
-  updatedAt: string
-  songs: Array<{
-    id: string
-    serviceId: string
-    songId: string
-    category: SongCategory
-    position: number
-    // Played during the offering, after the worship set (a júbilo song)
-    isOffering: boolean
-    song: SongWithMeta
-  }>
-}
+export type SongCategory = SchemaSongCategory
+
+// El payload del editor de lienzo solo lo usa el editor, que lo lee aparte
+export type SongWithMeta = Serialized<Omit<Song, "payload">>
+
+// Un servicio con sus alabanzas en orden, como lo devuelve la API; las consultas usan esta misma forma
+export const SERVICE_WITH_SONGS = {
+  songs: {
+    orderBy: { position: "asc" },
+    include: { song: true }
+  }
+} as const satisfies Prisma.ServiceInclude
+
+export type ServiceWithSongs = Serialized<Prisma.ServiceGetPayload<{ include: typeof SERVICE_WITH_SONGS }>>
