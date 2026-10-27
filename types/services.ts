@@ -1,4 +1,4 @@
-import type { Prisma, Song, SongCategory as SchemaSongCategory } from "@prisma/client"
+import type { Prisma, Song, SongCategory as SchemaSongCategory } from "@/generated/prisma/client"
 import type { Serialized } from "./serialized"
 
 // Tipos de alabanzas y servicios tal como los recibe la interfaz. Salen del esquema de Prisma,

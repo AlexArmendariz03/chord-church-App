@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { Prisma } from "@prisma/client"
+import { Prisma } from "@/generated/prisma/client"
 
 // Respuestas de la API: todas las de error llevan el mismo formato, { message }, que muestra la interfaz
 

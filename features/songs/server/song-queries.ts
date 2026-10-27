@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client"
+import type { Prisma } from "@/generated/prisma/client"
 import { prisma } from "@/shared/server/prisma"
 import { SONG_LIST_SELECT, type SongListItem } from "@/types/services"
 
