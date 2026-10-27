@@ -1,63 +1,23 @@
 import { NextResponse } from "next/server"
-import { prisma } from "@/shared/server/prisma"
 import { parseServiceBody, type ServiceBody } from "@/features/services/server/service-input"
+import { createService, listServices } from "@/features/services/server/service-queries"
+import { errorResponse, forbidden, handle, unauthorized } from "@/shared/server/http"
 import { requirePermission, requireUser } from "@/shared/server/session"
-import { pastServiceCutoff } from "@/shared/utils/service-rules"
 
-// Past services: the most recent ones, newest first
-const PAST_SERVICES_LIMIT = 50
-
+// ?periodo=anteriores para los que ya pasaron; sin él, los próximos (incluido el que está en curso)
 export async function GET(req: Request) {
-  if (!(await requireUser())) {
-    return NextResponse.json({ message: "Tu sesión expiró. Vuelve a iniciar sesión." }, { status: 401 })
-  }
+  if (!(await requireUser())) return unauthorized()
 
-  const cutoff = pastServiceCutoff()
-  const isPast = new URL(req.url).searchParams.get("periodo") === "anteriores"
-  const services = await prisma.service.findMany({
-    where: { eventDate: isPast ? { lt: cutoff } : { gte: cutoff } },
-    orderBy: { eventDate: isPast ? "desc" : "asc" },
-    ...(isPast ? { take: PAST_SERVICES_LIMIT } : {}),
-    include: {
-      songs: {
-        orderBy: { position: "asc" },
-        include: { song: true }
-      }
-    }
-  })
-
-  return NextResponse.json(services)
+  const period = new URL(req.url).searchParams.get("periodo") === "anteriores" ? "past" : "upcoming"
+  return handle(async () => NextResponse.json(await listServices(period)), { failed: "Error al cargar los servicios" })
 }
 
 export async function POST(req: Request) {
-  const leader = await requirePermission("manageServices")
-  if (!leader) {
-    return NextResponse.json({ message: "Solo el líder puede crear servicios" }, { status: 403 })
-  }
+  if (!(await requirePermission("manageServices"))) return forbidden("Solo el líder puede crear servicios")
 
-  try {
+  return handle(async () => {
     const parsed = await parseServiceBody((await req.json()) as ServiceBody)
-    if (parsed.error !== undefined) {
-      return NextResponse.json({ message: parsed.error }, { status: 400 })
-    }
-    const { songs, ...fields } = parsed.data
-
-    const service = await prisma.service.create({
-      data: {
-        ...fields,
-        songs: { create: songs }
-      },
-      include: {
-        songs: {
-          orderBy: { position: "asc" },
-          include: { song: true }
-        }
-      }
-    })
-
-    return NextResponse.json(service, { status: 201 })
-  } catch (error) {
-    console.error("Error creating service:", error)
-    return NextResponse.json({ message: "Error al crear el servicio" }, { status: 500 })
-  }
+    if (parsed.error !== undefined) return errorResponse(parsed.error, 400)
+    return NextResponse.json(await createService(parsed.data), { status: 201 })
+  }, { failed: "Error al crear el servicio" })
 }
