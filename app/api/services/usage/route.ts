@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/shared/server/prisma"
-import { requireLeader } from "@/shared/server/session"
+import { requirePermission } from "@/shared/server/session"
 
 // Alcanza para un mes del calendario, y es lo bastante corto para que nadie descargue todo el historial de una vez
 const MAX_RANGE_MS = 45 * 24 * 60 * 60 * 1000
@@ -8,7 +8,7 @@ const MAX_RANGE_MS = 45 * 24 * 60 * 60 * 1000
 // Qué alabanzas usó cada servicio entre `desde` y `hasta`, para que el formulario avise
 // cuando una alabanza se repite mucho en el mismo mes
 export async function GET(req: Request) {
-  if (!(await requireLeader())) {
+  if (!(await requirePermission("manageServices"))) {
     return NextResponse.json({ message: "Solo el líder puede ver el uso de las alabanzas" }, { status: 403 })
   }
 

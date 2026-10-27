@@ -1,4 +1,4 @@
-import type { SessionRole } from "@/shared/server/session-token"
+import type { Role } from "@/shared/auth/permissions"
 
 // Pasos del recorrido de ayuda, por página y por rol.
 // Cada paso señala un elemento marcado con data-tour="…"; si no está visible (por ejemplo, el menú
@@ -189,8 +189,11 @@ const PAGE_BY_PATH: Record<string, TourPage> = {
 // Solo las páginas principales tienen recorrido (no la de editar una alabanza, por ejemplo)
 export const tourPageFor = (pathname: string): TourPage | null => PAGE_BY_PATH[pathname] ?? null
 
-export const tourStepsFor = (page: TourPage, role: SessionRole): TourStep[] => {
-  if (role === "leader") return LEADER_STEPS[page]
-  if (role === "proyeccion") return PROJECTION_STEPS[page] ?? []
-  return MUSICIAN_STEPS[page] ?? []
+// Un rol nuevo tiene que agregarse aquí (TypeScript lo pide), aunque sea con su recorrido vacío
+const STEPS_BY_ROLE: Record<Role, Partial<Record<TourPage, TourStep[]>>> = {
+  leader: LEADER_STEPS,
+  musico: MUSICIAN_STEPS,
+  proyeccion: PROJECTION_STEPS
 }
+
+export const tourStepsFor = (page: TourPage, role: Role): TourStep[] => STEPS_BY_ROLE[role][page] ?? []

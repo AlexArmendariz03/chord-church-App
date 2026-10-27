@@ -25,3 +25,10 @@ export const isSingleWorshipEvent = (title?: string | null, eventDate?: Date | s
   const date = new Date(eventDate)
   return !Number.isNaN(date.getTime()) && isWeekendMorning(date)
 }
+
+// Un servicio sigue "En curso" (y entre los próximos) estas horas después de empezar; luego pasa a anteriores.
+// La usan la API y las tarjetas, para que las dos cambien siempre al mismo tiempo.
+export const IN_PROGRESS_HOURS = 6
+
+// Los servicios que empezaron antes de este momento ya son anteriores
+export const pastServiceCutoff = (now = new Date()) => new Date(now.getTime() - IN_PROGRESS_HOURS * 60 * 60 * 1000)

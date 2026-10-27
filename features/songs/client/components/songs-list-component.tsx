@@ -15,7 +15,8 @@ type TagFilter = "all" | "youth" | "service"
 const SongsListComponent = () => {
   const { modal, message } = App.useApp()
   const router = useRouter()
-  const { isLeader } = useSession()
+  const { can } = useSession()
+  const canManage = can("manageSongs")
   const [songs, setSongs] = useState<SongWithMeta[]>([])
   const [loading, setLoading] = useState(false)
   const [tagFilter, setTagFilter] = useState<TagFilter>("all")
@@ -122,7 +123,7 @@ const SongsListComponent = () => {
       ]} />
   )
 
-  if (!isLeader) {
+  if (!canManage) {
     return (
       <div style={{ padding: 24 }}>
         <Card>

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { Prisma } from "@prisma/client"
 import { prisma } from "@/shared/server/prisma"
-import { requireLeader, requireUser } from "@/shared/server/session"
+import { requirePermission, requireUser } from "@/shared/server/session"
 import { trimLyrics } from "@/shared/utils/lyrics"
 
 type SongCategory = "jubilo" | "adoracion"
@@ -45,7 +45,7 @@ export async function GET(_req: Request, context: RouteContext) {
 }
 
 export async function PUT(req: Request, context: RouteContext) {
-  const leader = await requireLeader()
+  const leader = await requirePermission("manageSongs")
   if (!leader) {
     return NextResponse.json({ message: "Solo el líder puede editar alabanzas" }, { status: 403 })
   }
@@ -86,7 +86,7 @@ export async function PUT(req: Request, context: RouteContext) {
 }
 
 export async function DELETE(_req: Request, context: RouteContext) {
-  const leader = await requireLeader()
+  const leader = await requirePermission("manageSongs")
   if (!leader) {
     return NextResponse.json({ message: "Solo el líder puede eliminar alabanzas" }, { status: 403 })
   }

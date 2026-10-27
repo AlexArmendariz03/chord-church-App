@@ -1,7 +1,8 @@
 import { cookies } from "next/headers"
+import { can, type Permission } from "@/shared/auth/permissions"
 import { SESSION_COOKIE_NAME, SESSION_MAX_AGE, signSession, verifySession, type SessionUser } from "./session-token"
 
-export type { SessionRole, SessionUser } from "./session-token"
+export type { SessionUser } from "./session-token"
 
 export async function setSessionCookie(user: SessionUser) {
   const cookieStore = await cookies()
@@ -29,7 +30,8 @@ export async function requireUser(): Promise<SessionUser | null> {
   return getSessionUser()
 }
 
-export async function requireLeader(): Promise<SessionUser | null> {
+// El usuario de la sesión, solo si su rol tiene ese permiso (shared/auth/permissions.ts)
+export async function requirePermission(permission: Permission): Promise<SessionUser | null> {
   const user = await getSessionUser()
-  return user?.role === "leader" ? user : null
+  return can(user?.role, permission) ? user : null
 }

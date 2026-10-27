@@ -33,7 +33,9 @@ const SERVICE_QUERY_PARAM = "servicio"
 const CurrentServiceComponent = () => {
   const { message } = App.useApp()
   const router = useRouter()
-  const { isLeader } = useSession()
+  const { can } = useSession()
+  // El dirigente ve el nombre de cada alabanza en grande y la guía de oración y anuncios
+  const leadsService = can("leadService")
   const requestedServiceId = useSearchParams().get(SERVICE_QUERY_PARAM)
   const [services, setServices] = useState<ServiceWithSongs[]>([])
   const [loading, setLoading] = useState(true)
@@ -133,10 +135,10 @@ const CurrentServiceComponent = () => {
   const songs = currentService?.songs ?? []
   const activeIndex = Math.max(0, songs.findIndex(serviceSong => serviceSong.id === activeServiceSongId))
   const activeSong = songs[activeIndex] ?? null
-  const isLeaderView = isLeader && !leaderWantsLyrics
+  const isLeaderView = leadsService && !leaderWantsLyrics
   // The leader's slide is a single page per song
   const { pageCount, fontSize, autoSize } = isLeaderView ? { ...layout, pageCount: 1 } : layout
-  const showsGuide = isLeader && hasClosingGuide(currentService)
+  const showsGuide = leadsService && hasClosingGuide(currentService)
   // The guide follows the worship set: before the offering song, or at the end when there's none
   const offeringIndex = songs.findIndex(serviceSong => serviceSong.isOffering)
   const guideAfterIndex = !showsGuide ? -1 : offeringIndex > 0 ? offeringIndex - 1 : songs.length - 1
@@ -420,7 +422,7 @@ const CurrentServiceComponent = () => {
                     {!isGuideOpen && <Text type="secondary">Canción {activeIndex + 1} de {songs.length}</Text>}
                   </Space>
                   <div className="current-service-toolbar-actions">
-                    {isLeader && (
+                    {leadsService && (
                       <Button
                         data-tour="vista-dirigente" icon={isLeaderView ? <ReadOutlined /> : <OrderedListOutlined />}
                         onClick={() => toggleLeaderLyrics(isLeaderView)}>

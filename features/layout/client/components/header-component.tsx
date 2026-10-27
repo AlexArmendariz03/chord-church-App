@@ -9,23 +9,27 @@ import { useMemo, useState } from "react"
 import { openTour, useHasTour } from "@/features/tour/client/app-tour"
 import { getMenuItems, getSelectedMenuKey } from "./menu-items"
 import { displayName } from "@/shared/utils/user"
+import { ROLE_LABELS, type Role } from "@/shared/auth/permissions"
 import { useSession } from "./session-provider"
 
 const { Header } = ALayout
 // "1.6" (set in next.config.ts from package.json); shown in the user menu to check which version is deployed
 const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION
 
+// Color del avatar y de la etiqueta de cada rol (layout.scss)
+const ROLE_CLASSES: Record<Role, string> = { leader: "is-leader", musico: "is-musician", proyeccion: "is-projection" }
+
 const HeaderBar = () => {
   const router = useRouter()
   const pathname = usePathname()
-  const { user, isLeader, isProjection } = useSession()
+  const { user, role } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const hasTour = useHasTour()
-  const menuItems = useMemo(() => getMenuItems(isLeader, !isProjection), [isLeader, isProjection])
+  const menuItems = useMemo(() => getMenuItems(role), [role])
   const selectedKeys = [getSelectedMenuKey(pathname)]
-  const roleLabel = isLeader ? "Dirigente" : isProjection ? "Proyección" : "Músico"
-  const name = displayName(user?.username) || (isLeader ? "Líder" : roleLabel)
-  const roleClass = isLeader ? "is-leader" : isProjection ? "is-projection" : "is-musician"
+  const roleLabel = role ? ROLE_LABELS[role] : ""
+  const name = displayName(user?.username) || roleLabel
+  const roleClass = role ? ROLE_CLASSES[role] : ""
   // antd icon avatar in the role's color
   const userAvatar = (size: number) => (
     <Avatar size={size} icon={<UserOutlined />} className={`user-avatar ${roleClass}`} />
