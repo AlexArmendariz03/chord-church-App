@@ -1,11 +1,12 @@
 "use client"
 
-import { CloseOutlined, DownOutlined, LogoutOutlined, MenuOutlined, UserOutlined } from "@ant-design/icons"
+import { CloseOutlined, CompassOutlined, DownOutlined, LogoutOutlined, MenuOutlined, UserOutlined } from "@ant-design/icons"
 import { Avatar, Button, Drawer, Dropdown, Layout as ALayout, Menu, type MenuProps } from "antd"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
+import { openTour, useHasTour } from "@/features/tour/client/app-tour"
 import { getMenuItems, getSelectedMenuKey } from "./menu-items"
 import { displayName } from "@/shared/utils/user"
 import { useSession } from "./session-provider"
@@ -19,6 +20,7 @@ const HeaderBar = () => {
   const pathname = usePathname()
   const { user, isLeader, isProjection } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const hasTour = useHasTour()
   const menuItems = useMemo(() => getMenuItems(isLeader, !isProjection), [isLeader, isProjection])
   const selectedKeys = [getSelectedMenuKey(pathname)]
   const roleLabel = isLeader ? "Dirigente" : isProjection ? "Proyección" : "Músico"
@@ -42,7 +44,14 @@ const HeaderBar = () => {
     }
   }
 
+  // En el teléfono primero se cierra el menú lateral, para que el recorrido señale la página
+  const showHelp = () => {
+    setIsMenuOpen(false)
+    setTimeout(openTour, 300)
+  }
+
   const userMenuItems: MenuProps["items"] = [
+    ...(hasTour ? [{ key: "tour", icon: <CompassOutlined />, label: "Tour guiado", onClick: openTour }] : []),
     { key: "terms", label: <Link href="/terminos">Términos y condiciones</Link> },
     { key: "logout", icon: <LogoutOutlined />, label: "Cerrar sesión", onClick: handleLogout },
     { type: "divider" },
@@ -54,8 +63,9 @@ const HeaderBar = () => {
       {/* Phones and tablets: burger on the left, the emblem centered, the user's initial on the right */}
       <Button
         className="mobile-menu-button" type="text"
-        icon={<MenuOutlined />} aria-label="Abrir menú"
-        aria-expanded={isMenuOpen} onClick={() => setIsMenuOpen(true)} />
+        data-tour="menu" icon={<MenuOutlined />}
+        aria-label="Abrir menú" aria-expanded={isMenuOpen}
+        onClick={() => setIsMenuOpen(true)} />
 
       <Link
         href="/dashboard" className="brand"
@@ -74,14 +84,15 @@ const HeaderBar = () => {
 
       <Menu
         className="nav-menu" mode="horizontal"
-        selectedKeys={selectedKeys} items={menuItems} />
+        data-tour="menu" selectedKeys={selectedKeys}
+        items={menuItems} />
 
       <Dropdown
         menu={{ items: userMenuItems }} trigger={["click"]}
         placement="bottomRight" rootClassName="user-menu">
         <button
           type="button" className="user"
-          aria-label={`${name}, ${roleLabel}: abrir menú de usuario`}>
+          data-tour="usuario" aria-label={`${name}, ${roleLabel}: abrir menú de usuario`}>
           {userAvatar(34)}
           <span className="user-text">
             <span className="user-name">{name}</span>
@@ -93,7 +104,8 @@ const HeaderBar = () => {
 
       <button
         type="button" className="mobile-avatar"
-        aria-label={`${name}: abrir menú`} onClick={() => setIsMenuOpen(true)}>
+        data-tour="usuario" aria-label={`${name}: abrir menú`}
+        onClick={() => setIsMenuOpen(true)}>
         {userAvatar(38)}
       </button>
 
@@ -131,6 +143,14 @@ const HeaderBar = () => {
             selectedKeys={selectedKeys} items={menuItems}
             onClick={() => setIsMenuOpen(false)} />
 
+          {hasTour && (
+            <Button
+              className="mobile-nav-help" icon={<CompassOutlined />}
+              size="large" block
+              onClick={showHelp}>
+              Tour guiado
+            </Button>
+          )}
           <Button
             className="mobile-nav-logout" icon={<LogoutOutlined />}
             size="large" block

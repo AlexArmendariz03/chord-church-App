@@ -104,7 +104,8 @@ export const ServiceCard = ({ service, isNext = false, onOpen, onEdit, onReuse, 
             }}>
             <Button
               className="service-card-menu" type="text"
-              icon={<MoreOutlined />} aria-label="Más acciones" />
+              icon={<MoreOutlined />} aria-label="Más acciones"
+              data-tour="tarjeta-menu" />
           </Dropdown>
         )}
       </div>
@@ -134,7 +135,7 @@ export const ServiceCard = ({ service, isNext = false, onOpen, onEdit, onReuse, 
         {onOpen && songs.length > 0 && (
           <Button
             type={isNext ? "primary" : "default"} icon={<PlayCircleOutlined />}
-            onClick={onOpen}>
+            data-tour="abrir-en-vivo" onClick={onOpen}>
             Abrir en vivo
           </Button>
         )}

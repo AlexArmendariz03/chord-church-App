@@ -327,7 +327,7 @@ const CurrentServiceComponent = () => {
             xs={24} lg={8}
             className={`current-service-sidebar-col ${isSongListCollapsed ? "is-collapsed" : ""}`}>
             <Card
-              title="Alabanzas programadas"
+              data-tour="lista-en-curso" title="Alabanzas programadas"
               // With several services the picker already shows each date
               extra={services.length > 1 ? null : <Text strong>{formatServiceDate(currentService.eventDate)}</Text>}
               style={{ height: "100%" }}>
@@ -335,14 +335,16 @@ const CurrentServiceComponent = () => {
                 orientation="vertical" size={8}
                 style={{ width: "100%" }}>
                 {services.length > 1 ? (
-                  <Select
-                    className="current-service-picker" size="large"
-                    value={currentService.id} onChange={changeService}
-                    aria-label="Cambiar de evento"
-                    options={services.map(service => ({
-                      value: service.id,
-                      label: `${service.title} · ${formatServiceDate(service.eventDate)}`
-                    }))} />
+                  <div data-tour="elegir-servicio">
+                    <Select
+                      className="current-service-picker" size="large"
+                      value={currentService.id} onChange={changeService}
+                      aria-label="Cambiar de evento"
+                      options={services.map(service => ({
+                        value: service.id,
+                        label: `${service.title} · ${formatServiceDate(service.eventDate)}`
+                      }))} />
+                  </div>
                 ) : (
                   <Title level={4} style={{ marginTop: 0 }}>{currentService.title}</Title>
                 )}
@@ -400,7 +402,7 @@ const CurrentServiceComponent = () => {
                   </span>
                 }
                 extra={isGuideOpen ? <Tag color="blue">Dirigente</Tag> : <CategoryTag category={activeSong.category} offering={activeSong.isOffering} />}>
-                <div className={`current-service-toolbar ${isGuideOpen ? "is-guide" : ""}`}>
+                <div data-tour="herramientas" className={`current-service-toolbar ${isGuideOpen ? "is-guide" : ""}`}>
                   <Space
                     size={12} align="center"
                     wrap>
@@ -420,7 +422,7 @@ const CurrentServiceComponent = () => {
                   <div className="current-service-toolbar-actions">
                     {isLeader && (
                       <Button
-                        icon={isLeaderView ? <ReadOutlined /> : <OrderedListOutlined />}
+                        data-tour="vista-dirigente" icon={isLeaderView ? <ReadOutlined /> : <OrderedListOutlined />}
                         onClick={() => toggleLeaderLyrics(isLeaderView)}>
                         {isLeaderView ? "Ver letras" : "Vista del dirigente"}
                       </Button>
@@ -447,7 +449,8 @@ const CurrentServiceComponent = () => {
                     )}
                     <Button
                       type="primary" icon={<ExpandOutlined />}
-                      className="current-service-stage-button" onClick={enterStage}>
+                      className="current-service-stage-button" data-tour="pantalla-completa"
+                      onClick={enterStage}>
                       Pantalla completa
                     </Button>
                   </div>
@@ -455,7 +458,7 @@ const CurrentServiceComponent = () => {
 
                 <div className="current-service-sheet">{renderPager(activeSong, "light")}</div>
 
-                <div className="current-service-nav">
+                <div className="current-service-nav" data-tour="navegacion">
                   <Button
                     size="large" icon={<LeftOutlined />}
                     disabled={!canPrev} onClick={goPrev}>
