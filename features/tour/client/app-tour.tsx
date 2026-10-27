@@ -26,6 +26,12 @@ export const AppTour = () => {
   const [steps, setSteps] = useState<TourProps["steps"]>([])
   const [open, setOpen] = useState(false)
   const [current, setCurrent] = useState(0)
+  // Al cambiar de página se cierra, para no señalar elementos que ya no están
+  const [tourPath, setTourPath] = useState(pathname)
+  if (tourPath !== pathname) {
+    setTourPath(pathname)
+    setOpen(false)
+  }
 
   const start = useCallback(() => {
     if (!page || !role) return
@@ -39,11 +45,6 @@ export const AppTour = () => {
     setCurrent(0)
     setOpen(true)
   }, [page, role])
-
-  // Al cambiar de página se cierra, para no señalar elementos que ya no están
-  useEffect(() => {
-    setOpen(false)
-  }, [pathname])
 
   useEffect(() => {
     window.addEventListener(OPEN_TOUR_EVENT, start)

@@ -1,5 +1,5 @@
-import LoginComponent from "@/features/auth/client/components/login-component"
+import LoginForm from "@/features/auth/client/components/login-form"
 
 export default function LoginPage() {
-  return <LoginComponent />
+  return <LoginForm />
 }

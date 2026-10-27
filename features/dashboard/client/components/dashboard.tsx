@@ -1,14 +1,16 @@
 "use client"
 
 import { AppstoreAddOutlined, CalendarOutlined, PlayCircleOutlined, UnorderedListOutlined } from "@ant-design/icons"
-import { Alert, App, Button, Card, Col, Empty, Row, Typography } from "antd"
+import { Alert, Button, Card, Col, Empty, Row, Typography } from "antd"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useSession } from "@/features/layout/client/components/session-provider"
+import { ServiceCard } from "@/features/services/client/components/service-card"
+import { servicesApi } from "@/features/services/client/services-api"
 import { ROLE_LABELS, type Role } from "@/shared/auth/permissions"
+import { useConfirmDelete } from "@/shared/client/use-confirm-delete"
 import { displayName } from "@/shared/utils/user"
-import { ServiceCard } from "@/shared/components/service-card"
-import type { ServiceWithSongs } from "@/types/services"
+import type { ServiceSummary } from "@/types/services"
 
 const { Meta } = Card
 const { Title, Paragraph } = Typography
@@ -43,51 +45,44 @@ const LEADER_SHORTCUTS = [
 
 const Dashboard = () => {
   const router = useRouter()
-  const { modal, message } = App.useApp()
+  const confirmDelete = useConfirmDelete()
   const { user, role, can } = useSession()
   const canManage = can("manageServices")
   const canGoLive = can("goLive")
-  const [services, setServices] = useState<ServiceWithSongs[]>([])
+  const [services, setServices] = useState<ServiceSummary[]>([])
   const [loadingService, setLoadingService] = useState(true)
   const [loadError, setLoadError] = useState(false)
 
-  const fetchServices = () => {
-    setLoadingService(true)
-    setLoadError(false)
-    fetch("/api/services")
-      .then(res => {
-        if (!res.ok) throw new Error()
-        return res.json()
+  const loadServices = useCallback(() => {
+    servicesApi.upcoming()
+      .then(data => {
+        setServices(data)
+        setLoadError(false)
       })
-      .then((data: ServiceWithSongs[]) => setServices(data))
       .catch(() => setLoadError(true))
       .finally(() => setLoadingService(false))
-  }
+  }, [])
 
   useEffect(() => {
-    fetchServices()
-  }, [])
+    loadServices()
+  }, [loadServices])
+
+  const retry = () => {
+    setLoadingService(true)
+    loadServices()
+  }
 
   const navigateTo = (path: string) => {
     router.push(path)
   }
 
-  const deleteService = (service: ServiceWithSongs) => {
-    modal.confirm({
-      title: "Eliminar servicio",
-      content: `¿Seguro que deseas eliminar "${service.title}"? Esta acción no se puede deshacer.`,
-      okText: "Eliminar",
-      okButtonProps: { danger: true },
-      cancelText: "Cancelar",
-      async onOk() {
-        const response = await fetch(`/api/services/${service.id}`, { method: "DELETE" })
-        const data = await response.json()
-        if (!response.ok) throw new Error(data.message ?? "Error al eliminar")
-        message.success("Servicio eliminado")
-        fetchServices()
-      }
-    })
-  }
+  const deleteService = (service: ServiceSummary) => confirmDelete({
+    title: "Eliminar servicio",
+    content: `¿Seguro que deseas eliminar "${service.title}"? Esta acción no se puede deshacer.`,
+    remove: () => servicesApi.remove(service.id),
+    success: "Servicio eliminado",
+    onDeleted: loadServices
+  })
 
   return (
     <div className="dashboard">
@@ -141,7 +136,7 @@ const Dashboard = () => {
           <Alert
             type="error" showIcon
             title="No se pudieron cargar los servicios"
-            action={<Button size="small" onClick={fetchServices}>Reintentar</Button>} />
+            action={<Button size="small" onClick={retry}>Reintentar</Button>} />
         ) : services.length ? (
           <div className="service-list">
             {services.map((service, index) => (

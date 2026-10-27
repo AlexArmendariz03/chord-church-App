@@ -55,6 +55,15 @@ export default defineConfig([
     }
   },
   {
+    // En TypeScript, la regla base marca los nombres de parámetros de los tipos de función
+    // (`onChange: (value: string) => void`); la de typescript-eslint los entiende
+    files: ["**/*.ts", "**/*.tsx"],
+    rules: {
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": ["error", { ignoreRestSiblings: true, varsIgnorePattern: "^_" }]
+    }
+  },
+  {
     // Scripts de terminal: imprimir en consola es su salida
     files: ["prisma/**/*.mjs"],
     rules: { "no-console": "off" }
