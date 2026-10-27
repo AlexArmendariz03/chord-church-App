@@ -5,12 +5,20 @@ import { Alert, App, Button, Card, Col, Empty, Row, Typography } from "antd"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useSession } from "@/features/layout/client/components/session-provider"
+import { ROLE_LABELS, type Role } from "@/shared/auth/permissions"
 import { displayName } from "@/shared/utils/user"
 import { ServiceCard } from "@/shared/components/service-card"
 import type { ServiceWithSongs } from "@/types/services"
 
 const { Meta } = Card
 const { Title, Paragraph } = Typography
+
+// Lo que cada rol hace en la app, bajo el saludo
+const SUBTITLES: Record<Role, string> = {
+  leader: "Administra alabanzas y arma los próximos servicios.",
+  musico: "Abre el servicio en curso para seguir las letras en vivo.",
+  proyeccion: "Aquí están las alabanzas de cada servicio, en el orden en que se proyectan."
+}
 
 const LEADER_SHORTCUTS = [
   {
@@ -36,7 +44,9 @@ const LEADER_SHORTCUTS = [
 const Dashboard = () => {
   const router = useRouter()
   const { modal, message } = App.useApp()
-  const { user, isLeader, isProjection } = useSession()
+  const { user, role, can } = useSession()
+  const canManage = can("manageServices")
+  const canGoLive = can("goLive")
   const [services, setServices] = useState<ServiceWithSongs[]>([])
   const [loadingService, setLoadingService] = useState(true)
   const [loadError, setLoadError] = useState(false)
@@ -84,17 +94,13 @@ const Dashboard = () => {
       <div className="dashboard-hero">
         <Title
           level={2} style={{ margin: "0 0 6px" }}>
-          Hola, {displayName(user?.username) || (isLeader ? "Líder" : isProjection ? "Proyección" : "Músico")}
+          Hola, {displayName(user?.username) || (role && ROLE_LABELS[role])}
         </Title>
         <Paragraph className="dashboard-subtitle">
-          {isLeader
-            ? "Administra alabanzas y arma los próximos servicios."
-            : isProjection
-              ? "Aquí están las alabanzas de cada servicio, en el orden en que se proyectan."
-              : "Abre el servicio en curso para seguir las letras en vivo."}
+          {role && SUBTITLES[role]}
         </Paragraph>
 
-        {isLeader ? (
+        {canManage ? (
           <Row gutter={[20, 20]} data-tour="atajos">
             {LEADER_SHORTCUTS.map(({ path, title, description, icon }) => (
               <Col
@@ -113,7 +119,7 @@ const Dashboard = () => {
               </Col>
             ))}
           </Row>
-        ) : !isProjection && (
+        ) : canGoLive && (
           <Button
             type="primary" size="large"
             icon={<PlayCircleOutlined />} data-tour="abrir-en-curso"
@@ -142,16 +148,16 @@ const Dashboard = () => {
               <ServiceCard
                 key={service.id} service={service}
                 isNext={index === 0}
-                onOpen={isProjection ? undefined : () => navigateTo(`/en-curso?servicio=${service.id}`)}
-                onEdit={isLeader ? () => navigateTo(`/servicios?edit=${service.id}`) : undefined}
-                onDelete={isLeader ? () => deleteService(service) : undefined} />
+                onOpen={!canGoLive ? undefined : () => navigateTo(`/en-curso?servicio=${service.id}`)}
+                onEdit={canManage ? () => navigateTo(`/servicios?edit=${service.id}`) : undefined}
+                onDelete={canManage ? () => deleteService(service) : undefined} />
             ))}
           </div>
         ) : (
           <Empty
-            description={isLeader ? "Aún no hay servicios programados" : "No hay servicios programados por ahora"}
+            description={canManage ? "Aún no hay servicios programados" : "No hay servicios programados por ahora"}
             image={Empty.PRESENTED_IMAGE_SIMPLE}>
-            {isLeader && (
+            {canManage && (
               <Button
                 type="primary" onClick={() => navigateTo("/servicios")}>
                 Crear el primero

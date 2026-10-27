@@ -39,7 +39,8 @@ const ServicesComponent = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [form] = Form.useForm<ServiceFormValues>()
-  const { isLeader } = useSession()
+  const { can } = useSession()
+  const canManage = can("manageServices")
   const [songs, setSongs] = useState<SongWithMeta[]>([])
   const [services, setServices] = useState<ServiceWithSongs[]>([])
   // Services that already left the upcoming list; loaded the first time the tab opens
@@ -99,7 +100,7 @@ const ServicesComponent = () => {
 
   // El mes es el mes del calendario del evento, según el dispositivo (la hora de la iglesia)
   useEffect(() => {
-    if (!isLeader || !watchedMonth || monthUsage?.month === watchedMonth) return
+    if (!canManage || !watchedMonth || monthUsage?.month === watchedMonth) return
     let cancelled = false
     const start = dayjs(`${watchedMonth}-01`)
     const query = new URLSearchParams({ desde: start.toISOString(), hasta: start.add(1, "month").toISOString() })
@@ -109,7 +110,7 @@ const ServicesComponent = () => {
       // Es solo un aviso: sin él, el formulario funciona igual
       .catch(() => {})
     return () => { cancelled = true }
-  }, [isLeader, watchedMonth, monthUsage?.month])
+  }, [canManage, watchedMonth, monthUsage?.month])
 
   // Fechas de otros servicios del mes en que ya se tocó cada alabanza; sin la del servicio que se edita
   const datesBySong = useMemo(() => {
@@ -360,7 +361,7 @@ const ServicesComponent = () => {
                 Estudios y seminarios llevan solo 1 de adoración.
               </Paragraph>
             </Col>
-            {isLeader && formInModal && (
+            {canManage && formInModal && (
               <Col>
                 <Button
                   type="primary" size="large"
@@ -373,13 +374,13 @@ const ServicesComponent = () => {
           </Row>
         </Card>
 
-        {isLeader && !formInModal && !loading && (
+        {canManage && !formInModal && !loading && (
           <Card title="Crear servicio" data-tour="agregar-evento">
             {serviceForm}
           </Card>
         )}
 
-        {isLeader && formInModal && (
+        {canManage && formInModal && (
           <Modal
             open={formOpen} title={editingServiceId ? "Editar servicio" : "Agregar evento"}
             onCancel={closeForm} footer={null}
@@ -404,8 +405,8 @@ const ServicesComponent = () => {
                         key={service.id} service={service}
                         isNext={index === 0}
                         onOpen={() => router.push(`/en-curso?servicio=${service.id}`)}
-                        onEdit={isLeader ? () => startEdit(service) : undefined}
-                        onDelete={isLeader ? () => deleteService(service) : undefined} />
+                        onEdit={canManage ? () => startEdit(service) : undefined}
+                        onDelete={canManage ? () => deleteService(service) : undefined} />
                     ))}
                   </div>
                 )
@@ -420,8 +421,8 @@ const ServicesComponent = () => {
                     {pastServices.map(service => (
                       <ServiceCard
                         key={service.id} service={service}
-                        onReuse={isLeader ? () => startReuse(service) : undefined}
-                        onDelete={isLeader ? () => deleteService(service) : undefined} />
+                        onReuse={canManage ? () => startReuse(service) : undefined}
+                        onDelete={canManage ? () => deleteService(service) : undefined} />
                     ))}
                   </div>
                 )

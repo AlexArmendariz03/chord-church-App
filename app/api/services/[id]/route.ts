@@ -2,14 +2,14 @@ import { NextResponse } from "next/server"
 import { Prisma } from "@prisma/client"
 import { prisma } from "@/shared/server/prisma"
 import { parseServiceBody, type ServiceBody } from "@/features/services/server/service-input"
-import { requireLeader } from "@/shared/server/session"
+import { requirePermission } from "@/shared/server/session"
 
 type RouteContext = {
   params: Promise<{ id: string }>
 }
 
 export async function PUT(req: Request, context: RouteContext) {
-  const leader = await requireLeader()
+  const leader = await requirePermission("manageServices")
   if (!leader) {
     return NextResponse.json({ message: "Solo el líder puede editar servicios" }, { status: 403 })
   }
@@ -50,7 +50,7 @@ export async function PUT(req: Request, context: RouteContext) {
 }
 
 export async function DELETE(_req: Request, context: RouteContext) {
-  const leader = await requireLeader()
+  const leader = await requirePermission("manageServices")
   if (!leader) {
     return NextResponse.json({ message: "Solo el líder puede eliminar servicios" }, { status: 403 })
   }

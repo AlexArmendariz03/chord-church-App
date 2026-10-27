@@ -170,7 +170,8 @@ export const UploadSongComponent = () => {
     const editingId = searchParams.get("id")
     const previewContainerRef = useRef<HTMLDivElement | null>(null)
 
-    const { isLeader } = useSession()
+    const { can } = useSession()
+    const canManage = can("manageSongs")
     const [songName, setSongName] = useState("")
     const [songKey, setSongKey] = useState("C")
     const [songCategory, setSongCategory] = useState<"jubilo" | "adoracion">("jubilo")
@@ -436,7 +437,7 @@ export const UploadSongComponent = () => {
         }
     }
 
-    if (!isLeader) {
+    if (!canManage) {
         return (
           <div style={{ padding: 24 }}>
             <Card style={CARD_STYLE}>

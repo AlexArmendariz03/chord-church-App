@@ -1,12 +1,14 @@
 // Creates or updates a user in the database.
 // Usage: npm run create-user -- <usuario> <contraseña> [leader|musico|proyeccion]
 import bcrypt from "bcryptjs"
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient, UserRole } from "@prisma/client"
 
+// Los roles salen del enum de prisma/schema.prisma, así que un rol nuevo funciona aquí sin tocar nada
+const ROLES = Object.values(UserRole)
 const [username, password, role = "musico"] = process.argv.slice(2)
 
-if (!username || !password || !["leader", "musico", "proyeccion"].includes(role)) {
-  console.error("Uso: npm run create-user -- <usuario> <contraseña> [leader|musico|proyeccion]")
+if (!username || !password || !ROLES.includes(role)) {
+  console.error(`Uso: npm run create-user -- <usuario> <contraseña> [${ROLES.join("|")}]`)
   process.exit(1)
 }
 

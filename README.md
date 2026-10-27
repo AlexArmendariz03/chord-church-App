@@ -1,10 +1,13 @@
 # Chord Church
 
-## Node Version
+Alabanzas, servicios y letras con acordes en vivo para el equipo de alabanza.
+Next.js (App Router) + Prisma + PostgreSQL (Supabase), desplegada en Vercel.
 
-- Requerido: Node 22 (ver `.nvmrc`)
+## Requisitos
 
-## Getting Started
+- Node 22 (ver `.nvmrc`)
+
+## Empezar
 
 1. Copia `.env.examples` a `.env` y completa `DATABASE_URL`, `DIRECT_URL` y `SESSION_SECRET`
    (genera el secreto con `openssl rand -base64 48`).
@@ -17,16 +20,52 @@ npm run dev
 
 Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-## Usuarios
+## Scripts
+
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` / `npm start` | Compila y sirve la versión de producción |
+| `npm run lint` | Revisa el código con ESLint |
+| `npm run create-user -- <usuario> <contraseña> [rol]` | Crea o actualiza un usuario |
+| `npm run import-songs -- <archivo.json> [--apply]` | Importa alabanzas desde un JSON; sin `--apply` solo muestra qué haría |
+
+## Usuarios y roles
 
 Crea o actualiza usuarios en la base de datos con:
 
 ```bash
-npm run create-user -- <usuario> <contraseña> leader   # o musico
+npm run create-user -- <usuario> <contraseña> leader   # o musico, o proyeccion
 ```
 
-En desarrollo (`npm run dev`) existen además dos usuarios de prueba: `leader` y `musico`.
-**En producción están desactivados**: solo pueden entrar usuarios de la base de datos.
+| Rol | Qué puede hacer |
+|---|---|
+| `leader` (Dirigente) | Todo: alabanzas, servicios y En curso con la vista del dirigente |
+| `musico` (Músico) | Ver los servicios y seguir En curso con letras, acordes y tono |
+| `proyeccion` (Proyección) | Solo ver la lista de servicios con sus alabanzas, sin tonos |
+
+Los permisos de cada rol están en un solo lugar: `shared/auth/permissions.ts`.
+
+## Base de datos
+
+El esquema está en `prisma/schema.prisma` y cada cambio va en una migración de `prisma/migrations/`.
+
+- Crear una migración después de cambiar el esquema: `npx prisma migrate dev --name <descripcion>`
+- Aplicar las migraciones pendientes: `npx prisma migrate deploy`
+- Ver cuáles faltan: `npx prisma migrate status`
+
+Aplica las migraciones **antes** de publicar el código que las usa.
+
+## Estructura
+
+```
+app/        Páginas y rutas de la API (App Router)
+features/   Cada funcionalidad con su parte client/ y server/
+shared/     Código común: auth y permisos, componentes, servidor (Prisma, sesión) y utilidades
+types/      Tipos compartidos entre cliente y servidor
+styles/     Estilos globales y de cada componente (SCSS)
+prisma/     Esquema, migraciones y scripts de usuarios e importación
+```
 
 ## Despliegue
 

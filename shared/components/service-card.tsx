@@ -7,6 +7,7 @@ import "dayjs/locale/es"
 import { useState } from "react"
 import { useSession } from "@/features/layout/client/components/session-provider"
 import { formatServiceDate } from "@/shared/utils/dates"
+import { IN_PROGRESS_HOURS } from "@/shared/utils/service-rules"
 import type { ServiceWithSongs } from "@/types/services"
 
 type ServiceCardProps = {
@@ -20,9 +21,6 @@ type ServiceCardProps = {
   onReuse?: () => void
   onDelete?: () => void
 }
-
-// Same window as the API: a service is "En curso" for this long after it starts, then it's past
-const IN_PROGRESS_HOURS = 6
 
 // "Hoy", "Mañana", "En 5 días"; "En curso" once it has started; "Ayer", "Hace 3 días" once it's over
 const relativeLabel = (eventDate: string) => {
@@ -41,9 +39,9 @@ const relativeLabel = (eventDate: string) => {
 }
 
 export const ServiceCard = ({ service, isNext = false, onOpen, onEdit, onReuse, onDelete }: ServiceCardProps) => {
-  // Proyección no toca: la lista va sin tonos y abierta en todos los servicios, que es lo único que ve
-  const { isProjection } = useSession()
-  const [expanded, setExpanded] = useState(isNext || isProjection)
+  const { can } = useSession()
+  // Sin En curso, esta lista es lo único que ve el usuario: todas las tarjetas van abiertas
+  const [expanded, setExpanded] = useState(isNext || !can("goLive"))
   const date = dayjs(service.eventDate).locale("es")
   const songs = [...service.songs].sort((a, b) => a.position - b.position)
   const jubiloCount = songs.filter(s => s.category === "jubilo" && !s.isOffering).length
@@ -117,7 +115,7 @@ export const ServiceCard = ({ service, isNext = false, onOpen, onEdit, onReuse, 
               <span className="service-card-song-number">{position}</span>
               <span className="service-card-song-name">{song.name}</span>
               {isOffering && <span className="service-card-song-badge">Ofrenda</span>}
-              {!isProjection && <span className="service-card-song-key">{song.key}</span>}
+              {can("seeKeys") && <span className="service-card-song-key">{song.key}</span>}
             </li>
           ))}
         </ol>
