@@ -378,6 +378,15 @@ $projection-gradient: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
   margin-top: 12px;
 }
 
+// Tour guiado va justo antes de Cerrar sesión
+.mobile-nav-help.ant-btn {
+  margin-top: 12px;
+
+  & + .mobile-nav-logout.ant-btn {
+    margin-top: 8px;
+  }
+}
+
 .mobile-nav-version {
   display: block;
   margin-top: 10px;

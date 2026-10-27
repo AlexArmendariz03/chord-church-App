@@ -364,7 +364,8 @@ const ServicesComponent = () => {
               <Col>
                 <Button
                   type="primary" size="large"
-                  icon={<PlusOutlined />} onClick={startCreate}>
+                  icon={<PlusOutlined />} data-tour="agregar-evento"
+                  onClick={startCreate}>
                   Agregar evento
                 </Button>
               </Col>
@@ -373,7 +374,7 @@ const ServicesComponent = () => {
         </Card>
 
         {isLeader && !formInModal && !loading && (
-          <Card title="Crear servicio">
+          <Card title="Crear servicio" data-tour="agregar-evento">
             {serviceForm}
           </Card>
         )}
@@ -387,7 +388,7 @@ const ServicesComponent = () => {
           </Modal>
         )}
 
-        <Card>
+        <Card data-tour="lista-servicios">
           <Tabs
             activeKey={listTab} onChange={changeListTab}
             items={[

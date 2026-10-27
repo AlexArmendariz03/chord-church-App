@@ -95,7 +95,7 @@ const Dashboard = () => {
         </Paragraph>
 
         {isLeader ? (
-          <Row gutter={[20, 20]}>
+          <Row gutter={[20, 20]} data-tour="atajos">
             {LEADER_SHORTCUTS.map(({ path, title, description, icon }) => (
               <Col
                 key={path} xs={24}
@@ -116,14 +116,16 @@ const Dashboard = () => {
         ) : !isProjection && (
           <Button
             type="primary" size="large"
-            icon={<PlayCircleOutlined />} onClick={() => navigateTo("/en-curso")}>
+            icon={<PlayCircleOutlined />} data-tour="abrir-en-curso"
+            onClick={() => navigateTo("/en-curso")}>
             Abrir servicio en curso
           </Button>
         )}
       </div>
 
       <Card
-        className="next-service-card" loading={loadingService}
+        className="next-service-card" data-tour="proximos"
+        loading={loadingService}
         title={(
           <span className="next-service-title">
             <CalendarOutlined /> Próximos servicios

@@ -102,7 +102,7 @@ const SongsListComponent = () => {
                   }}>
                   <Button
                     type="text" icon={<MoreOutlined />}
-                    aria-label="Más acciones" />
+                    aria-label="Más acciones" data-tour="alabanza-menu" />
                 </Dropdown>
               </div>
             </div>
@@ -148,13 +148,13 @@ const SongsListComponent = () => {
             </div>
             <Button
               type="primary" icon={<PlusOutlined />}
-              onClick={() => router.push("/alabanzas/nueva")}>
+              data-tour="nueva-alabanza" onClick={() => router.push("/alabanzas/nueva")}>
               Nueva alabanza
             </Button>
           </div>
         </Card>
 
-        <Card loading={loading}>
+        <Card loading={loading} data-tour="lista-alabanzas">
           {!isWide && tagFilterControl}
           <Tabs
             tabBarExtraContent={isWide ? tagFilterControl : undefined}
