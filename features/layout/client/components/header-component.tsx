@@ -32,7 +32,9 @@ const HeaderBar = () => {
   const roleClass = role ? ROLE_CLASSES[role] : ""
   // antd icon avatar in the role's color
   const userAvatar = (size: number) => (
-    <Avatar size={size} icon={<UserOutlined />} className={`user-avatar ${roleClass}`} />
+    <Avatar
+      size={size} icon={<UserOutlined />}
+      className={`user-avatar ${roleClass}`} />
   )
   // Shared accounts are named after their role ("dirigente"): no badge repeating the name
   const nameIsRole = name.toLowerCase() === roleLabel.toLowerCase()

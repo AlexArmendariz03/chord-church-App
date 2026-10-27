@@ -26,9 +26,15 @@ Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 |---|---|
 | `npm run dev` | Servidor de desarrollo |
 | `npm run build` / `npm start` | Compila y sirve la versión de producción |
-| `npm run lint` | Revisa el código con ESLint |
+| `npm run lint` | Revisa el código con ESLint (`npm run lint:fix` corrige lo automático) |
+| `npm run typecheck` | Revisa los tipos de TypeScript |
+| `npm test` | Corre las pruebas (Vitest); `npm run test:watch` las repite al guardar |
 | `npm run create-user -- <usuario> <contraseña> [rol]` | Crea o actualiza un usuario |
 | `npm run import-songs -- <archivo.json> [--apply]` | Importa alabanzas desde un JSON; sin `--apply` solo muestra qué haría |
+
+Las pruebas van junto al archivo que prueban (`transpose.ts` → `transpose.test.ts`) y cubren la lógica
+pura: transposición, letras, paginación, reglas de servicios, permisos y validación de la API.
+En GitHub, cada push a `main` o `dev` y cada PR corre lint, tipos y pruebas (`.github/workflows/ci.yml`).
 
 ## Usuarios y roles
 

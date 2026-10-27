@@ -1,0 +1,22 @@
+# Revisa cada push y cada PR: lint, tipos y pruebas. No toca la base de datos.
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      # También genera el cliente de Prisma (postinstall), que necesitan los tipos
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
