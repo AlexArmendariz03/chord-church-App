@@ -1,4 +1,4 @@
-import type { UserRole } from "@prisma/client"
+import type { UserRole } from "@/generated/prisma/client"
 
 // Roles y permisos de la app, en un solo lugar. Lo usan el proxy, las rutas de la API y la interfaz.
 // Para agregar un rol: súmalo al enum UserRole de prisma/schema.prisma (con su migración), a ROLES,

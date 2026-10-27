@@ -65,7 +65,7 @@ export default defineConfig([
   },
   {
     // Scripts de terminal: imprimir en consola es su salida
-    files: ["prisma/**/*.mjs"],
+    files: ["prisma/**/*.ts"],
     rules: { "no-console": "off" }
   }
 ])

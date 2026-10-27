@@ -55,6 +55,10 @@ Los permisos de cada rol están en un solo lugar: `shared/auth/permissions.ts`.
 ## Base de datos
 
 El esquema está en `prisma/schema.prisma` y cada cambio va en una migración de `prisma/migrations/`.
+Con Prisma 7 las conexiones ya no van en el esquema: las migraciones usan `DIRECT_URL` desde
+`prisma.config.ts` y la app usa `DATABASE_URL` (con pooling) en `shared/server/prisma.ts`.
+El cliente se genera en `generated/prisma/` (no se versiona) al instalar dependencias o con `npx prisma generate`;
+se importa desde `@/generated/prisma/client`.
 
 - Crear una migración después de cambiar el esquema: `npx prisma migrate dev --name <descripcion>`
 - Aplicar las migraciones pendientes: `npx prisma migrate deploy`
@@ -85,6 +89,7 @@ shared/         Código común
 types/          Tipos compartidos entre cliente y servidor, derivados de Prisma
 styles/         Estilos globales y de cada componente (SCSS)
 prisma/         Esquema, migraciones y scripts de usuarios e importación
+generated/      Cliente de Prisma generado (no se versiona)
 ```
 
 Para agregar una funcionalidad: su carpeta en `features/` con `client/` (componentes, hooks y su
