@@ -1,6 +1,6 @@
 {
   "name": "chord-church",
-  "version": "1.13.0",
+  "version": "1.14.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,8 +9,11 @@
     "postinstall": "prisma generate",
     "create-user": "node --env-file=.env prisma/create-user.mjs",
     "import-songs": "node --env-file=.env prisma/import-songs.mjs",
-    "lint": "ESLINT_USE_FLAT_CONFIG=false eslint . --ext .ts,.tsx",
-    "lint:fix": "ESLINT_USE_FLAT_CONFIG=false eslint . --ext .ts,.tsx --fix"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "engines": {
     "node": "22.x"
@@ -30,13 +33,14 @@
     "react-konva": "^19.2.3"
   },
   "devDependencies": {
-    "@types/node": "^20.19.10",
+    "@types/node": "^22.20.5",
     "@types/react": "19.1.10",
     "@types/react-dom": "19.1.7",
     "eslint": "9.34.0",
-    "eslint-config-next": "15.3.0",
+    "eslint-config-next": "^16.4.2",
     "sass": "1.77.8",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^5.0.5"
   }
 }

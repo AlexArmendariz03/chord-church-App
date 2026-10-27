@@ -26,7 +26,8 @@ export type Unit = LyricsLine[]
 // Section names as they come in scraped sheets, Spanish or English. A header is the name alone
 // ("Coro", "[VERSO 2]", "Verso II (x2)"), the name and a colon ("Intro: Am G F") or the name and
 // chords ("Intro A D E").
-const SECTION_NAME = /^\s*([[(]?)\s*(intro|verso|estrofa|pre-?coro|coro|estribillo|puente|interludio|instrumental|final|outro|tag|pre-?chorus|chorus|verse|bridge|interlude|ending)\b(.*)$/i
+const SECTION_NAMES = "intro|verso|estrofa|pre-?coro|coro|estribillo|puente|interludio|instrumental|final|outro|tag|pre-?chorus|chorus|verse|bridge|interlude|ending"
+const SECTION_NAME = new RegExp(`^\\s*([[(]?)\\s*(${SECTION_NAMES})\\b(.*)$`, "i")
 // What can follow the name in the label itself: a number and/or a note like "(x2)"
 const SECTION_SUFFIX = /^\s*(?:\d+|[ivx]+\b)?\s*(?:\([^)]*\))?\s*$/i
 // Shown in Spanish whatever language the sheet used
