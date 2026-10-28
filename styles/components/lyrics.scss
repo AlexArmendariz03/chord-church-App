@@ -16,7 +16,7 @@
   &.is-light {
     --lyrics-text: #{$ink-dark};
     --lyrics-chord: #{$accent-indigo};
-    --section-verse: #475569;
+    --section-verse: var(--app-text-subtle);
     --section-chorus: #0284c7;
     --section-bridge: #7c3aed;
     --section-instrumental: #0f766e;

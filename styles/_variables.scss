@@ -6,13 +6,13 @@ $primary-yellow: #FFD549;
 $primary-green: #48D598;
 $primary-black: #000000;
 $primary-light-black: #2F333C;
-$primary-typography: #576176;
+$primary-typography: var(--app-text-secondary);
 
-// Theme (minimal claro) //
-$accent-indigo: #4f46e5;
-$ink-dark: #111827;
-$header-bg: #ffffff;
-$header-border: #e5e7eb;
-$page-bg: #f7f8fb;
+// Theme: cambian con el modo claro u oscuro (_theme.scss) //
+$accent-indigo: var(--app-accent);
+$ink-dark: var(--app-ink);
+$header-bg: var(--app-surface);
+$header-border: var(--app-border);
+$page-bg: var(--app-page-bg);
 // Brand emblem: the logo in white over this indigo → violet tile (header on phones, login)
 $brand-gradient: linear-gradient(145deg, #6366f1 0%, #4f46e5 55%, #7c3aed 100%);
