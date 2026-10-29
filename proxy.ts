@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { can, type Permission } from "@/shared/auth/permissions"
-import { SESSION_COOKIE_NAME, verifySession } from "@/shared/server/session-token"
+import { SESSION_COOKIE_NAME, sessionTokenFrom, verifySession } from "@/shared/server/session-token"
 
 const PUBLIC_PAGES = ["/login"]
 const PUBLIC_API = ["/api/login", "/api/logout"]
@@ -18,7 +18,7 @@ const matches = (pathname: string, paths: string[]) =>
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const user = await verifySession(request.cookies.get(SESSION_COOKIE_NAME)?.value)
+  const user = await verifySession(sessionTokenFrom(request.cookies.get(SESSION_COOKIE_NAME)?.value, request.headers.get("authorization")))
   const redirectTo = (path: string) => NextResponse.redirect(new URL(path, request.url))
 
   if (pathname.startsWith("/api/")) {
