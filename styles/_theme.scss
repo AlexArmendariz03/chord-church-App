@@ -1,0 +1,115 @@
+// Colores de la interfaz para el modo claro y el oscuro. El <html> lleva data-theme="light" o "dark"
+// (app/layout.tsx); los componentes usan estas variables, directo o por las de _variables.scss.
+// Los fondos y bordes de antd salen de features/layout/theme.ts: si cambias uno, cambia el otro.
+// El modo escenario tiene sus propios temas (stage.scss) y no depende de esto.
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --app-page-bg: #f7f8fb;
+  --app-surface: #ffffff;
+  --app-surface-muted: #f1f5f9;
+  --app-border: #e5e7eb;
+  --app-border-soft: #eef2f6;
+
+  --app-ink: #111827;
+  --app-text: #334155;
+  --app-text-secondary: #576176;
+  --app-text-muted: #64748b;
+  --app-text-faint: #94a3b8;
+  --app-text-subtle: #475569;
+
+  // Cobalto para textos e íconos; el de relleno lleva texto blanco encima
+  --app-accent: #1f47c2;
+  --app-accent-fill: #2b53d6;
+  --app-accent-soft: #ebf0fe;
+  --app-accent-tint: rgba(43, 83, 214, 0.06);
+  // Para sombras y fondos translúcidos: rgba(var(--app-accent-rgb), 0.1)
+  --app-accent-rgb: 43, 83, 214;
+  // Degradado de un solo tono (claro arriba, oscuro abajo) y relieve de los elementos con color
+  --app-accent-gradient: linear-gradient(180deg, #3a66f0 0%, #1e43b8 100%);
+  --app-accent-raised: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 1px 2px rgba(30, 67, 184, 0.4), 0 6px 14px -6px rgba(30, 67, 184, 0.55);
+
+  --app-jubilo-text: #15803d;
+  --app-adoracion-text: #6d28d9;
+  --app-ofrenda-text: #b45309;
+  --app-ofrenda-soft: #fef3c7;
+  --app-soon-text: #c2410c;
+  --app-soon-soft: #fff7ed;
+  --app-note-text: #d46b08;
+
+  --app-hero-bg: linear-gradient(135deg, #edf2ff 0%, #f7f8fb 65%);
+  --app-hero-border: #dfe6fb;
+  --app-canvas-bg: linear-gradient(180deg, #fbfcfe 0%, #f4f6fa 100%);
+  --app-canvas-border: #e8edf3;
+  --app-shadow: rgba(15, 23, 42, 0.08);
+  --app-avatar-ring: #ffffff;
+
+  --app-message-bg: #f6ffed;
+  --app-message-border: #b7eb8f;
+  --app-modal-button: #17202a;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --app-page-bg: #0b1020;
+  --app-surface: #151b2b;
+  --app-surface-muted: #1e2638;
+  --app-border: #283247;
+  --app-border-soft: #222b3e;
+
+  --app-ink: #e5e7eb;
+  --app-text: #cbd5e1;
+  --app-text-secondary: #a3adc2;
+  --app-text-muted: #8b95a9;
+  --app-text-faint: #6b7489;
+  --app-text-subtle: #a3adc2;
+
+  --app-accent: #9db6ff;
+  --app-accent-fill: #3a66f0;
+  --app-accent-soft: rgba(58, 102, 240, 0.18);
+  --app-accent-tint: rgba(120, 150, 255, 0.1);
+  --app-accent-rgb: 58, 102, 240;
+  --app-accent-gradient: linear-gradient(180deg, #4a74f5 0%, #2448c4 100%);
+  --app-accent-raised: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 1px 2px rgba(0, 0, 0, 0.5), 0 6px 14px -6px rgba(0, 0, 0, 0.6);
+
+  --app-jubilo-text: #4ade80;
+  --app-adoracion-text: #c4b5fd;
+  --app-ofrenda-text: #fbbf24;
+  --app-ofrenda-soft: rgba(245, 158, 11, 0.18);
+  --app-soon-text: #fdba74;
+  --app-soon-soft: rgba(234, 88, 12, 0.18);
+  --app-note-text: #fdba74;
+
+  --app-hero-bg: linear-gradient(135deg, #16224a 0%, #0b1020 65%);
+  --app-hero-border: #253a6e;
+  --app-canvas-bg: linear-gradient(180deg, #121828 0%, #0e1422 100%);
+  --app-canvas-border: #283247;
+  --app-shadow: rgba(0, 0, 0, 0.35);
+  --app-avatar-ring: #151b2b;
+
+  --app-message-bg: #162312;
+  --app-message-border: #274916;
+  --app-modal-button: #3a66f0;
+
+  // Letras, guía y diapositiva del dirigente fuera del modo escenario: tonos claros sobre fondo oscuro
+  .lyrics-viewer.is-light {
+    --section-verse: #a3adc2;
+    --section-chorus: #38bdf8;
+    --section-bridge: #c4b5fd;
+    --section-instrumental: #2dd4bf;
+  }
+
+  .closing-guide:not(.is-stage) {
+    --guide-note: #fbbf24;
+  }
+
+  .leader-slide:not(.is-stage) {
+    --slide-accent: #4ade80;
+
+    &.is-adoracion { --slide-accent: #c4b5fd; }
+    &.is-ofrenda { --slide-accent: #fbbf24; }
+  }
+}

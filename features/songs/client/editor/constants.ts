@@ -20,8 +20,8 @@ export const INITIAL_BOARD_CONFIG: BoardConfig = {
 
 export const CARD_STYLE: CSSProperties = {
   borderRadius: 22,
-  boxShadow: "0 10px 28px rgba(15,23,42,0.08)",
-  border: "1px solid #eef2f6"
+  boxShadow: "0 10px 28px var(--app-shadow)",
+  border: "1px solid var(--app-border-soft)"
 }
 
 export const ALIGN_OPTIONS = [
@@ -41,7 +41,7 @@ export type StylePreset = {
 
 export const STYLE_PRESETS: StylePreset[] = [
   { key: "escenario", name: "Escenario", background: "#1f2937", border: "#f59e0b", lyricsColor: "#ffffff", chordColor: "#f59e0b" },
-  { key: "medianoche", name: "Medianoche", background: "#0f172a", border: "#6366f1", lyricsColor: "#f1f5f9", chordColor: "#a5b4fc" },
+  { key: "medianoche", name: "Medianoche", background: "#0f172a", border: "#3a66f0", lyricsColor: "#f1f5f9", chordColor: "#9db6ff" },
   { key: "hoja-clara", name: "Hoja clara", background: "#fdfaf5", border: "#92400e", lyricsColor: "#1f2937", chordColor: "#1d4ed8" }
 ]
 

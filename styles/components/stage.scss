@@ -21,8 +21,8 @@ $stage-controls-transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opaci
   --section-bridge: #c4b5fd;
   --section-instrumental: #5eead4;
   --glow-opacity: 0.34;
-  --glow-a: #6366f1;
-  --glow-b: #a855f7;
+  --glow-a: #3a66f0;
+  --glow-b: #1e43b8;
   --glow-c: #06b6d4;
 
   position: fixed;
@@ -282,7 +282,7 @@ $stage-controls-transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opaci
   background: rgba(148, 163, 184, 0.22);
 
   &.is-done {
-    background: rgba(129, 140, 248, 0.55);
+    background: rgba(120, 150, 255, 0.55);
   }
 }
 
@@ -391,12 +391,12 @@ $bubble-size: 46px;
     width: 64px;
     height: 64px;
     border-color: transparent;
-    background: linear-gradient(135deg, #6366f1, #a855f7);
-    box-shadow: 0 12px 32px rgba(99, 102, 241, 0.45);
+    background: linear-gradient(180deg, #3a66f0, #1e43b8);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 12px 28px -8px rgba(30, 67, 184, 0.7);
     font-size: 22px;
 
     &:hover:not(:disabled) {
-      background: linear-gradient(135deg, #818cf8, #c084fc);
+      background: linear-gradient(180deg, #5a80f5, #2a52d0);
     }
   }
 }
@@ -640,8 +640,8 @@ $bubble-size: 46px;
   }
 
   &.is-active {
-    background: #4f46e5;
-    border-color: #4f46e5;
+    background: #2b53d6;
+    border-color: #2b53d6;
   }
 }
 

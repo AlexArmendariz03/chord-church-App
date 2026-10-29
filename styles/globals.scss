@@ -15,18 +15,23 @@ body {
   overflow-x: hidden;
 }
 
+body {
+  background-color: var(--app-page-bg);
+  color: var(--app-ink);
+}
+
 .ant-modal .ant-btn[type="submit"],
 .ant-modal .ant-modal-footer .ant-btn-primary {
-  background-color: #17202a;
+  background-color: var(--app-modal-button);
   color: white;
 }
 
 .ant-message .ant-message-notice .ant-message-notice-content {
   width: 95%;
   height: 40px;
-  background-color: #F6FFED;
+  background-color: var(--app-message-bg);
   border-radius: 0%;
-  border: 1px solid #B7EB8F;
+  border: 1px solid var(--app-message-border);
   text-align: left;
 }
 
@@ -37,7 +42,7 @@ body {
 .ant-typography.page-title {
   font-size: 40px;
   font-weight: 700;
-  color: #576176;
+  color: var(--app-text-secondary);
 }
 
 .ant-typography {
@@ -45,4 +50,5 @@ body {
 }
 
 @import "./_variables.scss";
+@import "./_theme.scss";
 @import "./_components.scss";

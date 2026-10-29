@@ -20,11 +20,20 @@ enum SongCategory {
   adoracion
 }
 
+// Modo claro u oscuro de la interfaz; "system" sigue al del dispositivo
+enum ThemePreference {
+  light
+  dark
+  system
+}
+
 model User {
-  id       Int      @id @default(autoincrement())
-  username String   @unique
+  id       Int             @id @default(autoincrement())
+  username String          @unique
   password String
-  role     UserRole @default(musico)
+  role     UserRole        @default(musico)
+  // Se guarda en la cuenta para que el tema sea el mismo en todos los dispositivos
+  theme    ThemePreference @default(system)
 }
 
 model Song {

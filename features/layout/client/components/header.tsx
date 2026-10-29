@@ -12,6 +12,7 @@ import { getMenuItems, getSelectedMenuKey } from "./menu-items"
 import { displayName } from "@/shared/utils/user"
 import { ROLE_LABELS, type Role } from "@/shared/auth/permissions"
 import { useSession } from "./session-provider"
+import { ThemeSegmented, useThemeMenuItem } from "./theme-picker"
 
 const { Header } = ALayout
 // "1.6" (set in next.config.ts from package.json); shown in the user menu to check which version is deployed
@@ -26,6 +27,7 @@ const HeaderBar = () => {
   const { user, role } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const hasTour = useHasTour()
+  const themeMenuItem = useThemeMenuItem()
   const menuItems = useMemo(() => getMenuItems(role), [role])
   const selectedKeys = [getSelectedMenuKey(pathname)]
   const roleLabel = role ? ROLE_LABELS[role] : ""
@@ -61,6 +63,7 @@ const HeaderBar = () => {
 
   const userMenuItems: MenuProps["items"] = [
     ...(hasTour ? [{ key: "tour", icon: <CompassOutlined />, label: "Tour guiado", onClick: openTour }] : []),
+    themeMenuItem,
     { key: "terms", label: <Link href="/terminos">Términos y condiciones</Link> },
     { key: "logout", icon: <LogoutOutlined />, label: "Cerrar sesión", onClick: handleLogout },
     { type: "divider" },
@@ -151,6 +154,11 @@ const HeaderBar = () => {
             className="mobile-nav-menu" mode="inline"
             selectedKeys={selectedKeys} items={menuItems}
             onClick={() => setIsMenuOpen(false)} />
+
+          <div className="mobile-nav-theme">
+            <span className="mobile-nav-theme-label">Tema</span>
+            <ThemeSegmented />
+          </div>
 
           {hasTour && (
             <Button

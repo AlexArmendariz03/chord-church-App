@@ -18,10 +18,10 @@ const COLOR_INPUT_STYLE: CSSProperties = {
 }
 
 const SECTION_STYLE: CSSProperties = {
-  border: "1px solid #eef2f6",
+  border: "1px solid var(--app-border-soft)",
   borderRadius: 16,
   padding: 14,
-  background: "#fff"
+  background: "var(--app-surface)"
 }
 
 type EditorSidebarProps = {

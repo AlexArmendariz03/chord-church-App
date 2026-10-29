@@ -4,7 +4,7 @@
 
 .leader-slide {
   --slide-text: #{$ink-dark};
-  --slide-muted: #64748b;
+  --slide-muted: var(--app-text-muted);
   --slide-accent: #52c41a;
   --slide-name-size: clamp(32px, 5vw, 56px);
 

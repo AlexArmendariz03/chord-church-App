@@ -115,9 +115,9 @@ export const EditorCanvas = ({
                   display: "flex",
                   alignItems: "center",
                   gap: 8,
-                  border: "1px solid #e5e7eb",
+                  border: "1px solid var(--app-border)",
                   borderRadius: 12,
-                  background: "#fff",
+                  background: "var(--app-surface)",
                   height: 34
                 }}>
                 <AntText strong style={{ minWidth: 42, fontSize: 12 }}>{Math.round(zoom * 100)}%</AntText>
@@ -149,10 +149,10 @@ export const EditorCanvas = ({
         <div
           ref={previewContainerRef}
           style={{
-            border: "1px solid #e8edf3",
+            border: "1px solid var(--app-canvas-border)",
             borderRadius: 18,
             overflow: "auto",
-            background: "linear-gradient(180deg, #fbfcfe 0%, #f4f6fa 100%)",
+            background: "var(--app-canvas-bg)",
             padding: 16,
             minHeight: 0
           }}>
@@ -210,7 +210,7 @@ export const EditorCanvas = ({
                         text={item.text} fontSize={item.fontSize}
                         fill={item.color} fontStyle="bold"
                         draggable
-                        stroke={isSelected ? "#a855f7" : undefined} strokeWidth={isSelected ? 0.45 : 0}
+                        stroke={isSelected ? "#3a66f0" : undefined} strokeWidth={isSelected ? 0.45 : 0}
                         {...select(item.id)}
                         dragBoundFunc={pos =>
                           constrainPosition(pos.x, pos.y, Math.max(36, item.text.length * item.fontSize * 0.7), item.fontSize + 12)}
