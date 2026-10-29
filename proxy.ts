@@ -5,7 +5,7 @@ import { SESSION_COOKIE_NAME, sessionTokenFrom, verifySession } from "@/shared/s
 const PUBLIC_PAGES = ["/login"]
 const PUBLIC_API = ["/api/login", "/api/logout"]
 // Open to everyone, with or without a session
-const OPEN_PAGES = ["/terminos"]
+const OPEN_PAGES = ["/terminos", "/privacidad"]
 // Páginas que piden un permiso; sin él, el usuario vuelve a Inicio
 const PAGE_PERMISSIONS: [string, Permission][] = [
   ["/alabanzas", "manageSongs"],
