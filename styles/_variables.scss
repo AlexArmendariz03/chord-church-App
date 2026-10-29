@@ -9,10 +9,10 @@ $primary-light-black: #2F333C;
 $primary-typography: var(--app-text-secondary);
 
 // Theme: cambian con el modo claro u oscuro (_theme.scss) //
-$accent-indigo: var(--app-accent);
+$accent: var(--app-accent);
 $ink-dark: var(--app-ink);
 $header-bg: var(--app-surface);
 $header-border: var(--app-border);
 $page-bg: var(--app-page-bg);
-// Brand emblem: the logo in white over this indigo → violet tile (header on phones, login)
-$brand-gradient: linear-gradient(145deg, #6366f1 0%, #4f46e5 55%, #7c3aed 100%);
+// Brand emblem: the logo in white over this cobalt tile (header on phones, login)
+$brand-gradient: var(--app-accent-gradient);

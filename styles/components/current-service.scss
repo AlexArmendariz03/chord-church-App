@@ -110,12 +110,12 @@
 .current-service-key-badge.ant-btn {
   font-size: 16px;
   font-weight: 700;
-  color: $accent-indigo;
+  color: $accent;
 
   &:disabled {
     cursor: default;
-    color: $accent-indigo;
-    background: rgba(79, 70, 229, 0.08);
+    color: $accent;
+    background: rgba(var(--app-accent-rgb), 0.08);
   }
 
   &.is-transposed {
@@ -156,7 +156,7 @@
   transition: background 0.15s ease, transform 0.15s ease;
 
   &.is-active {
-    background: $accent-indigo;
+    background: $accent;
     transform: scale(1.35);
   }
 }

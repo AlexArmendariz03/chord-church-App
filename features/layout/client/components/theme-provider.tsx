@@ -11,8 +11,8 @@ import { resolveTheme, SYSTEM_THEME_COOKIE, THEME_COOKIE, themeCookie, type Reso
 dayjs.locale("es")
 
 const BASE_TOKENS: ThemeConfig["token"] = {
-  colorPrimary: "#4f46e5",
-  colorLink: "#4f46e5",
+  colorPrimary: "#2b53d6",
+  colorLink: "#1f47c2",
   borderRadius: 10,
   fontFamily: "var(--font-inter), sans-serif"
 }
@@ -24,8 +24,8 @@ const ANTD_THEMES: Record<ResolvedTheme, ThemeConfig> = {
     algorithm: theme.darkAlgorithm,
     token: {
       ...BASE_TOKENS,
-      colorPrimary: "#6366f1",
-      colorLink: "#a5b4fc",
+      colorPrimary: "#3a66f0",
+      colorLink: "#9db6ff",
       colorBgLayout: "#0b1020",
       colorBgContainer: "#151b2b",
       colorBgElevated: "#1b2234",

@@ -1,5 +1,6 @@
 "use client"
 
+import { LockOutlined, UserOutlined } from "@ant-design/icons"
 import type { LoginFormData } from "@/types/auth"
 import { App, Button, Card, Col, Form, Input, Row } from "antd"
 import Image from "next/image"
@@ -38,27 +39,33 @@ const LoginForm = () => {
               className="login-emblem-icon" priority />
           </span>
           <h1 className="login-title">Chord Church</h1>
-          <p className="login-subtitle">Inicia sesión para ver las alabanzas</p>
+          <p className="login-subtitle">Inicia sesión para comenzar</p>
         </div>
         <Card className="login-card">
-          <Form layout="vertical" onFinish={onFinish}>
+          <Form
+            layout="vertical" size="large"
+            onFinish={onFinish}>
             <Form.Item name="username" rules={[{ required: true, message: "Escribe tu usuario" }]}>
-              <Input placeholder="Usuario" autoComplete="username" />
+              <Input
+                prefix={<UserOutlined />} placeholder="Usuario"
+                autoComplete="username" />
             </Form.Item>
             <Form.Item name="password" rules={[{ required: true, message: "Escribe tu contraseña" }]}>
-              <Input.Password placeholder="Contraseña" autoComplete="current-password" />
+              <Input.Password
+                prefix={<LockOutlined />} placeholder="Contraseña"
+                autoComplete="current-password" />
             </Form.Item>
             <Form.Item style={{ marginBottom: 0 }}>
               <Button
                 type="primary" htmlType="submit"
                 block>
-                Iniciar sesión
+                Entrar
               </Button>
             </Form.Item>
           </Form>
         </Card>
         <p className="login-terms">
-          Al iniciar sesión aceptas los <Link href="/terminos">Términos y condiciones</Link>.
+          Al entrar aceptas los <Link href="/terminos">Términos y condiciones</Link>.
         </p>
       </Col>
     </Row>

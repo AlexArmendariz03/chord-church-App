@@ -20,11 +20,16 @@
   --app-text-faint: #94a3b8;
   --app-text-subtle: #475569;
 
-  // Índigo para textos e íconos; el de relleno lleva texto blanco encima
-  --app-accent: #4f46e5;
-  --app-accent-fill: #4f46e5;
-  --app-accent-soft: #eef2ff;
-  --app-accent-tint: rgba(79, 70, 229, 0.06);
+  // Cobalto para textos e íconos; el de relleno lleva texto blanco encima
+  --app-accent: #1f47c2;
+  --app-accent-fill: #2b53d6;
+  --app-accent-soft: #ebf0fe;
+  --app-accent-tint: rgba(43, 83, 214, 0.06);
+  // Para sombras y fondos translúcidos: rgba(var(--app-accent-rgb), 0.1)
+  --app-accent-rgb: 43, 83, 214;
+  // Degradado de un solo tono (claro arriba, oscuro abajo) y relieve de los elementos con color
+  --app-accent-gradient: linear-gradient(180deg, #3a66f0 0%, #1e43b8 100%);
+  --app-accent-raised: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 1px 2px rgba(30, 67, 184, 0.4), 0 6px 14px -6px rgba(30, 67, 184, 0.55);
 
   --app-jubilo-text: #15803d;
   --app-adoracion-text: #6d28d9;
@@ -34,8 +39,8 @@
   --app-soon-soft: #fff7ed;
   --app-note-text: #d46b08;
 
-  --app-hero-bg: linear-gradient(135deg, #eef0ff 0%, #f7f8fb 65%);
-  --app-hero-border: #e3e5fb;
+  --app-hero-bg: linear-gradient(135deg, #edf2ff 0%, #f7f8fb 65%);
+  --app-hero-border: #dfe6fb;
   --app-canvas-bg: linear-gradient(180deg, #fbfcfe 0%, #f4f6fa 100%);
   --app-canvas-border: #e8edf3;
   --app-shadow: rgba(15, 23, 42, 0.08);
@@ -62,10 +67,13 @@
   --app-text-faint: #6b7489;
   --app-text-subtle: #a3adc2;
 
-  --app-accent: #a5b4fc;
-  --app-accent-fill: #6366f1;
-  --app-accent-soft: rgba(99, 102, 241, 0.18);
-  --app-accent-tint: rgba(129, 140, 248, 0.1);
+  --app-accent: #9db6ff;
+  --app-accent-fill: #3a66f0;
+  --app-accent-soft: rgba(58, 102, 240, 0.18);
+  --app-accent-tint: rgba(120, 150, 255, 0.1);
+  --app-accent-rgb: 58, 102, 240;
+  --app-accent-gradient: linear-gradient(180deg, #4a74f5 0%, #2448c4 100%);
+  --app-accent-raised: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 1px 2px rgba(0, 0, 0, 0.5), 0 6px 14px -6px rgba(0, 0, 0, 0.6);
 
   --app-jubilo-text: #4ade80;
   --app-adoracion-text: #c4b5fd;
@@ -75,8 +83,8 @@
   --app-soon-soft: rgba(234, 88, 12, 0.18);
   --app-note-text: #fdba74;
 
-  --app-hero-bg: linear-gradient(135deg, #1b2040 0%, #0b1020 65%);
-  --app-hero-border: #2a3160;
+  --app-hero-bg: linear-gradient(135deg, #16224a 0%, #0b1020 65%);
+  --app-hero-border: #253a6e;
   --app-canvas-bg: linear-gradient(180deg, #121828 0%, #0e1422 100%);
   --app-canvas-border: #283247;
   --app-shadow: rgba(0, 0, 0, 0.35);
@@ -84,7 +92,7 @@
 
   --app-message-bg: #162312;
   --app-message-border: #274916;
-  --app-modal-button: #6366f1;
+  --app-modal-button: #3a66f0;
 
   // Letras, guía y diapositiva del dirigente fuera del modo escenario: tonos claros sobre fondo oscuro
   .lyrics-viewer.is-light {

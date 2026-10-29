@@ -21,24 +21,24 @@ $service-ofrenda: #f59e0b;
   transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
 
   &:hover {
-    border-color: color-mix(in srgb, $accent-indigo 30%, $header-border);
-    box-shadow: 0 10px 30px rgba(79, 70, 229, 0.08);
+    border-color: color-mix(in srgb, $accent 30%, $header-border);
+    box-shadow: 0 10px 30px rgba(var(--app-accent-rgb), 0.08);
   }
 
-  // The next service stands out: soft indigo wash and a colored edge
+  // The next service stands out: soft cobalt wash and a colored edge
   &.is-next {
-    border-color: color-mix(in srgb, $accent-indigo 35%, $header-border);
+    border-color: color-mix(in srgb, $accent 35%, $header-border);
     background:
-      radial-gradient(120% 140% at 0% 0%, rgba(79, 70, 229, 0.08), transparent 55%),
+      radial-gradient(120% 140% at 0% 0%, rgba(var(--app-accent-rgb), 0.08), transparent 55%),
       $header-bg;
-    box-shadow: 0 12px 34px rgba(79, 70, 229, 0.1);
+    box-shadow: 0 12px 34px rgba(var(--app-accent-rgb), 0.1);
 
     &::before {
       content: "";
       position: absolute;
       inset: 0 auto 0 0;
       width: 4px;
-      background: linear-gradient(180deg, var(--app-accent-fill), #a855f7);
+      background: var(--app-accent-gradient);
     }
   }
 }
@@ -60,13 +60,13 @@ $service-ofrenda: #f59e0b;
   padding: 8px 0 9px;
   border-radius: 14px;
   background: var(--app-accent-soft);
-  color: $accent-indigo;
+  color: $accent;
   line-height: 1;
 
   .is-next & {
-    background: linear-gradient(150deg, var(--app-accent-fill), #7c3aed);
+    background: var(--app-accent-gradient);
     color: #fff;
-    box-shadow: 0 8px 18px rgba(79, 70, 229, 0.3);
+    box-shadow: var(--app-accent-raised);
   }
 }
 
@@ -287,7 +287,7 @@ $service-ofrenda: #f59e0b;
 }
 
 .service-card-toggle {
-  color: $accent-indigo !important;
+  color: $accent !important;
   font-weight: 600;
 
   .anticon {
