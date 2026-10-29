@@ -52,7 +52,7 @@ type StageViewProps = {
 
 const STAGE_THEME = {
   algorithm: theme.darkAlgorithm,
-  token: { colorPrimary: "#6366f1", colorBgElevated: "#151b2e", fontSize: 15 }
+  token: { colorPrimary: "#3a66f0", colorBgElevated: "#151b2e", fontSize: 15 }
 }
 
 const StageView = ({

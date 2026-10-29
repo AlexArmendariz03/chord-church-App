@@ -6,7 +6,8 @@
   justify-content: center;
   align-items: center;
 
-  .ant-col {
+  // Solo la columna de la página: los Form.Item también usan .ant-col por dentro
+  > .ant-col {
     width: 100%;
 
     @media (max-width: 575px) {
@@ -35,8 +36,9 @@
     border-radius: 28px;
     background: $brand-gradient;
     box-shadow:
-      0 16px 36px rgba(79, 70, 229, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      inset 0 1px 0 rgba(255, 255, 255, 0.28),
+      0 2px 4px rgba(30, 67, 184, 0.35),
+      0 16px 30px -12px rgba(30, 67, 184, 0.6);
   }
 
   .login-emblem-icon {
@@ -46,17 +48,22 @@
   }
 
   .login-title {
-    margin: 18px 0 4px;
+    margin: 16px 0 0;
     color: $ink-dark;
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 700;
-    letter-spacing: 0.2px;
+    letter-spacing: -0.01em;
   }
 
   .login-subtitle {
-    margin: 0;
+    margin: 4px 0 0;
     color: $primary-typography;
     font-size: 14px;
+  }
+
+  .ant-input-prefix {
+    margin-inline-end: 8px;
+    color: var(--app-text-faint);
   }
 
   .login-card {
@@ -72,8 +79,7 @@
 
     .ant-form-item {
       max-width: 100%;
-      margin: 0 auto 16px;
-      text-align: center;
+      margin: 0 auto 14px;
 
       .ant-input, .ant-input-password {
         max-width: 400px;
@@ -130,7 +136,7 @@
 }
 
 .terms-back {
-  color: $accent-indigo;
+  color: $accent;
   font-size: 14px;
 }
 
@@ -141,6 +147,6 @@
   text-align: center;
 
   a {
-    color: $accent-indigo;
+    color: $accent;
   }
 }

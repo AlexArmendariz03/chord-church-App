@@ -17,7 +17,7 @@
     letter-spacing: 1.5px;
     font-size: 12px;
     font-weight: 700;
-    color: $accent-indigo;
+    color: $accent;
   }
 
   .dashboard-subtitle {
@@ -36,9 +36,9 @@
     text-align: left;
 
     &:hover {
-      box-shadow: 0 10px 24px rgba(79, 70, 229, 0.14);
+      box-shadow: 0 10px 24px rgba(var(--app-accent-rgb), 0.14);
       transform: translateY(-2px);
-      border-color: rgba(79, 70, 229, 0.3);
+      border-color: rgba(var(--app-accent-rgb), 0.3);
     }
 
     .dashboard-card-content {
@@ -51,7 +51,7 @@
       width: 48px;
       height: 48px;
       border-radius: 12px;
-      background: rgba(79, 70, 229, 0.1);
+      background: rgba(var(--app-accent-rgb), 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -60,7 +60,7 @@
 
     .dashboard-card-icon {
       font-size: 22px;
-      color: $accent-indigo;
+      color: $accent;
     }
 
     .dashboard-card-meta {

@@ -210,7 +210,7 @@ export const EditorCanvas = ({
                         text={item.text} fontSize={item.fontSize}
                         fill={item.color} fontStyle="bold"
                         draggable
-                        stroke={isSelected ? "#a855f7" : undefined} strokeWidth={isSelected ? 0.45 : 0}
+                        stroke={isSelected ? "#3a66f0" : undefined} strokeWidth={isSelected ? 0.45 : 0}
                         {...select(item.id)}
                         dragBoundFunc={pos =>
                           constrainPosition(pos.x, pos.y, Math.max(36, item.text.length * item.fontSize * 0.7), item.fontSize + 12)}
