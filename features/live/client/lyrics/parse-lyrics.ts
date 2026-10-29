@@ -164,6 +164,37 @@ export const parseLyrics = (lyrics: string, { showChords, transpose }: ParseOpti
     )
     .filter(stanza => stanza.length > 0)
 
+// Qué es cada renglón de la hoja tal como se escribe, para colorearlo en el editor
+export type LineKind =
+  | { type: "blank" | "chords" | "lyrics" | "ignored" }
+  | { type: "section"; kind: SectionKind }
+
+export const classifyLine = (line: string): LineKind => {
+  if (!line.trim()) return { type: "blank" }
+  if (CHORD_DIAGRAM.test(line)) return { type: "ignored" }
+  const section = sectionHeader(line)
+  if (section?.type === "section") return { type: "section", kind: section.kind }
+  return { type: isChordLine(line) ? "chords" : "lyrics" }
+}
+
+// Mueve todos los acordes de la hoja `semitones` semitonos, sin tocar la letra ni el nombre de
+// las secciones ("Coro" empieza con C, pero no es un acorde). `key` decide si van con ♯ o ♭.
+export const transposeSheet = (lyrics: string, semitones: number, key: string) => {
+  const flats = prefersFlats(key, semitones)
+  return lyrics
+    .split("\n")
+    .map(line => {
+      const section = sectionHeader(line)
+      if (section?.type === "section") {
+        if (!section.chords) return line
+        const start = line.lastIndexOf(section.chords)
+        return line.slice(0, start) + transposeInlineChords(section.chords, semitones, flats) + line.slice(start + section.chords.length)
+      }
+      return isChordLine(line) ? transposeChordLine(line, semitones, flats) : line
+    })
+    .join("\n")
+}
+
 export const toUnits = (stanza: Stanza): Unit[] => {
   const units: Unit[] = []
   let pending: LyricsLine[] = []
