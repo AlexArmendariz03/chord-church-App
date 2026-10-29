@@ -37,9 +37,9 @@ type LyricsPagerProps = {
   onCenterTap?: () => void
 }
 
-type ParsedStanza = { units: Unit[]; kind: SectionKind | null }
+export type ParsedStanza = { units: Unit[]; kind: SectionKind | null }
 
-const StanzaView = ({ stanza, from = 0, to }: { stanza: ParsedStanza; from?: number; to?: number }) => (
+export const StanzaView = ({ stanza, from = 0, to }: { stanza: ParsedStanza; from?: number; to?: number }) => (
   <div className={`lyrics-stanza ${stanza.kind ? `has-section is-${stanza.kind}` : ""} ${from > 0 ? "is-continued" : ""}`}>
     {stanza.units.slice(from, to).map((unit, unitIndex) => (
       <div key={from + unitIndex} className="lyrics-unit">
