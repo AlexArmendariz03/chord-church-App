@@ -3,8 +3,11 @@ import { loginUser } from "@/features/auth/server/login"
 import { blockedMinutes, clearFailures, clientIp, recordFailure } from "@/features/auth/server/login-attempts"
 import { errorResponse } from "@/shared/server/http"
 import { setSessionCookie } from "@/shared/server/session"
+import { APP_SESSION_MAX_AGE, signSession } from "@/shared/server/session-token"
 
 const MAX_FIELD_LENGTH = 200
+// La app móvil se identifica con este encabezado y recibe el token en la respuesta, no en una cookie
+const APP_CLIENT_HEADER = "x-chord-client"
 
 export async function POST(request: Request) {
   try {
@@ -27,14 +30,19 @@ export async function POST(request: Request) {
 
     const response = await loginUser({ username, password })
 
-    if (response.status === 200 && response.role) {
-      clearFailures(normalizedUsername, ip)
-      await setSessionCookie({ username: normalizedUsername, role: response.role })
-    } else {
+    if (response.status !== 200 || !response.role) {
       recordFailure(normalizedUsername, ip)
+      return NextResponse.json({ message: response.message }, { status: response.status })
     }
 
-    return NextResponse.json({ message: response.message, role: response.role }, { status: response.status })
+    clearFailures(normalizedUsername, ip)
+    const user = { username: normalizedUsername, role: response.role }
+    if (request.headers.get(APP_CLIENT_HEADER) === "app") {
+      const token = await signSession(user, APP_SESSION_MAX_AGE)
+      return NextResponse.json({ message: response.message, role: response.role, username: user.username, token })
+    }
+    await setSessionCookie(user)
+    return NextResponse.json({ message: response.message, role: response.role })
   } catch (error) {
     console.error(error)
     return errorResponse("Error del servidor", 500)

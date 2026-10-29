@@ -1,6 +1,6 @@
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
 import { can, type Permission } from "@/shared/auth/permissions"
-import { SESSION_COOKIE_NAME, SESSION_MAX_AGE, signSession, verifySession, type SessionUser } from "./session-token"
+import { SESSION_COOKIE_NAME, SESSION_MAX_AGE, sessionTokenFrom, signSession, verifySession, type SessionUser } from "./session-token"
 
 export type { SessionUser } from "./session-token"
 
@@ -21,8 +21,8 @@ export async function clearSessionCookie() {
 }
 
 export async function getSessionUser(): Promise<SessionUser | null> {
-  const cookieStore = await cookies()
-  return verifySession(cookieStore.get(SESSION_COOKIE_NAME)?.value)
+  const [cookieStore, headerList] = await Promise.all([cookies(), headers()])
+  return verifySession(sessionTokenFrom(cookieStore.get(SESSION_COOKIE_NAME)?.value, headerList.get("authorization")))
 }
 
 // Route handlers check the session themselves too, so a proxy bypass doesn't expose data
