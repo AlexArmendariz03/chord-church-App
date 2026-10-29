@@ -3,7 +3,7 @@
 
 .closing-guide {
   --guide-text: #{$ink-dark};
-  --guide-muted: #64748b;
+  --guide-muted: var(--app-text-muted);
   --guide-accent: #{$accent-indigo};
   --guide-note: #b45309;
   --guide-title-size: clamp(24px, 3vw, 32px);

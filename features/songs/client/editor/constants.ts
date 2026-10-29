@@ -20,8 +20,8 @@ export const INITIAL_BOARD_CONFIG: BoardConfig = {
 
 export const CARD_STYLE: CSSProperties = {
   borderRadius: 22,
-  boxShadow: "0 10px 28px rgba(15,23,42,0.08)",
-  border: "1px solid #eef2f6"
+  boxShadow: "0 10px 28px var(--app-shadow)",
+  border: "1px solid var(--app-border-soft)"
 }
 
 export const ALIGN_OPTIONS = [
