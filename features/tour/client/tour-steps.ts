@@ -4,7 +4,7 @@ import type { Role } from "@/shared/auth/permissions"
 // Cada paso señala un elemento marcado con data-tour="…"; si no está visible (por ejemplo, el menú
 // de escritorio en el teléfono) se salta. Un paso sin `target` sale centrado, como bienvenida.
 
-export type TourPage = "inicio" | "alabanzas" | "servicios" | "en-curso"
+export type TourPage = "inicio" | "alabanzas" | "editor" | "servicios" | "en-curso"
 
 export type TourStep = {
   target?: string
@@ -68,6 +68,42 @@ const LEADER_STEPS: Record<TourPage, TourStep[]> = {
       target: "alabanza-menu",
       title: "Editar o eliminar",
       description: "Cada alabanza tiene su menú para corregirla o quitarla."
+    }
+  ],
+  editor: [
+    {
+      title: "La hoja de la alabanza",
+      description: "Cada sección (Verso, Coro, Puente…) es un bloque. Escribe directo en él: los acordes van en el renglón de arriba de la letra."
+    },
+    {
+      target: "editor-bloque",
+      title: "Mueve los bloques",
+      description: "Arrastra cada bloque de su barra. El número es el orden en que se toca: el de más arriba va primero."
+    },
+    {
+      target: "editor-mover",
+      title: "Cambia el orden",
+      description: "También puedes subir o bajar un bloque un lugar con las flechas."
+    },
+    {
+      target: "editor-acorde",
+      title: "Acomoda los acordes",
+      description: "Arrastra cada acorde de lado hasta la sílaba donde se toca. Si lo tocas sin arrastrar, escribes ahí."
+    },
+    {
+      target: "editor-agregar",
+      title: "Agrega secciones",
+      description: "Crea un bloque nuevo con su sección ya escrita, listo para escribir."
+    },
+    {
+      target: "editor-deshacer",
+      title: "Deshacer",
+      description: "Si moviste o quitaste algo por error, deshazlo aquí o con Cmd+Z (Ctrl+Z en Windows)."
+    },
+    {
+      target: "editor-vista",
+      title: "Vista previa",
+      description: "Mira la alabanza tal como se verá en \"En curso\" antes de guardarla."
     }
   ],
   servicios: [
@@ -182,11 +218,13 @@ const PROJECTION_STEPS: Partial<Record<TourPage, TourStep[]>> = {
 const PAGE_BY_PATH: Record<string, TourPage> = {
   "/dashboard": "inicio",
   "/alabanzas": "alabanzas",
+  "/alabanzas/nueva": "editor",
+  "/alabanzas/editar": "editor",
   "/servicios": "servicios",
   "/en-curso": "en-curso"
 }
 
-// Solo las páginas principales tienen recorrido (no la de editar una alabanza, por ejemplo)
+// Solo las páginas principales y el editor de alabanzas tienen recorrido
 export const tourPageFor = (pathname: string): TourPage | null => PAGE_BY_PATH[pathname] ?? null
 
 // Un rol nuevo tiene que agregarse aquí (TypeScript lo pide), aunque sea con su recorrido vacío

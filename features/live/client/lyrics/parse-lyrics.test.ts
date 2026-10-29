@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { parseLyrics, stanzaKind, toUnits } from "./parse-lyrics"
+import { classifyLine, parseLyrics, stanzaKind, toUnits, transposeSheet } from "./parse-lyrics"
 
 const SONG = [
   "Verso 1",
@@ -73,5 +73,23 @@ describe("toUnits", () => {
     const units = toUnits(verse)
     expect(units).toHaveLength(2)
     expect(units[0].map(line => line.type)).toEqual(["section", "lyrics"])
+  })
+})
+
+describe("classifyLine", () => {
+  it("distingue secciones, acordes, letra y renglones vacíos", () => {
+    expect(classifyLine("[CORO]")).toEqual({ type: "section", kind: "chorus" })
+    expect(classifyLine("Intro: A D E")).toEqual({ type: "section", kind: "instrumental" })
+    expect(classifyLine("G       D")).toEqual({ type: "chords" })
+    expect(classifyLine("Cuan grande es Él")).toEqual({ type: "lyrics" })
+    expect(classifyLine("   ")).toEqual({ type: "blank" })
+    expect(classifyLine("G2= 320033")).toEqual({ type: "ignored" })
+  })
+})
+
+describe("transposeSheet", () => {
+  it("mueve los acordes y deja intacta la letra y el nombre de las secciones", () => {
+    const sheet = ["Coro", "G       D", "Cuan grande es Él", "Intro: G D/F#"].join("\n")
+    expect(transposeSheet(sheet, 2, "G").split("\n")).toEqual(["Coro", "A       E", "Cuan grande es Él", "Intro: A E/G#"])
   })
 })

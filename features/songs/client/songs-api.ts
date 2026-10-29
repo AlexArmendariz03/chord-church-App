@@ -1,6 +1,6 @@
 import { apiRequest } from "@/shared/client/api"
 import type { SongDetail, SongListItem } from "@/types/services"
-import type { SongPayload } from "./editor/types"
+import type { SheetPayload } from "./editor/sheet-layout"
 
 // Lo que el editor envía al guardar (lo valida features/songs/server/song-input.ts)
 export type SongInput = {
@@ -10,7 +10,8 @@ export type SongInput = {
   isYouth: boolean
   isService: boolean
   lyrics: string
-  payload: SongPayload
+  // Dónde quedó cada bloque en la hoja del editor
+  payload: SheetPayload
 }
 
 export const songsApi = {
