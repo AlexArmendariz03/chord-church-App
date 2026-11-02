@@ -7,8 +7,11 @@ const PUBLIC_API = ["/api/login", "/api/logout"]
 // Open to everyone, with or without a session
 const OPEN_PAGES = ["/terminos", "/privacidad"]
 // Páginas que piden un permiso; sin él, el usuario vuelve a Inicio
+// (una página puede pedir varios: el editor pide ver y administrar alabanzas)
 const PAGE_PERMISSIONS: [string, Permission][] = [
-  ["/alabanzas", "manageSongs"],
+  ["/alabanzas", "viewSongs"],
+  ["/alabanzas/nueva", "manageSongs"],
+  ["/alabanzas/editar", "manageSongs"],
   ["/servicios", "manageServices"],
   ["/en-curso", "goLive"]
 ]

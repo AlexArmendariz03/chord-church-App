@@ -10,6 +10,7 @@ import { useConfirmDelete } from "@/shared/client/use-confirm-delete"
 import { CategoryTag, ServiceTag, YouthTag } from "@/shared/components/category-tag"
 import type { SongListItem } from "@/types/services"
 import { songsApi } from "../songs-api"
+import { SongPreview } from "./song-preview"
 
 const { Paragraph, Text, Title } = Typography
 
@@ -24,6 +25,8 @@ const SongsList = () => {
   const [songs, setSongs] = useState<SongListItem[]>([])
   const [loading, setLoading] = useState(true)
   const [tagFilter, setTagFilter] = useState<TagFilter>("all")
+  // La alabanza abierta en la vista previa para ensayar
+  const [previewSong, setPreviewSong] = useState<SongListItem | null>(null)
   // Phones: the filter goes above the tabs so both tabs keep their room
   const isWide = Grid.useBreakpoint().sm ?? true
 
@@ -63,20 +66,23 @@ const SongsList = () => {
           rowKey="id"
           itemRender={song => (
             <div className="song-row">
-              <div className="song-row-main">
+              <button
+                type="button" className="song-row-main"
+                aria-label={`Ver ${song.name}`} data-tour="ver-alabanza"
+                onClick={() => setPreviewSong(song)}>
                 <Text strong className="song-row-name">{song.name}</Text>
                 <Paragraph
                   type="secondary" ellipsis={{ rows: 1 }}
                   className="song-row-preview">
                   {song.preview}
                 </Paragraph>
-              </div>
+              </button>
               <div className="song-row-meta">
                 <Text type="secondary">Tono: {song.key}</Text>
                 {song.isYouth && <YouthTag />}
                 {song.isService && <ServiceTag />}
                 <CategoryTag category={song.category} />
-                <Dropdown
+                {canManage && <Dropdown
                   trigger={["click"]}
                   menu={{
                     items: [
@@ -91,7 +97,7 @@ const SongsList = () => {
                   <Button
                     type="text" icon={<MoreOutlined />}
                     aria-label="Más acciones" data-tour="alabanza-menu" />
-                </Dropdown>
+                </Dropdown>}
               </div>
             </div>
           )} />
@@ -110,17 +116,6 @@ const SongsList = () => {
       ]} />
   )
 
-  if (!canManage) {
-    return (
-      <div style={{ padding: 24 }}>
-        <Card>
-          <Title level={3}>Acceso solo para líder</Title>
-          <Paragraph>El músico solo puede consultar las alabanzas dentro de Servicios o En curso.</Paragraph>
-        </Card>
-      </div>
-    )
-  }
-
   return (
     <div style={{ padding: 24 }}>
       <Space
@@ -131,14 +126,18 @@ const SongsList = () => {
             <div>
               <Title level={2} style={{ margin: 0 }}>Alabanzas</Title>
               <Paragraph type="secondary" style={{ margin: 0 }}>
-                Usa el menú de cada fila para editar o eliminar.
+                {canManage
+                  ? "Toca una alabanza para verla; usa el menú de cada fila para editar o eliminar."
+                  : "Toca una alabanza para ver su letra con acordes y ensayarla en el tono que necesites."}
               </Paragraph>
             </div>
-            <Button
-              type="primary" icon={<PlusOutlined />}
-              data-tour="nueva-alabanza" onClick={() => router.push("/alabanzas/nueva")}>
-              Nueva alabanza
-            </Button>
+            {canManage && (
+              <Button
+                type="primary" icon={<PlusOutlined />}
+                data-tour="nueva-alabanza" onClick={() => router.push("/alabanzas/nueva")}>
+                Nueva alabanza
+              </Button>
+            )}
           </div>
         </Card>
 
@@ -152,6 +151,8 @@ const SongsList = () => {
             ]} />
         </Card>
       </Space>
+
+      <SongPreview song={previewSong} onClose={() => setPreviewSong(null)} />
     </div>
   )
 }

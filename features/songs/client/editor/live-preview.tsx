@@ -7,11 +7,18 @@ import { parseLyrics, stanzaKind, toUnits } from "@/features/live/client/lyrics/
 
 const { Text } = Typography
 
+type LivePreviewProps = {
+  lyrics: string
+  showChords?: boolean
+  // Para ensayar en otro tono: medios tonos a mover y el tono original de la alabanza
+  transpose?: { semitones: number; key: string }
+}
+
 // Así se verá en "En curso": mismas estrofas, colores y acordes sobre su sílaba
-export const LivePreview = ({ lyrics }: { lyrics: string }) => {
+export const LivePreview = ({ lyrics, showChords = true, transpose }: LivePreviewProps) => {
   const stanzas = useMemo(
-    () => parseLyrics(lyrics, { showChords: true }).map(stanza => ({ units: toUnits(stanza), kind: stanzaKind(stanza) })),
-    [lyrics]
+    () => parseLyrics(lyrics, { showChords, transpose }).map(stanza => ({ units: toUnits(stanza), kind: stanzaKind(stanza) })),
+    [lyrics, showChords, transpose]
   )
   if (!stanzas.length) return <Text type="secondary">Todavía no hay letra para mostrar.</Text>
   return (
