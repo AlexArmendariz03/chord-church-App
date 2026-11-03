@@ -14,6 +14,8 @@ export const ROLES_MATCH_SCHEMA: [Role] extends [UserRole] ? ([UserRole] extends
 export const isRole = (value: unknown): value is Role => ROLES.includes(value as Role)
 
 export type Permission =
+  // Ver el cancionero (página Alabanzas) y abrir la vista previa de cada alabanza para ensayarla
+  | "viewSongs"
   // Crear, editar y eliminar alabanzas (página Alabanzas)
   | "manageSongs"
   // Crear, editar y eliminar servicios (página Servicios)
@@ -26,9 +28,9 @@ export type Permission =
   | "seeKeys"
 
 const PERMISSIONS: Record<Role, Record<Permission, boolean>> = {
-  leader: { manageSongs: true, manageServices: true, goLive: true, leadService: true, seeKeys: true },
-  musico: { manageSongs: false, manageServices: false, goLive: true, leadService: false, seeKeys: true },
-  proyeccion: { manageSongs: false, manageServices: false, goLive: false, leadService: false, seeKeys: false }
+  leader: { viewSongs: true, manageSongs: true, manageServices: true, goLive: true, leadService: true, seeKeys: true },
+  musico: { viewSongs: true, manageSongs: false, manageServices: false, goLive: true, leadService: false, seeKeys: true },
+  proyeccion: { viewSongs: false, manageSongs: false, manageServices: false, goLive: false, leadService: false, seeKeys: false }
 }
 
 export const can = (role: Role | null | undefined, permission: Permission) => Boolean(role && PERMISSIONS[role][permission])

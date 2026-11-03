@@ -7,8 +7,10 @@ describe("can", () => {
     expect(can("leader", "leadService")).toBe(true)
   })
 
-  it("el músico sigue En curso con tonos, sin administrar", () => {
+  it("el músico sigue En curso con tonos y ve el cancionero, sin administrar", () => {
     expect(can("musico", "goLive")).toBe(true)
+    expect(can("musico", "viewSongs")).toBe(true)
+    expect(can("musico", "manageSongs")).toBe(false)
     expect(can("musico", "seeKeys")).toBe(true)
     expect(can("musico", "manageServices")).toBe(false)
     expect(can("musico", "leadService")).toBe(false)
@@ -17,6 +19,7 @@ describe("can", () => {
   it("proyección solo ve la lista de servicios", () => {
     expect(can("proyeccion", "goLive")).toBe(false)
     expect(can("proyeccion", "seeKeys")).toBe(false)
+    expect(can("proyeccion", "viewSongs")).toBe(false)
   })
 
   it("sin rol no puede nada", () => {
