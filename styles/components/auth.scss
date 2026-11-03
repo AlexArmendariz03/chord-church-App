@@ -129,6 +129,15 @@
   p {
     margin: 0;
   }
+
+  // Varios párrafos seguidos en una sección (aviso de privacidad) llevan aire entre ellos
+  p + p {
+    margin-top: 10px;
+  }
+}
+
+.terms-updated {
+  margin-bottom: 16px !important;
 }
 
 .terms-updated {

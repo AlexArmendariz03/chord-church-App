@@ -46,7 +46,7 @@ export default function TermsPage() {
         <p>
           Guardamos tu nombre de usuario, tu rol y tu contraseña cifrada, además de una cookie para mantener tu
           sesión abierta. No vendemos tus datos ni los compartimos con nadie, salvo con los servicios donde
-          está alojada la app.
+          está alojada la app. Los detalles están en el <Link href="/privacidad">Aviso de privacidad</Link>.
         </p>
 
         <h2>6. Disponibilidad</h2>

@@ -1,5 +1,7 @@
 // Signed session token: base64url(payload).base64url(HMAC-SHA256(payload)).
 // Uses Web Crypto so it works both in route handlers and in proxy.ts.
+// La web lo guarda en una cookie; la app móvil lo recibe al iniciar sesión y lo manda en cada
+// petición como `Authorization: Bearer <token>`.
 
 import { isRole, type Role } from "@/shared/auth/permissions"
 
@@ -12,6 +14,8 @@ type SessionPayload = SessionUser & { exp: number }
 
 export const SESSION_COOKIE_NAME = "session"
 export const SESSION_MAX_AGE = 60 * 60 * 24
+// En la app móvil la sesión dura más: el teléfono es personal y el token se guarda cifrado en él
+export const APP_SESSION_MAX_AGE = 60 * 60 * 24 * 30
 
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
@@ -32,8 +36,8 @@ const getKey = () => {
   return crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"])
 }
 
-export async function signSession(user: SessionUser): Promise<string> {
-  const payload: SessionPayload = { ...user, exp: Date.now() + SESSION_MAX_AGE * 1000 }
+export async function signSession(user: SessionUser, maxAge = SESSION_MAX_AGE): Promise<string> {
+  const payload: SessionPayload = { ...user, exp: Date.now() + maxAge * 1000 }
   const body = toBase64Url(encoder.encode(JSON.stringify(payload)))
   const signature = await crypto.subtle.sign("HMAC", await getKey(), encoder.encode(body))
   return `${body}.${toBase64Url(new Uint8Array(signature))}`
@@ -57,3 +61,11 @@ export async function verifySession(token: string | undefined): Promise<SessionU
     return null
   }
 }
+
+// El token de `Authorization: Bearer <token>`, como lo manda la app móvil
+export const bearerToken = (authorization: string | null | undefined) =>
+  authorization?.match(/^Bearer\s+(\S+)$/i)?.[1]
+
+// La sesión viene en la cookie (web) o en el encabezado Authorization (app móvil)
+export const sessionTokenFrom = (cookie: string | undefined, authorization: string | null | undefined) =>
+  cookie ?? bearerToken(authorization)

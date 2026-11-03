@@ -65,6 +65,7 @@ const HeaderBar = () => {
     ...(hasTour ? [{ key: "tour", icon: <CompassOutlined />, label: "Tour guiado", onClick: openTour }] : []),
     themeMenuItem,
     { key: "terms", label: <Link href="/terminos">Términos y condiciones</Link> },
+    { key: "privacy", label: <Link href="/privacidad">Aviso de privacidad</Link> },
     { key: "logout", icon: <LogoutOutlined />, label: "Cerrar sesión", onClick: handleLogout },
     { type: "divider" },
     { key: "version", label: <span className="user-menu-version">Versión {APP_VERSION}</span>, disabled: true }
@@ -176,6 +177,7 @@ const HeaderBar = () => {
           </Button>
           <span className="mobile-nav-version">
             Versión {APP_VERSION} · <Link href="/terminos" onClick={() => setIsMenuOpen(false)}>Términos</Link>
+            {" · "}<Link href="/privacidad" onClick={() => setIsMenuOpen(false)}>Privacidad</Link>
           </span>
         </div>
       </Drawer>

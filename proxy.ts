@@ -1,14 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { can, type Permission } from "@/shared/auth/permissions"
-import { SESSION_COOKIE_NAME, verifySession } from "@/shared/server/session-token"
+import { SESSION_COOKIE_NAME, sessionTokenFrom, verifySession } from "@/shared/server/session-token"
 
 const PUBLIC_PAGES = ["/login"]
 const PUBLIC_API = ["/api/login", "/api/logout"]
 // Open to everyone, with or without a session
-const OPEN_PAGES = ["/terminos"]
+const OPEN_PAGES = ["/terminos", "/privacidad"]
 // Páginas que piden un permiso; sin él, el usuario vuelve a Inicio
+// (una página puede pedir varios: el editor pide ver y administrar alabanzas)
 const PAGE_PERMISSIONS: [string, Permission][] = [
-  ["/alabanzas", "manageSongs"],
+  ["/alabanzas", "viewSongs"],
+  ["/alabanzas/nueva", "manageSongs"],
+  ["/alabanzas/editar", "manageSongs"],
   ["/servicios", "manageServices"],
   ["/en-curso", "goLive"]
 ]
@@ -18,7 +21,7 @@ const matches = (pathname: string, paths: string[]) =>
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const user = await verifySession(request.cookies.get(SESSION_COOKIE_NAME)?.value)
+  const user = await verifySession(sessionTokenFrom(request.cookies.get(SESSION_COOKIE_NAME)?.value, request.headers.get("authorization")))
   const redirectTo = (path: string) => NextResponse.redirect(new URL(path, request.url))
 
   if (pathname.startsWith("/api/")) {

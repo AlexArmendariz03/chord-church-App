@@ -65,7 +65,8 @@ const LoginForm = () => {
           </Form>
         </Card>
         <p className="login-terms">
-          Al entrar aceptas los <Link href="/terminos">Términos y condiciones</Link>.
+          Al entrar aceptas los <Link href="/terminos">Términos y condiciones</Link> y el{" "}
+          <Link href="/privacidad">Aviso de privacidad</Link>.
         </p>
       </Col>
     </Row>

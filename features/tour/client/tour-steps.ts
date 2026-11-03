@@ -65,6 +65,11 @@ const LEADER_STEPS: Record<TourPage, TourStep[]> = {
       description: "Las alabanzas separadas en Júbilo y Adoración, con el inicio de la letra, el tono y sus etiquetas."
     },
     {
+      target: "ver-alabanza",
+      title: "Vista previa",
+      description: "Toca una alabanza para ver su letra con acordes como en En curso, en el tono que quieras."
+    },
+    {
       target: "alabanza-menu",
       title: "Editar o eliminar",
       description: "Cada alabanza tiene su menú para corregirla o quitarla."
@@ -170,6 +175,18 @@ const MUSICIAN_STEPS: Partial<Record<TourPage, TourStep[]>> = {
       description: "Las alabanzas de cada servicio en orden, con su tono, para ensayar con tiempo."
     },
     HELP_STEP
+  ],
+  alabanzas: [
+    {
+      target: "lista-alabanzas",
+      title: "Cancionero",
+      description: "Todas las alabanzas, separadas en Júbilo y Adoración, con su tono y sus etiquetas."
+    },
+    {
+      target: "ver-alabanza",
+      title: "Ensayar",
+      description: "Toca una alabanza para ver su letra con acordes. Sube o baja el tono con ♭ y ♯ u oculta los acordes; solo cambia en tu pantalla."
+    }
   ],
   "en-curso": [
     {

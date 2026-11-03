@@ -5,7 +5,7 @@ import { can, type Permission, type Role } from "@/shared/auth/permissions"
 // Cada sección del menú, con el permiso que pide (el mismo que revisa el proxy); Inicio es para todos
 const ITEMS: { path: string, label: string, icon: React.ReactNode, permission?: Permission }[] = [
   { path: "/dashboard", label: "Inicio", icon: <HomeOutlined /> },
-  { path: "/alabanzas", label: "Alabanzas", icon: <UnorderedListOutlined />, permission: "manageSongs" },
+  { path: "/alabanzas", label: "Alabanzas", icon: <UnorderedListOutlined />, permission: "viewSongs" },
   { path: "/servicios", label: "Servicios", icon: <AppstoreAddOutlined />, permission: "manageServices" },
   { path: "/en-curso", label: "En curso", icon: <PlayCircleOutlined />, permission: "goLive" }
 ]
