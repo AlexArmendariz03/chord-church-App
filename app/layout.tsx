@@ -1,13 +1,15 @@
 import "@/styles/globals.scss"
 import type { ReactNode } from "react"
 import { cookies } from "next/headers"
-import { Inter, Plus_Jakarta_Sans } from "next/font/google"
+import localFont from "next/font/local"
 import ThemeProvider from "@/features/layout/client/components/theme-provider"
 import { parsePreference, resolveTheme, SYSTEM_THEME_COOKIE, THEME_COOKIE, themeScript } from "@/features/layout/theme"
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
+// Las fuentes van en el repo (app/fonts, licencia OFL) y no se descargan de Google Fonts al compilar:
+// esa descarga a veces falla y rompe el build en Vercel ("queries have exactly one entry")
+const inter = localFont({ src: "./fonts/inter-latin.woff2", weight: "100 900", variable: "--font-inter" })
 // Lyrics and chords in En curso: wide, friendly letterforms that read well from a music stand
-const sheetFont = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["500", "600", "700", "800"], variable: "--font-sheet" })
+const sheetFont = localFont({ src: "./fonts/plus-jakarta-sans-latin.woff2", weight: "200 800", variable: "--font-sheet" })
 
 export const metadata = {
   title: "Chord Church App",
