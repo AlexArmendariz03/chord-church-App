@@ -1,3 +1,4 @@
+import "server-only"
 // Signed session token: base64url(payload).base64url(HMAC-SHA256(payload)).
 // Uses Web Crypto so it works both in route handlers and in proxy.ts.
 // La web lo guarda en una cookie; la app móvil lo recibe al iniciar sesión y lo manda en cada

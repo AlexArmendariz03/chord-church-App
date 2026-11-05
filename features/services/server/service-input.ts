@@ -1,3 +1,4 @@
+import "server-only"
 import type { SongCategory } from "@/generated/prisma/client"
 import { prisma } from "@/shared/server/prisma"
 import { isSingleWorshipEvent } from "@/features/services/service-rules"

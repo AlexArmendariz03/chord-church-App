@@ -1,3 +1,4 @@
+import "server-only"
 import { prisma } from "@/shared/server/prisma"
 import { pastServiceCutoff } from "@/features/services/service-rules"
 import { SERVICE_SUMMARY, SERVICE_WITH_LYRICS } from "@/features/services/server/service-selects"

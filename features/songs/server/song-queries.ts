@@ -1,3 +1,4 @@
+import "server-only"
 import type { Prisma } from "@/generated/prisma/client"
 import { prisma } from "@/shared/server/prisma"
 import { SONG_LIST_SELECT } from "@/features/songs/server/song-selects"
