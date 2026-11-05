@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, type PointerEvent as ReactPointerEvent } from "react"
 import { classifyLine } from "@/shared/lyrics/parse-lyrics"
-import { chordTokens, moveChord } from "./sheet-layout"
+import { chordTokens, moveChord } from "../../sheet-layout"
 
 // Mantiene de un renglón de alto los renglones vacíos de la copia coloreada
 const NBSP = "\u00a0"

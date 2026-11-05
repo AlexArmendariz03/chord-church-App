@@ -4,7 +4,7 @@ import { useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactP
 import { ArrowDownOutlined, ArrowUpOutlined, CloseOutlined, HolderOutlined } from "@ant-design/icons"
 import { classifyLine } from "@/shared/lyrics/parse-lyrics"
 import { SongSheet } from "./song-sheet"
-import { nextFreeY, resolveOverlaps, sortBlocks, type BlockSize, type SheetBlock } from "./sheet-layout"
+import { nextFreeY, resolveOverlaps, sortBlocks, type BlockSize, type SheetBlock } from "../../sheet-layout"
 
 // Los bloques se acomodan en esta cuadrícula al soltarlos
 const GRID = 8

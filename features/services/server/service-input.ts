@@ -1,6 +1,6 @@
 import type { SongCategory } from "@/generated/prisma/client"
 import { prisma } from "@/shared/server/prisma"
-import { isSingleWorshipEvent } from "@/shared/utils/service-rules"
+import { isSingleWorshipEvent } from "@/features/services/service-rules"
 
 export type ServiceBody = {
   title?: string

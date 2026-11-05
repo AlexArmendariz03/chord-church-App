@@ -7,7 +7,7 @@ import "dayjs/locale/es"
 import { useState } from "react"
 import { useSession } from "@/features/layout/client/components/session-provider"
 import { formatServiceDate } from "@/shared/utils/dates"
-import { IN_PROGRESS_HOURS } from "@/shared/utils/service-rules"
+import { IN_PROGRESS_HOURS } from "@/features/services/service-rules"
 import type { ServiceSummary } from "@/types/services"
 
 type ServiceCardProps = {

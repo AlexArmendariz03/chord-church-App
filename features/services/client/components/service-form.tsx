@@ -5,7 +5,7 @@ import { Button, Col, DatePicker, Form, Input, Row, Select, Typography, type For
 import dayjs, { type Dayjs } from "dayjs"
 import "dayjs/locale/es"
 import { useMemo } from "react"
-import { isSingleWorshipEvent } from "@/shared/utils/service-rules"
+import { isSingleWorshipEvent } from "@/features/services/service-rules"
 import type { ServiceSummary, SongListItem } from "@/types/services"
 import type { ServiceInput } from "../services-api"
 import { useMonthUsage } from "../use-month-usage"

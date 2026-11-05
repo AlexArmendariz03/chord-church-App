@@ -1,5 +1,5 @@
 import { prisma } from "@/shared/server/prisma"
-import { pastServiceCutoff } from "@/shared/utils/service-rules"
+import { pastServiceCutoff } from "@/features/services/service-rules"
 import { SERVICE_SUMMARY, SERVICE_WITH_LYRICS } from "@/types/services"
 import type { ServiceInput } from "./service-input"
 
