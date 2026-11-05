@@ -72,30 +72,37 @@ Aplica las migraciones **antes** de publicar el código que las usa.
 app/            Páginas y rutas de la API (App Router), sin lógica: solo llaman a features/
   (app)/        Páginas con sesión; su layout pone el encabezado, el menú y el recorrido
   api/          Rutas de la API: revisan permisos, validan y llaman a las consultas
-features/       Cada funcionalidad con su parte client/ y server/
-  auth/         Inicio de sesión
+features/       Cada funcionalidad: client/ (interfaz), server/ (base de datos) y, en la raíz, sus
+                tipos y su lógica pura (sin React ni Prisma), que puede usar cualquiera de las dos
+  auth/         Inicio de sesión y la sesión en la interfaz (session-provider)
   dashboard/    Inicio
-  layout/       Encabezado, menú, sesión y tema
-  live/         En curso: letras con acordes, transposición, paginación y modo escenario
-  services/     Servicios: lista, formulario, tarjetas y sus consultas
-  songs/        Alabanzas: lista, editor y sus consultas
+  layout/       Encabezado, menú y tema
+  live/         En curso: paginación en pantalla, controles y modo escenario
+  services/     Servicios: lista, formulario, tarjetas, reglas y sus consultas
+  songs/        Alabanzas: lista, vista previa, editor (sheet-layout) y sus consultas
   tour/         Recorrido de ayuda
-shared/         Código común
+shared/         Código común a varias funcionalidades
   auth/         Roles y permisos
   client/       Llamadas a la API y hooks del navegador
+  lyrics/       Letras con acordes: lectura, transposición y paginación (lógica pura; la app móvil
+                usa una copia)
   server/       Prisma, sesión y respuestas de la API
-  components/   Componentes que usan varias funcionalidades
-  utils/        Funciones puras (fechas, reglas de servicios)
-types/          Tipos compartidos entre cliente y servidor, derivados de Prisma
+  types/        Tipos genéricos (cómo llega un modelo de Prisma por JSON)
+  utils/        Funciones puras pequeñas (fechas, nombres)
 styles/         Estilos globales y de cada componente (SCSS)
 prisma/         Esquema, migraciones y scripts de usuarios e importación
 generated/      Cliente de Prisma generado (no se versiona)
 ```
 
 Para agregar una funcionalidad: su carpeta en `features/` con `client/` (componentes, hooks y su
-`*-api.ts` para llamar a la API) y `server/` (validación `*-input.ts` y consultas `*-queries.ts`),
-y en `app/` solo la página o ruta que la usa. Las listas piden solo los campos que muestran
-(`types/services.ts`).
+`*-api.ts` para llamar a la API), `server/` (validación `*-input.ts`, consultas `*-queries.ts` y
+qué campos pide cada vista en `*-selects.ts`) y `types.ts` con los tipos que recibe la interfaz;
+en `app/` solo la página o ruta que la usa.
+
+- `shared/` no importa nada de `features/`; las funcionalidades sí pueden usar `shared/` y otras
+  funcionalidades.
+- Los archivos de `server/` empiezan con `import "server-only"`: si un componente los importa por
+  error, el build falla en lugar de mandar Prisma o secretos al navegador.
 
 ## Despliegue
 
