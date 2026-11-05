@@ -1,6 +1,6 @@
 "use client"
 
-import type { ServiceWithSongs } from "@/types/services"
+import type { ServiceWithSongs } from "@/features/services/types"
 
 type ServiceSong = ServiceWithSongs["songs"][number]
 

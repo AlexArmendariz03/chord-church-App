@@ -5,10 +5,10 @@ import { Button, Dropdown } from "antd"
 import dayjs from "dayjs"
 import "dayjs/locale/es"
 import { useState } from "react"
-import { useSession } from "@/features/layout/client/components/session-provider"
+import { useSession } from "@/features/auth/client/session-provider"
 import { formatServiceDate } from "@/shared/utils/dates"
-import { IN_PROGRESS_HOURS } from "@/shared/utils/service-rules"
-import type { ServiceSummary } from "@/types/services"
+import { IN_PROGRESS_HOURS } from "@/features/services/service-rules"
+import type { ServiceSummary } from "@/features/services/types"
 
 type ServiceCardProps = {
   service: ServiceSummary

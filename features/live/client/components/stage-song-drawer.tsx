@@ -3,7 +3,7 @@
 import { Fragment } from "react"
 import { Drawer, Segmented } from "antd"
 import { formatServiceDate } from "@/shared/utils/dates"
-import type { ServiceWithSongs } from "@/types/services"
+import type { ServiceWithSongs } from "@/features/services/types"
 import { STAGE_THEMES, type StageTheme } from "../stage-themes"
 
 type StageSongDrawerProps = {

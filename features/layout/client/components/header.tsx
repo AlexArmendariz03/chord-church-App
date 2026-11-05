@@ -11,7 +11,7 @@ import { openTour, useHasTour } from "@/features/tour/client/app-tour"
 import { getMenuItems, getSelectedMenuKey } from "./menu-items"
 import { displayName } from "@/shared/utils/user"
 import { ROLE_LABELS, type Role } from "@/shared/auth/permissions"
-import { useSession } from "./session-provider"
+import { useSession } from "@/features/auth/client/session-provider"
 import { ThemeSegmented, useThemeMenuItem } from "./theme-picker"
 
 const { Header } = ALayout

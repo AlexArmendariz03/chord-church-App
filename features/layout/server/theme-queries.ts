@@ -1,3 +1,4 @@
+import "server-only"
 import type { ThemePreference } from "@/generated/prisma/client"
 import { prisma } from "@/shared/server/prisma"
 

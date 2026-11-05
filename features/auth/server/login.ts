@@ -1,3 +1,4 @@
+import "server-only"
 import bcrypt from "bcryptjs"
 import type { Role } from "@/shared/auth/permissions"
 import { prisma } from "@/shared/server/prisma"

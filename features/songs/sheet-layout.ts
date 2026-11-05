@@ -1,5 +1,5 @@
-import { classifyLine } from "@/features/live/client/lyrics/parse-lyrics"
-import { trimLyrics } from "@/shared/utils/lyrics"
+import { classifyLine } from "@/shared/lyrics/parse-lyrics"
+import { trimLyrics } from "@/shared/lyrics/trim"
 
 // La hoja del editor: cada sección de la alabanza es un bloque que se coloca libremente.
 // La letra que se guarda (y la que se ve en vivo) sale de los bloques en el orden en que
