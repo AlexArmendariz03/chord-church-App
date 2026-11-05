@@ -3,7 +3,7 @@
 import { Tour, type TourProps } from "antd"
 import { usePathname } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
-import { useSession } from "@/features/layout/client/components/session-provider"
+import { useSession } from "@/features/auth/client/session-provider"
 import { tourPageFor, tourStepsFor, type TourStep } from "./tour-steps"
 
 const OPEN_TOUR_EVENT = "chord-church:abrir-recorrido"

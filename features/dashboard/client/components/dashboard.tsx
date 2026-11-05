@@ -4,7 +4,7 @@ import { AppstoreAddOutlined, CalendarOutlined, PlayCircleOutlined, UnorderedLis
 import { Alert, Button, Card, Col, Empty, Row, Typography } from "antd"
 import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
-import { useSession } from "@/features/layout/client/components/session-provider"
+import { useSession } from "@/features/auth/client/session-provider"
 import { ServiceCard } from "@/features/services/client/components/service-card"
 import { servicesApi } from "@/features/services/client/services-api"
 import { ROLE_LABELS, type Role } from "@/shared/auth/permissions"
