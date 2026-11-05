@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from "react"
 import { ArrowDownOutlined, ArrowUpOutlined, CloseOutlined, HolderOutlined } from "@ant-design/icons"
-import { classifyLine } from "@/features/live/client/lyrics/parse-lyrics"
+import { classifyLine } from "@/shared/lyrics/parse-lyrics"
 import { SongSheet } from "./song-sheet"
 import { nextFreeY, resolveOverlaps, sortBlocks, type BlockSize, type SheetBlock } from "./sheet-layout"
 

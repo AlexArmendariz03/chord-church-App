@@ -4,7 +4,7 @@ import { cloneElement, useEffect, useState, type Dispatch, type ReactElement } f
 import { BgColorsOutlined, CloseOutlined, DownOutlined, EyeInvisibleOutlined, LeftOutlined, RightOutlined, UnorderedListOutlined } from "@ant-design/icons"
 import { ConfigProvider, theme } from "antd"
 import type { ServiceWithSongs } from "@/types/services"
-import { displaySemitones, formatSemitones, transposeKey } from "../lyrics/transpose"
+import { displaySemitones, formatSemitones, transposeKey } from "@/shared/lyrics/transpose"
 import { STAGE_THEMES, type StageTheme } from "../stage-themes"
 import { StageBubble as Bubble } from "./stage-bubble"
 import { StageSongDrawer } from "./stage-song-drawer"
