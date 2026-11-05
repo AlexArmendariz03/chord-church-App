@@ -1,6 +1,6 @@
 import { prisma } from "@/shared/server/prisma"
 import { pastServiceCutoff } from "@/features/services/service-rules"
-import { SERVICE_SUMMARY, SERVICE_WITH_LYRICS } from "@/types/services"
+import { SERVICE_SUMMARY, SERVICE_WITH_LYRICS } from "@/features/services/server/service-selects"
 import type { ServiceInput } from "./service-input"
 
 // Consultas de servicios; las rutas de la API solo validan y llaman a estas funciones

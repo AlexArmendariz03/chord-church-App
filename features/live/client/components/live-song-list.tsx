@@ -2,9 +2,9 @@
 
 import { Fragment } from "react"
 import { Card, Select, Space, Tag, Typography } from "antd"
-import { CategoryTag } from "@/shared/components/category-tag"
+import { CategoryTag } from "@/features/songs/client/components/category-tag"
 import { formatServiceDate } from "@/shared/utils/dates"
-import type { ServiceWithSongs } from "@/types/services"
+import type { ServiceWithSongs } from "@/features/services/types"
 
 const { Title, Text } = Typography
 

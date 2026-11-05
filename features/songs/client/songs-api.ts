@@ -1,5 +1,5 @@
 import { apiRequest } from "@/shared/client/api"
-import type { SongDetail, SongListItem } from "@/types/services"
+import type { SongDetail, SongListItem } from "@/features/songs/types"
 import type { SheetPayload } from "../sheet-layout"
 
 // Lo que el editor envía al guardar (lo valida features/songs/server/song-input.ts)

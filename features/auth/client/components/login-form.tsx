@@ -1,7 +1,7 @@
 "use client"
 
 import { LockOutlined, UserOutlined } from "@ant-design/icons"
-import type { LoginFormData } from "@/types/auth"
+import type { LoginFormData } from "@/features/auth/types"
 import { App, Button, Card, Col, Form, Input, Row } from "antd"
 import Image from "next/image"
 import Link from "next/link"

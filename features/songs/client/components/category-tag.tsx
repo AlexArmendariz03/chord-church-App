@@ -1,5 +1,5 @@
 import { Tag } from "antd"
-import type { SongCategory } from "@/types/services"
+import type { SongCategory } from "@/features/songs/types"
 
 // Keep in sync with the .is-jubilo / .is-adoracion borders in current-service.scss
 const CATEGORY_META: Record<SongCategory, { label: string; color: string }> = {

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { formatSemitones, transposeKey } from "@/shared/lyrics/transpose"
 import { useSession } from "@/features/auth/client/session-provider"
 import { errorMessage } from "@/shared/client/api"
-import type { SongDetail, SongListItem } from "@/types/services"
+import type { SongDetail, SongListItem } from "@/features/songs/types"
 import { LivePreview } from "../editor/live-preview"
 import { songsApi } from "../songs-api"
 

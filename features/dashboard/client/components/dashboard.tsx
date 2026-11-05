@@ -10,7 +10,7 @@ import { servicesApi } from "@/features/services/client/services-api"
 import { ROLE_LABELS, type Role } from "@/shared/auth/permissions"
 import { useConfirmDelete } from "@/shared/client/use-confirm-delete"
 import { displayName } from "@/shared/utils/user"
-import type { ServiceSummary } from "@/types/services"
+import type { ServiceSummary } from "@/features/services/types"
 
 const { Meta } = Card
 const { Title, Paragraph } = Typography
