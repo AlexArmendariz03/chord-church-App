@@ -124,8 +124,8 @@ const LEADER_STEPS: Record<TourPage, TourStep[]> = {
   servicios: [
     {
       target: "agregar-evento",
-      title: "Agregar evento",
-      description: "Elige fecha y hora, y las alabanzas de júbilo, adoración y ofrenda en el orden en que se tocan. Si una ya se usó mucho en el mes, te avisa."
+      title: "Nuevo servicio",
+      description: "Abre un panel para elegir fecha y hora y armar el orden de júbilo, adoración y ofrenda. Las flechas cambian el orden y te avisa de las repetidas."
     },
     {
       target: "lista-servicios",
