@@ -102,9 +102,11 @@
   }
 }
 
-// En el teléfono, un renglón largo se desplaza de lado en lugar de cortarse
-.song-preview .song-editor-preview.lyrics-viewer {
-  overflow-x: auto;
+// En el teléfono el panel ocupa toda la pantalla: menos relleno para que la letra crezca
+@media (max-width: 576px) {
+  .song-preview-drawer .ant-drawer-body {
+    padding: 16px 14px;
+  }
 }
 
 // Buscador de Alabanzas, arriba de las pestañas
