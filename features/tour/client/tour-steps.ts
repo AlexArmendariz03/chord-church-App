@@ -101,6 +101,11 @@ const LEADER_STEPS: Record<TourPage, TourStep[]> = {
       description: "Crea un bloque nuevo con su sección ya escrita, listo para escribir."
     },
     {
+      target: "editor-pegar",
+      title: "Pega la alabanza completa",
+      description: "Si ya la tienes escrita, pégala con los acordes arriba de la letra: se corta en bloques sola y los acordes en Do, Re, Mi pasan a C, D, E."
+    },
+    {
       target: "editor-deshacer",
       title: "Deshacer",
       description: "Si moviste o quitaste algo por error, deshazlo aquí o con Cmd+Z (Ctrl+Z en Windows)."

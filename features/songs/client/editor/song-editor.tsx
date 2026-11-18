@@ -9,6 +9,7 @@ import { transposeSheet } from "@/shared/lyrics/parse-lyrics"
 import { useSession } from "@/features/auth/client/session-provider"
 import { errorMessage } from "@/shared/client/api"
 import type { SongCategory } from "@/features/songs/types"
+import { pasteIntoSheet, type PasteMode } from "../../paste-lyrics"
 import { songsApi } from "../songs-api"
 import { EditorTip, EditorTools } from "./editor-tools"
 import { LivePreview } from "./live-preview"
@@ -137,6 +138,16 @@ const SongEditorForm = ({ editingId }: SongEditorFormProps) => {
         </span>
       )
     })
+  }
+
+  // La alabanza pegada, ya limpia y cortada en bloques: en lugar de la hoja o debajo de todo
+  const pasteLyrics = (text: string, mode: PasteMode) => {
+    const pasted = pasteIntoSheet(blocks, text, mode)
+    if (!pasted.added) return
+    changeBlocks(pasted.blocks)
+    setView("write")
+    const converted = pasted.convertedLines ? `; ${pasted.convertedLines} renglón(es) de acordes pasaron de Do-Re-Mi a letras` : ""
+    message.success(`Letra pegada en ${pasted.added} bloque(s)${converted}. Revisa que cada acorde quede sobre su sílaba.`)
   }
 
   const moveBlock = (id: string, direction: -1 | 1) => changeBlocks(moveInOrder(blocks, id, direction, sizesRef.current))
@@ -291,6 +302,7 @@ const SongEditorForm = ({ editingId }: SongEditorFormProps) => {
           <>
             <EditorTools
               onAddSection={addSection} onTidy={tidyBlocks}
+              sheetHasLyrics={Boolean(lyrics.trim())} onPaste={pasteLyrics}
               onUndo={history.undo} onRedo={history.redo}
               canUndo={history.canUndo} canRedo={history.canRedo} />
             <EditorTip />

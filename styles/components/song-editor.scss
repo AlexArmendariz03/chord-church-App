@@ -462,3 +462,10 @@
     font-size: 16px;
   }
 }
+
+// Ventana "Pegar letra": monoespaciada, para que cada acorde se vea sobre su sílaba
+.song-paste-input {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  white-space: pre;
+}

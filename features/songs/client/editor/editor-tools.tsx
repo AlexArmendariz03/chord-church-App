@@ -4,6 +4,8 @@ import { useSyncExternalStore } from "react"
 import { CloseOutlined, ColumnHeightOutlined, QuestionCircleOutlined, RedoOutlined, UndoOutlined } from "@ant-design/icons"
 import { Button, Tooltip } from "antd"
 import { openTour } from "@/features/tour/client/app-tour"
+import type { PasteMode } from "../../paste-lyrics"
+import { PasteLyricsButton } from "./paste-lyrics-button"
 
 // Secciones que se agregan con un clic; la vista en vivo las reconoce y les da su color
 const SECTIONS = ["Intro", "Verso", "Pre-coro", "Coro", "Puente", "Final"]
@@ -59,14 +61,16 @@ export const EditorTip = () => {
 type EditorToolsProps = {
   onAddSection: (label: string) => void
   onTidy: () => void
+  sheetHasLyrics: boolean
+  onPaste: (text: string, mode: PasteMode) => void
   onUndo: () => void
   onRedo: () => void
   canUndo: boolean
   canRedo: boolean
 }
 
-// Atajos de la hoja: agregar secciones, deshacer y acomodar
-export const EditorTools = ({ onAddSection, onTidy, onUndo, onRedo, canUndo, canRedo }: EditorToolsProps) => (
+// Atajos de la hoja: agregar secciones, pegar una alabanza completa, deshacer y acomodar
+export const EditorTools = ({ onAddSection, onTidy, sheetHasLyrics, onPaste, onUndo, onRedo, canUndo, canRedo }: EditorToolsProps) => (
   <div className="song-editor-tools">
     <span className="song-editor-sections" data-tour="editor-agregar">
       <span className="song-editor-tools-label">Agregar</span>
@@ -79,6 +83,7 @@ export const EditorTools = ({ onAddSection, onTidy, onUndo, onRedo, canUndo, can
       ))}
     </span>
     <span className="song-editor-actions">
+      <PasteLyricsButton sheetHasLyrics={sheetHasLyrics} onPaste={onPaste} />
       <span data-tour="editor-deshacer">
         <Tooltip title="Deshacer (Cmd+Z)">
           <Button
