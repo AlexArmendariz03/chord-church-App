@@ -106,3 +106,14 @@
 .song-preview .song-editor-preview.lyrics-viewer {
   overflow-x: auto;
 }
+
+// Buscador de Alabanzas, arriba de las pestañas
+.songs-search {
+  margin-bottom: 12px;
+}
+
+.songs-search-count {
+  display: block;
+  margin: 4px 0 8px;
+  font-size: 13px;
+}

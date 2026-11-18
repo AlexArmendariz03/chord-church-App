@@ -65,6 +65,11 @@ const LEADER_STEPS: Record<TourPage, TourStep[]> = {
       description: "Las alabanzas separadas en Júbilo y Adoración, con el inicio de la letra, el tono y sus etiquetas."
     },
     {
+      target: "buscar-alabanza",
+      title: "Buscar",
+      description: "Escribe parte del nombre de la alabanza; no importan los acentos."
+    },
+    {
       target: "ver-alabanza",
       title: "Vista previa",
       description: "Toca una alabanza para ver su letra con acordes como en En curso, en el tono que quieras."
@@ -99,6 +104,11 @@ const LEADER_STEPS: Record<TourPage, TourStep[]> = {
       target: "editor-agregar",
       title: "Agrega secciones",
       description: "Crea un bloque nuevo con su sección ya escrita, listo para escribir."
+    },
+    {
+      target: "editor-pegar",
+      title: "Pega la alabanza completa",
+      description: "Si ya la tienes escrita, pégala con los acordes arriba de la letra: se corta en bloques sola y los acordes en Do, Re, Mi pasan a C, D, E."
     },
     {
       target: "editor-deshacer",
@@ -181,6 +191,11 @@ const MUSICIAN_STEPS: Partial<Record<TourPage, TourStep[]>> = {
       target: "lista-alabanzas",
       title: "Cancionero",
       description: "Todas las alabanzas, separadas en Júbilo y Adoración, con su tono y sus etiquetas."
+    },
+    {
+      target: "buscar-alabanza",
+      title: "Buscar",
+      description: "Escribe parte del nombre de la alabanza; no importan los acentos."
     },
     {
       target: "ver-alabanza",
