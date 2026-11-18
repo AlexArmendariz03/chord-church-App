@@ -1,3 +1,4 @@
+import "server-only"
 import { cookies, headers } from "next/headers"
 import { can, type Permission } from "@/shared/auth/permissions"
 import { SESSION_COOKIE_NAME, SESSION_MAX_AGE, sessionTokenFrom, signSession, verifySession, type SessionUser } from "./session-token"

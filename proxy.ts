@@ -13,7 +13,8 @@ const PAGE_PERMISSIONS: [string, Permission][] = [
   ["/alabanzas/nueva", "manageSongs"],
   ["/alabanzas/editar", "manageSongs"],
   ["/servicios", "manageServices"],
-  ["/en-curso", "goLive"]
+  ["/en-curso", "goLive"],
+  ["/usuarios", "manageUsers"]
 ]
 
 const matches = (pathname: string, paths: string[]) =>

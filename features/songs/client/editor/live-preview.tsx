@@ -2,8 +2,8 @@
 
 import { useMemo } from "react"
 import { Typography } from "antd"
-import { StanzaView } from "@/features/live/client/lyrics/lyrics-pager"
-import { parseLyrics, stanzaKind, toUnits } from "@/features/live/client/lyrics/parse-lyrics"
+import { StanzaView } from "@/features/live/client/components/lyrics-pager"
+import { parseLyrics, stanzaKind, toUnits } from "@/shared/lyrics/parse-lyrics"
 
 const { Text } = Typography
 

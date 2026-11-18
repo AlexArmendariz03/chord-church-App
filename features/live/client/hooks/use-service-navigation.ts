@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type { ServiceWithSongs } from "@/types/services"
+import type { ServiceWithSongs } from "@/features/services/types"
 
 type NavigationOptions = {
   // Leader only: the prayer and announcements guide that follows the worship set

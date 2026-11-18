@@ -1,5 +1,5 @@
 import { apiRequest } from "@/shared/client/api"
-import type { LoginFormData } from "@/types/auth"
+import type { LoginFormData } from "@/features/auth/types"
 
 export const authApi = {
   // Responde con el mensaje de bienvenida

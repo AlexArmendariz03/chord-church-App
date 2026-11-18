@@ -4,19 +4,20 @@ import { AppstoreAddOutlined, CalendarOutlined, PlayCircleOutlined, UnorderedLis
 import { Alert, Button, Card, Col, Empty, Row, Typography } from "antd"
 import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
-import { useSession } from "@/features/layout/client/components/session-provider"
+import { useSession } from "@/features/auth/client/session-provider"
 import { ServiceCard } from "@/features/services/client/components/service-card"
 import { servicesApi } from "@/features/services/client/services-api"
 import { ROLE_LABELS, type Role } from "@/shared/auth/permissions"
 import { useConfirmDelete } from "@/shared/client/use-confirm-delete"
 import { displayName } from "@/shared/utils/user"
-import type { ServiceSummary } from "@/types/services"
+import type { ServiceSummary } from "@/features/services/types"
 
 const { Meta } = Card
 const { Title, Paragraph } = Typography
 
 // Lo que cada rol hace en la app, bajo el saludo
 const SUBTITLES: Record<Role, string> = {
+  master: "Administra alabanzas, servicios y todo lo de la app.",
   leader: "Administra alabanzas y arma los próximos servicios.",
   musico: "Abre el servicio en curso para seguir las letras en vivo.",
   proyeccion: "Aquí están las alabanzas de cada servicio, en el orden en que se proyectan."

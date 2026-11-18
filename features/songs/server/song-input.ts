@@ -1,5 +1,5 @@
 import type { Prisma, SongCategory } from "@/generated/prisma/client"
-import { trimLyrics } from "@/shared/utils/lyrics"
+import { trimLyrics } from "@/shared/lyrics/trim"
 
 // Valida el cuerpo para crear (POST) y editar (PUT) una alabanza, como service-input.ts con los servicios
 

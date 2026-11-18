@@ -1,20 +1,22 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { MoreOutlined, PlusOutlined } from "@ant-design/icons"
-import { App, Button, Card, Dropdown, Empty, Grid, Listy, Segmented, Space, Tabs, Typography } from "antd"
+import { MoreOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons"
+import { App, Button, Card, Dropdown, Empty, Grid, Input, Listy, Segmented, Space, Tabs, Typography } from "antd"
 import { useRouter } from "next/navigation"
-import { useSession } from "@/features/layout/client/components/session-provider"
+import { useSession } from "@/features/auth/client/session-provider"
 import { errorMessage } from "@/shared/client/api"
 import { useConfirmDelete } from "@/shared/client/use-confirm-delete"
-import { CategoryTag, ServiceTag, YouthTag } from "@/shared/components/category-tag"
-import type { SongListItem } from "@/types/services"
+import { CategoryTag, ServiceTag, YouthTag } from "@/features/songs/client/components/category-tag"
+import type { SongListItem } from "@/features/songs/types"
+import { searchSongs } from "../../song-search"
 import { songsApi } from "../songs-api"
 import { SongPreview } from "./song-preview"
 
 const { Paragraph, Text, Title } = Typography
 
 type TagFilter = "all" | "youth" | "service"
+type CategoryTab = SongListItem["category"]
 
 const SongsList = () => {
   const { message } = App.useApp()
@@ -25,6 +27,9 @@ const SongsList = () => {
   const [songs, setSongs] = useState<SongListItem[]>([])
   const [loading, setLoading] = useState(true)
   const [tagFilter, setTagFilter] = useState<TagFilter>("all")
+  const [categoryTab, setCategoryTab] = useState<CategoryTab>("jubilo")
+  // Mientras hay algo escrito, la lista junta las dos categorías y muestra las que coinciden por nombre
+  const [query, setQuery] = useState("")
   // La alabanza abierta en la vista previa para ensayar
   const [previewSong, setPreviewSong] = useState<SongListItem | null>(null)
   // Phones: the filter goes above the tabs so both tabs keep their room
@@ -35,6 +40,8 @@ const SongsList = () => {
     if (tagFilter === "service") return songs.filter(song => song.isService)
     return songs
   }, [songs, tagFilter])
+  const results = useMemo(() => searchSongs(visibleSongs, query), [visibleSongs, query])
+  const isSearching = Boolean(query.trim())
   const jubiloSongs = useMemo(() => visibleSongs.filter(song => song.category === "jubilo"), [visibleSongs])
   const adoracionSongs = useMemo(() => visibleSongs.filter(song => song.category === "adoracion"), [visibleSongs])
 
@@ -105,6 +112,24 @@ const SongsList = () => {
     )
   }
 
+  const renderResults = () => {
+    if (!results.length) {
+      return (
+        <Empty
+          description={`Ninguna alabanza se llama “${query.trim()}”`}
+          image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      )
+    }
+    return (
+      <>
+        <Text type="secondary" className="songs-search-count">
+          {results.length} {results.length === 1 ? "alabanza" : "alabanzas"}
+        </Text>
+        {renderSongs(results)}
+      </>
+    )
+  }
+
   const tagFilterControl = (
     <Segmented<TagFilter>
       className="songs-tag-filter" size="small"
@@ -142,13 +167,21 @@ const SongsList = () => {
         </Card>
 
         <Card loading={loading} data-tour="lista-alabanzas">
-          {!isWide && tagFilterControl}
-          <Tabs
+          <Input
+            className="songs-search" allowClear
+            prefix={<SearchOutlined />} value={query}
+            onChange={event => setQuery(event.target.value)}
+            onKeyDown={event => event.key === "Escape" && setQuery("")}
+            placeholder="Buscar por nombre"
+            aria-label="Buscar alabanzas" data-tour="buscar-alabanza" />
+          {(!isWide || isSearching) && tagFilterControl}
+          {isSearching ? renderResults() : <Tabs
+            activeKey={categoryTab} onChange={key => setCategoryTab(key as CategoryTab)}
             tabBarExtraContent={isWide ? tagFilterControl : undefined}
             items={[
               { key: "jubilo", label: `Júbilo (${jubiloSongs.length})`, children: renderSongs(jubiloSongs) },
               { key: "adoracion", label: `Adoración (${adoracionSongs.length})`, children: renderSongs(adoracionSongs) }
-            ]} />
+            ]} />}
         </Card>
       </Space>
 

@@ -4,17 +4,19 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ArrowLeftOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons"
 import { App, Button, Card, Checkbox, Input, Segmented, Select, Spin, Tooltip, Typography } from "antd"
-import { transposeKey } from "@/features/live/client/lyrics/transpose"
-import { transposeSheet } from "@/features/live/client/lyrics/parse-lyrics"
-import { useSession } from "@/features/layout/client/components/session-provider"
+import { transposeKey } from "@/shared/lyrics/transpose"
+import { transposeSheet } from "@/shared/lyrics/parse-lyrics"
+import { useSession } from "@/features/auth/client/session-provider"
 import { errorMessage } from "@/shared/client/api"
-import type { SongCategory } from "@/types/services"
+import type { SongCategory } from "@/features/songs/types"
+import { pasteIntoSheet, type PasteMode } from "../../paste-lyrics"
 import { songsApi } from "../songs-api"
 import { EditorTip, EditorTools } from "./editor-tools"
 import { LivePreview } from "./live-preview"
-import { blocksToLyrics, createId, loadBlocks, moveInOrder, nextFreeY, stackBlocks, stackInOrder, type BlockSize, type SheetBlock } from "./sheet-layout"
+import { blocksToLyrics, createId, loadBlocks, moveInOrder, nextFreeY, stackBlocks, stackInOrder, type BlockSize, type SheetBlock } from "../../sheet-layout"
 import { SongBoard } from "./song-board"
 import { useBlockHistory } from "./use-block-history"
+import { useSaveChecks } from "./use-save-checks"
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "./use-unsaved-changes-guard"
 
 const { Title, Text } = Typography
@@ -72,6 +74,7 @@ const SongEditorForm = ({ editingId }: SongEditorFormProps) => {
   const sizesRef = useRef(new Map<string, BlockSize>())
   const setBlocks = useCallback((next: SheetBlock[]) => setEditor(current => ({ ...current, blocks: next })), [])
   const history = useBlockHistory(blocks, setBlocks)
+  const checkBeforeSave = useSaveChecks()
   const { reset: resetHistory } = history
 
   useUnsavedChangesGuard(isDirty)
@@ -139,6 +142,16 @@ const SongEditorForm = ({ editingId }: SongEditorFormProps) => {
     })
   }
 
+  // La alabanza pegada, ya limpia y cortada en bloques: en lugar de la hoja o debajo de todo
+  const pasteLyrics = (text: string, mode: PasteMode) => {
+    const pasted = pasteIntoSheet(blocks, text, mode)
+    if (!pasted.added) return
+    changeBlocks(pasted.blocks)
+    setView("write")
+    const converted = pasted.convertedLines ? `; ${pasted.convertedLines} renglón(es) de acordes pasaron de Do-Re-Mi a letras` : ""
+    message.success(`Letra pegada en ${pasted.added} bloque(s)${converted}. Revisa que cada acorde quede sobre su sílaba.`)
+  }
+
   const moveBlock = (id: string, direction: -1 | 1) => changeBlocks(moveInOrder(blocks, id, direction, sizesRef.current))
   const tidyBlocks = () => changeBlocks(stackInOrder(blocks, sizesRef.current))
 
@@ -166,16 +179,11 @@ const SongEditorForm = ({ editingId }: SongEditorFormProps) => {
   }
 
   const saveSong = async () => {
-    if (!songName.trim() || !songKey.trim()) {
-      message.error("El nombre y tono de la canción son obligatorios")
-      return
-    }
-    if (!lyrics.trim()) {
-      message.error("La letra de la canción es obligatoria")
-      return
-    }
-
     setSaving(true)
+    if (!(await checkBeforeSave({ name: songName, key: songKey, lyrics }, editingId))) {
+      setSaving(false)
+      return
+    }
     try {
       await songsApi.save(editingId, {
         name: songName,
@@ -291,6 +299,7 @@ const SongEditorForm = ({ editingId }: SongEditorFormProps) => {
           <>
             <EditorTools
               onAddSection={addSection} onTidy={tidyBlocks}
+              sheetHasLyrics={Boolean(lyrics.trim())} onPaste={pasteLyrics}
               onUndo={history.undo} onRedo={history.redo}
               canUndo={history.canUndo} canRedo={history.canRedo} />
             <EditorTip />

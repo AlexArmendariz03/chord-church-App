@@ -3,7 +3,7 @@
 import { Fragment } from "react"
 import { LeftOutlined, RightOutlined } from "@ant-design/icons"
 import { Button, Typography } from "antd"
-import type { ServiceWithSongs } from "@/types/services"
+import type { ServiceWithSongs } from "@/features/services/types"
 
 const { Text } = Typography
 

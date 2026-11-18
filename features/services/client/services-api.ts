@@ -1,5 +1,5 @@
 import { apiRequest } from "@/shared/client/api"
-import type { ServiceSummary, ServiceWithSongs } from "@/types/services"
+import type { ServiceSummary, ServiceWithSongs } from "@/features/services/types"
 
 // Lo que el formulario envía al guardar (lo valida features/services/server/service-input.ts)
 export type ServiceInput = {

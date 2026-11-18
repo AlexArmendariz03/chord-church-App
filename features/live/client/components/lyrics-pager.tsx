@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type Dispatch, type MouseEvent, type TouchEvent } from "react"
-import { autoFontSize, layoutLyrics, REFERENCE_SIZE, type Fragment, type StanzaMetrics } from "./paginate"
-import { parseLyrics, stanzaKind, toUnits, type SectionKind, type Unit } from "./parse-lyrics"
+import { autoFontSize, layoutLyrics, REFERENCE_SIZE, type Fragment, type StanzaMetrics } from "@/shared/lyrics/paginate"
+import { parseLyrics, stanzaKind, toUnits, type SectionKind, type Unit } from "@/shared/lyrics/parse-lyrics"
 
 // Section labels can be long ("Estrofa 2 (misma secuencia que…)"); they truncate, and only
 // this much of them counts toward the column width when the row also carries chords.

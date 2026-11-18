@@ -1,3 +1,4 @@
+import "server-only"
 // Slows down password guessing: after MAX_FAILURES wrong attempts for the same user or IP,
 // login is blocked for the rest of the window. Kept in memory, so each server instance counts on its own.
 

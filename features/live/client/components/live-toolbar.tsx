@@ -2,7 +2,7 @@
 
 import { ExpandOutlined, OrderedListOutlined, ReadOutlined } from "@ant-design/icons"
 import { Button, Space, Switch, Typography } from "antd"
-import { formatSemitones, transposeKey } from "../lyrics/transpose"
+import { formatSemitones, transposeKey } from "@/shared/lyrics/transpose"
 
 const { Text } = Typography
 

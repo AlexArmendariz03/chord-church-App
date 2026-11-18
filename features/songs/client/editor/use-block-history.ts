@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useLayoutEffect, useReducer, useRef } from "react"
-import type { SheetBlock } from "./sheet-layout"
+import type { SheetBlock } from "../../sheet-layout"
 
 // Cuántos pasos se pueden deshacer
 const HISTORY_LIMIT = 50

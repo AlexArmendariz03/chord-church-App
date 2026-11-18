@@ -287,12 +287,19 @@
 $leader-gradient: linear-gradient(180deg, #3a66f0 0%, #1e43b8 100%);
 $musician-gradient: linear-gradient(135deg, #14b8a6 0%, #059669 100%);
 $projection-gradient: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+$master-gradient: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%);
 
 // Initial in a circle, ringed with the role's color (header chip and phone menu)
 .user-avatar.ant-avatar {
   flex-shrink: 0;
   color: #fff;
   font-weight: 700;
+
+  // Morado para el master
+  &.is-master {
+    background: $master-gradient;
+    box-shadow: 0 0 0 2px var(--app-avatar-ring), 0 0 0 4px rgba(124, 58, 237, 0.35);
+  }
 
   &.is-leader {
     background: $leader-gradient;
@@ -323,6 +330,11 @@ $projection-gradient: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
   letter-spacing: 0.06em;
   line-height: 16px;
   text-transform: uppercase;
+
+  &.is-master {
+    background: $master-gradient;
+    box-shadow: 0 2px 6px rgba(124, 58, 237, 0.3);
+  }
 
   &.is-leader {
     background: $leader-gradient;

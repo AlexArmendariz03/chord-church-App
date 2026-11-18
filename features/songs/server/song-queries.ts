@@ -1,6 +1,8 @@
+import "server-only"
 import type { Prisma } from "@/generated/prisma/client"
 import { prisma } from "@/shared/server/prisma"
-import { SONG_LIST_SELECT, type SongListItem } from "@/types/services"
+import { SONG_LIST_SELECT } from "@/features/songs/server/song-selects"
+import type { SongListItem } from "@/features/songs/types"
 
 // Consultas de alabanzas; las rutas de la API solo validan y llaman a estas funciones
 

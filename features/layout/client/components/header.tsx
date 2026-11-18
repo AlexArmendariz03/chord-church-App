@@ -11,7 +11,7 @@ import { openTour, useHasTour } from "@/features/tour/client/app-tour"
 import { getMenuItems, getSelectedMenuKey } from "./menu-items"
 import { displayName } from "@/shared/utils/user"
 import { ROLE_LABELS, type Role } from "@/shared/auth/permissions"
-import { useSession } from "./session-provider"
+import { useSession } from "@/features/auth/client/session-provider"
 import { ThemeSegmented, useThemeMenuItem } from "./theme-picker"
 
 const { Header } = ALayout
@@ -19,7 +19,7 @@ const { Header } = ALayout
 const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION
 
 // Color del avatar y de la etiqueta de cada rol (layout.scss)
-const ROLE_CLASSES: Record<Role, string> = { leader: "is-leader", musico: "is-musician", proyeccion: "is-projection" }
+const ROLE_CLASSES: Record<Role, string> = { master: "is-master", leader: "is-leader", musico: "is-musician", proyeccion: "is-projection" }
 
 const HeaderBar = () => {
   const router = useRouter()
