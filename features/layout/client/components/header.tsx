@@ -19,7 +19,7 @@ const { Header } = ALayout
 const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION
 
 // Color del avatar y de la etiqueta de cada rol (layout.scss)
-const ROLE_CLASSES: Record<Role, string> = { leader: "is-leader", musico: "is-musician", proyeccion: "is-projection" }
+const ROLE_CLASSES: Record<Role, string> = { master: "is-master", leader: "is-leader", musico: "is-musician", proyeccion: "is-projection" }
 
 const HeaderBar = () => {
   const router = useRouter()

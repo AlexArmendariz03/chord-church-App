@@ -17,6 +17,7 @@ const { Title, Paragraph } = Typography
 
 // Lo que cada rol hace en la app, bajo el saludo
 const SUBTITLES: Record<Role, string> = {
+  master: "Administra alabanzas, servicios y todo lo de la app.",
   leader: "Administra alabanzas y arma los próximos servicios.",
   musico: "Abre el servicio en curso para seguir las letras en vivo.",
   proyeccion: "Aquí están las alabanzas de cada servicio, en el orden en que se proyectan."

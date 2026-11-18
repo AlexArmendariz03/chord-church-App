@@ -1,0 +1,78 @@
+// Página Usuarios: una fila por cuenta, con su rol y "Restablecer contraseña"
+.users-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 4px;
+  border-bottom: 1px solid $header-border;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.users-row-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.users-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.users-role-select {
+  width: 140px;
+}
+
+// Cada rol con lo que puede hacer, al crear un usuario
+.users-role-option {
+  display: flex;
+  flex-direction: column;
+  white-space: normal;
+
+  span {
+    color: var(--app-text-muted);
+    font-size: 12px;
+  }
+}
+
+.users-password-input {
+  font-family: var(--font-mono);
+}
+
+// Usuario y contraseña recién creados, para pasárselos a la persona
+.users-credentials {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 16px;
+  padding: 14px 16px;
+  border: 1px solid $header-border;
+  border-radius: 12px;
+
+  span {
+    color: var(--app-text-muted);
+  }
+
+  strong {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    user-select: all;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .users-row-actions {
+    width: 100%;
+
+    .users-role-select {
+      flex: 1;
+    }
+  }
+}

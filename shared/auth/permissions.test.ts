@@ -2,6 +2,11 @@ import { describe, expect, it } from "vitest"
 import { can, isRole, ROLES } from "./permissions"
 
 describe("can", () => {
+  it("el master tiene todos los permisos", () => {
+    const permissions = ["viewSongs", "manageSongs", "manageServices", "goLive", "leadService", "seeKeys", "manageUsers"] as const
+    permissions.forEach(permission => expect(can("master", permission)).toBe(true))
+  })
+
   it("el dirigente puede todo", () => {
     expect(can("leader", "manageSongs")).toBe(true)
     expect(can("leader", "leadService")).toBe(true)
@@ -20,6 +25,13 @@ describe("can", () => {
     expect(can("proyeccion", "goLive")).toBe(false)
     expect(can("proyeccion", "seeKeys")).toBe(false)
     expect(can("proyeccion", "viewSongs")).toBe(false)
+  })
+
+  it("solo el master administra usuarios", () => {
+    expect(can("master", "manageUsers")).toBe(true)
+    expect(can("leader", "manageUsers")).toBe(false)
+    expect(can("musico", "manageUsers")).toBe(false)
+    expect(can("proyeccion", "manageUsers")).toBe(false)
   })
 
   it("sin rol no puede nada", () => {

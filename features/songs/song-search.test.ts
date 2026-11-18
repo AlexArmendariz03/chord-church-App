@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { normalizeForSearch, searchSongs } from "./song-search"
+import { findSameName, normalizeForSearch, searchSongs } from "./song-search"
 
 const SONGS = [
   { name: "Cadenas romper" },
@@ -33,5 +33,19 @@ describe("searchSongs", () => {
 
   it("no busca en la letra", () => {
     expect(names("cristo")).toEqual([])
+  })
+})
+
+describe("findSameName", () => {
+  const songs = [{ id: "a", name: "Señor tu nombre exaltaré" }, { id: "b", name: "Hosanna" }]
+
+  it("encuentra la que se llama igual aunque cambien acentos, mayúsculas o signos", () => {
+    expect(findSameName(songs, "  senor, TU nombre exaltare ", null)).toBe(songs[0])
+  })
+
+  it("no cuenta la que se está editando ni nombres que solo se parecen", () => {
+    expect(findSameName(songs, "Hosanna", "b")).toBeUndefined()
+    expect(findSameName(songs, "Hosanna en las alturas", null)).toBeUndefined()
+    expect(findSameName(songs, "  ", null)).toBeUndefined()
   })
 })

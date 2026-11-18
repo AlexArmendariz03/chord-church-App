@@ -41,11 +41,12 @@ En GitHub, cada push a `main` o `dev` y cada PR corre lint, tipos y pruebas (`.g
 Crea o actualiza usuarios en la base de datos con:
 
 ```bash
-npm run create-user -- <usuario> <contraseña> leader   # o musico, o proyeccion
+npm run create-user -- <usuario> <contraseña> leader   # o master, musico, proyeccion
 ```
 
 | Rol | Qué puede hacer |
 |---|---|
+| `master` (Master) | Todos los permisos, incluidos los que se agreguen solo para administrar la app |
 | `leader` (Dirigente) | Todo: alabanzas, servicios y En curso con la vista del dirigente |
 | `musico` (Músico) | Ver los servicios y seguir En curso con letras, acordes y tono |
 | `proyeccion` (Proyección) | Solo ver la lista de servicios con sus alabanzas, sin tonos |

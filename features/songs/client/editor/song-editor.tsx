@@ -16,6 +16,7 @@ import { LivePreview } from "./live-preview"
 import { blocksToLyrics, createId, loadBlocks, moveInOrder, nextFreeY, stackBlocks, stackInOrder, type BlockSize, type SheetBlock } from "../../sheet-layout"
 import { SongBoard } from "./song-board"
 import { useBlockHistory } from "./use-block-history"
+import { useSaveChecks } from "./use-save-checks"
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "./use-unsaved-changes-guard"
 
 const { Title, Text } = Typography
@@ -73,6 +74,7 @@ const SongEditorForm = ({ editingId }: SongEditorFormProps) => {
   const sizesRef = useRef(new Map<string, BlockSize>())
   const setBlocks = useCallback((next: SheetBlock[]) => setEditor(current => ({ ...current, blocks: next })), [])
   const history = useBlockHistory(blocks, setBlocks)
+  const checkBeforeSave = useSaveChecks()
   const { reset: resetHistory } = history
 
   useUnsavedChangesGuard(isDirty)
@@ -177,16 +179,11 @@ const SongEditorForm = ({ editingId }: SongEditorFormProps) => {
   }
 
   const saveSong = async () => {
-    if (!songName.trim() || !songKey.trim()) {
-      message.error("El nombre y tono de la canción son obligatorios")
-      return
-    }
-    if (!lyrics.trim()) {
-      message.error("La letra de la canción es obligatoria")
-      return
-    }
-
     setSaving(true)
+    if (!(await checkBeforeSave({ name: songName, key: songKey, lyrics }, editingId))) {
+      setSaving(false)
+      return
+    }
     try {
       await songsApi.save(editingId, {
         name: songName,
