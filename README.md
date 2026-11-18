@@ -5,7 +5,7 @@ Next.js (App Router) + Prisma + PostgreSQL (Supabase), desplegada en Vercel.
 
 ## Requisitos
 
-- Node 22 (ver `.nvmrc`)
+- Node 24 (ver `.nvmrc`)
 
 ## Empezar
 
