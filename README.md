@@ -34,7 +34,9 @@ Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
 Las pruebas van junto al archivo que prueban (`transpose.ts` → `transpose.test.ts`) y cubren la lógica
 pura: transposición, letras, paginación, reglas de servicios, permisos y validación de la API.
-En GitHub, cada push a `main` o `dev` y cada PR corre lint, tipos y pruebas (`.github/workflows/ci.yml`).
+En GitHub, cada push a `main` o `dev` y cada PR corre lint, tipos, pruebas y la revisión de migraciones
+(`.github/workflows/ci.yml`). `main` y `dev` están protegidas: solo cambian por PR y con esos checks y
+el de Vercel en verde.
 
 ## Usuarios y roles
 
@@ -65,7 +67,12 @@ se importa desde `@/generated/prisma/client`.
 - Aplicar las migraciones pendientes: `npx prisma migrate deploy`
 - Ver cuáles faltan: `npx prisma migrate status`
 
-Aplica las migraciones **antes** de publicar el código que las usa.
+Al llegar a `main`, el workflow **Migraciones en producción** (`.github/workflows/migraciones-produccion.yml`)
+aplica las pendientes con `prisma migrate deploy`; necesita el secreto `DIRECT_URL` en GitHub. Como Vercel
+publica el código nuevo al mismo tiempo, cada migración debe funcionar también con el código anterior
+(agregar columnas o tablas; quitar algo, en un segundo PR cuando el código ya no lo use).
+En cada PR, el CI aplica todas las migraciones a un Postgres temporal y revisa que el resultado sea igual
+a `prisma/schema.prisma`: si cambias el esquema sin crear su migración, el PR falla.
 
 ## Estructura
 
