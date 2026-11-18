@@ -1,7 +1,7 @@
 "use client"
 
-import { ExclamationCircleOutlined } from "@ant-design/icons"
-import { Button, Col, DatePicker, Form, Input, Row, Select, Typography, type FormInstance } from "antd"
+import { InfoCircleOutlined } from "@ant-design/icons"
+import { AutoComplete, Button, Col, Form, Input, Row, type FormInstance } from "antd"
 import dayjs, { type Dayjs } from "dayjs"
 import "dayjs/locale/es"
 import { useMemo } from "react"
@@ -10,8 +10,8 @@ import type { ServiceSummary } from "@/features/services/types"
 import type { SongListItem } from "@/features/songs/types"
 import type { ServiceInput } from "../services-api"
 import { useMonthUsage } from "../use-month-usage"
-
-const { Paragraph, Text } = Typography
+import { DateTimeField } from "./date-time-field"
+import { SongLane } from "./song-lane"
 
 export type ServiceFormValues = {
   title: string
@@ -23,18 +23,8 @@ export type ServiceFormValues = {
   announcements?: string
 }
 
-// Si una alabanza ya está en esta cantidad de otros servicios del mes, se avisa al elegirla otra vez
-const REPEAT_WARNING_COUNT = 2
-// "6 dic y 13 dic"
-const DATE_LIST = new Intl.ListFormat("es", { type: "conjunction" })
-
 const PRAYER_PLACEHOLDER = "Vamos a orar por:\nLa iglesia local\nNuestro pastor\nNuestros obreros y misioneros"
 const ANNOUNCEMENTS_PLACEHOLDER = "Dar los anuncios del día de mañana:\nSeminarios a las 9:00 a. m."
-
-const toOption = (song: SongListItem) => ({
-  label: `${song.name} (${song.key})${song.isYouth ? " · Jóvenes" : ""}${song.isService ? " · Servicios" : ""}`,
-  value: song.id
-})
 
 // Las alabanzas de un servicio guardado, separadas como las pide el formulario
 export const songFields = (service: ServiceSummary) => ({
@@ -75,112 +65,136 @@ type ServiceFormProps = {
   onSubmit: (service: ServiceInput) => void
   // Solo dentro del modal
   onCancel?: () => void
+  // Nombres de otros servicios, para sugerirlos al escribir
+  titleSuggestions?: string[]
 }
 
-export const ServiceForm = ({ form, songs, editingServiceId, saving, onSubmit, onCancel }: ServiceFormProps) => {
+// Cada parte del formulario con su número: 1 Evento, 2 Alabanzas, 3 Guía
+const Step = ({ number, title, hint, children }: { number: number; title: string; hint?: string; children: React.ReactNode }) => (
+  <section className="service-form-step">
+    <header className="service-form-step-header">
+      <span className="service-form-step-number">{number}</span>
+      <div>
+        <h4 className="service-form-step-title">{title}</h4>
+        {hint && <p className="service-form-step-hint">{hint}</p>}
+      </div>
+    </header>
+    {children}
+  </section>
+)
+
+// La ofrenda es un solo id en el formulario; su grupo trabaja con listas
+const asList = (value?: string | null) => ({ value: value ? [value] : [] })
+const firstOf = (value?: string[]) => value?.[0]
+
+export const ServiceForm = ({ form, songs, editingServiceId, saving, onSubmit, onCancel, titleSuggestions = [] }: ServiceFormProps) => {
   const jubiloSongs = useMemo(() => songs.filter(song => song.category === "jubilo"), [songs])
   const adoracionSongs = useMemo(() => songs.filter(song => song.category === "adoracion"), [songs])
-  // A song can only be in the service once, so the júbilo list and the offering hide each other's pick
-  const pickedJubilo = Form.useWatch("jubiloSongIds", form)
+  const pickedJubilo = Form.useWatch("jubiloSongIds", form) ?? []
+  const pickedAdoracion = Form.useWatch("adoracionSongIds", form) ?? []
   const pickedOffering = Form.useWatch("offeringSongId", form)
-  const pickedAdoracion = Form.useWatch("adoracionSongIds", form)
   // Studies and the weekend 9:45 gathering: one worship song for the whole event
   const watchedTitle = Form.useWatch("title", form)
   const watchedDate = Form.useWatch("eventDate", form)
   const singleWorship = isSingleWorshipEvent(watchedTitle, watchedDate?.toDate())
   const datesBySong = useMonthUsage(watchedDate ? watchedDate.format("YYYY-MM") : null, editingServiceId)
   const monthName = watchedDate ? watchedDate.locale("es").format("MMMM") : ""
+  const titleOptions = useMemo(() => {
+    const typed = (watchedTitle ?? "").trim().toLowerCase()
+    return [...new Set(titleSuggestions)]
+      .filter(title => title.toLowerCase().includes(typed) && title.toLowerCase() !== typed)
+      .slice(0, 8)
+      .map(title => ({ value: title }))
+  }, [titleSuggestions, watchedTitle])
 
-  // Nota bajo el campo cuando alguna de sus alabanzas ya se usó REPEAT_WARNING_COUNT veces o más en el mes
-  const repeatNote = (songIds?: string[]) => {
-    const repeated = (songIds ?? []).flatMap(songId => {
-      const dates = datesBySong.get(songId) ?? []
-      const song = songs.find(candidate => candidate.id === songId)
-      return song && dates.length >= REPEAT_WARNING_COUNT ? [{ name: song.name, dates }] : []
-    })
-    if (!repeated.length) return undefined
-    return (
-      <span className="service-repeat-note">
-        {repeated.map(({ name, dates }) => (
-          <span key={name}>
-            <ExclamationCircleOutlined /> {name} ya se usó {dates.length} veces en {monthName} ({DATE_LIST.format(dates)})
-          </span>
-        ))}
-      </span>
-    )
-  }
+  // Lo que lleva el servicio, al pie junto a Guardar
+  const jubiloCount = singleWorship ? 0 : pickedJubilo.length
+  const adoracionCount = singleWorship ? Math.min(1, pickedAdoracion.length) : pickedAdoracion.length
+  const summary = [
+    jubiloCount > 0 && `${jubiloCount} júbilo`,
+    adoracionCount > 0 && `${adoracionCount} adoración`,
+    !singleWorship && pickedOffering && "ofrenda"
+  ].filter(Boolean).join(" · ")
+  const laneProps = { datesBySong, monthName }
 
   return (
     <Form
       form={form} layout="vertical"
+      requiredMark={false} className="service-form"
       onFinish={values => onSubmit(toServiceInput(values))}>
-      <Row gutter={16}>
-        <Col xs={24} md={12}>
-          <Form.Item
-            name="title" label="Nombre del servicio"
-            rules={[{ required: true, message: "Escribe el nombre" }]}>
-            <Input placeholder="Ej. Servicio domingo" />
-          </Form.Item>
-        </Col>
-        <Col xs={24} md={12}>
-          <Form.Item
-            name="eventDate" label="Fecha del evento"
-            rules={[{ required: true, message: "Selecciona la fecha" }]}>
-            <DatePicker
-              showTime={{ format: "h:mm a", minuteStep: 5 }} format="DD/MM/YYYY h:mm a"
-              placeholder="Selecciona fecha y hora" style={{ width: "100%" }} />
-          </Form.Item>
-        </Col>
-        {!singleWorship && (
+      <Step number={1} title="Evento">
+        <Row gutter={16}>
           <Col xs={24} md={12}>
             <Form.Item
-              name="jubiloSongIds" label="Canciones de júbilo (mínimo 1)"
-              extra={repeatNote(pickedJubilo)}
-              rules={[{ required: true, type: "array", min: 1, message: "Selecciona al menos 1" }]}>
-              <Select
-                mode="multiple" placeholder="Busca o selecciona alabanzas"
-                optionFilterProp="label"
-                options={jubiloSongs.filter(song => song.id !== pickedOffering).map(toOption)} />
+              name="title" label="Nombre del servicio"
+              rules={[{ required: true, message: "Escribe el nombre" }]}>
+              <AutoComplete options={titleOptions}>
+                <Input placeholder="Ej. Servicio domingo" />
+              </AutoComplete>
             </Form.Item>
           </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="eventDate" label="Fecha y hora"
+              rules={[{ required: true, message: "Elige la fecha y la hora" }]}>
+              <DateTimeField />
+            </Form.Item>
+          </Col>
+        </Row>
+        {singleWorship && (
+          <p className="service-form-single">
+            <InfoCircleOutlined /> Estudios, seminarios y la reunión de las 9:45 llevan solo 1 alabanza de adoración, sin júbilo, ofrenda ni guía.
+          </p>
         )}
-        <Col xs={24} md={12}>
+      </Step>
+
+      <Step
+        number={2} title="Orden de alabanzas"
+        hint="Se tocan en este orden. Usa las flechas para cambiarlo.">
+        <div className="service-form-lanes">
+          {!singleWorship && (
+            <Form.Item
+              name="jubiloSongIds" className="service-form-lane"
+              rules={[{ required: true, type: "array", min: 1, message: "Agrega al menos 1 de júbilo" }]}>
+              <SongLane
+                kind="jubilo" title="Júbilo"
+                songs={jubiloSongs} excludeIds={pickedOffering ? [pickedOffering] : []}
+                firstPosition={1} placeholder="Agregar de júbilo"
+                emptyText="Todavía no hay alabanzas de júbilo" {...laneProps} />
+            </Form.Item>
+          )}
           <Form.Item
-            name="adoracionSongIds"
-            extra={repeatNote(pickedAdoracion)}
-            label={singleWorship ? "Canción de adoración (solo 1)" : "Canciones de adoración (mínimo 1)"}
+            name="adoracionSongIds" className="service-form-lane"
             rules={[
-              { required: true, type: "array", min: 1, message: "Selecciona al menos 1" },
+              { required: true, type: "array", min: 1, message: singleWorship ? "Agrega la alabanza de adoración" : "Agrega al menos 1 de adoración" },
               ...(singleWorship ? [{ type: "array" as const, max: 1, message: "Este evento lleva solo 1" }] : [])
             ]}>
-            <Select
-              mode="multiple" maxCount={singleWorship ? 1 : undefined}
-              placeholder="Busca o selecciona alabanzas"
-              optionFilterProp="label"
-              options={adoracionSongs.map(toOption)} />
+            <SongLane
+              kind="adoracion" title="Adoración"
+              songs={adoracionSongs} firstPosition={jubiloCount + 1}
+              maxCount={singleWorship ? 1 : undefined} placeholder="Agregar de adoración"
+              emptyText="Todavía no hay alabanzas de adoración" {...laneProps} />
           </Form.Item>
-        </Col>
-        {!singleWorship && (
-          <Col xs={24} md={12}>
+          {!singleWorship && (
             <Form.Item
-              name="offeringSongId" label="Canción de la ofrenda (opcional)"
-              extra={repeatNote(pickedOffering ? [pickedOffering] : [])}>
-              <Select
-                showSearch allowClear
-                placeholder="Busca o selecciona una de júbilo"
-                optionFilterProp="label"
-                options={jubiloSongs.filter(song => !pickedJubilo?.includes(song.id)).map(toOption)} />
+              name="offeringSongId" className="service-form-lane"
+              getValueProps={asList} normalize={firstOf}>
+              <SongLane
+                kind="ofrenda" title="Ofrenda"
+                songs={jubiloSongs} excludeIds={pickedJubilo}
+                firstPosition={jubiloCount + adoracionCount + 1} maxCount={1}
+                placeholder="Elegir una de júbilo" emptyText="Se toca después de la adoración, mientras se recoge la ofrenda"
+                {...laneProps} />
             </Form.Item>
-          </Col>
-        )}
-        {!singleWorship && (
-          <>
-            <Col span={24}>
-              <Text strong>Guía para el dirigente (opcional)</Text>
-              <Paragraph type="secondary" style={{ marginBottom: 12 }}>
-                Escribe un punto por línea; una línea que termina en &quot;:&quot; sirve de título.
-              </Paragraph>
-            </Col>
+          )}
+        </div>
+      </Step>
+
+      {!singleWorship && (
+        <Step
+          number={3} title="Guía para el dirigente"
+          hint='Opcional. Un punto por línea; una línea que termina en ":" sirve de título.'>
+          <Row gutter={16}>
             <Col xs={24} md={12}>
               <Form.Item name="prayerGuide" label="Oración">
                 <Input.TextArea autoSize={{ minRows: 4, maxRows: 10 }} placeholder={PRAYER_PLACEHOLDER} />
@@ -191,17 +205,19 @@ export const ServiceForm = ({ form, songs, editingServiceId, saving, onSubmit, o
                 <Input.TextArea autoSize={{ minRows: 4, maxRows: 10 }} placeholder={ANNOUNCEMENTS_PLACEHOLDER} />
               </Form.Item>
             </Col>
-          </>
-        )}
-      </Row>
-      <div className="service-form-actions">
+          </Row>
+        </Step>
+      )}
+
+      <footer className="service-form-actions">
+        <span className="service-form-summary">{summary || "Sin alabanzas todavía"}</span>
         {onCancel && <Button onClick={onCancel}>Cancelar</Button>}
         <Button
           type="primary" htmlType="submit"
           loading={saving}>
           {editingServiceId ? "Guardar cambios" : "Guardar servicio"}
         </Button>
-      </div>
+      </footer>
     </Form>
   )
 }

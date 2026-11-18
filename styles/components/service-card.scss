@@ -358,19 +358,277 @@ $service-ofrenda: #f59e0b;
   }
 }
 
-// Service form: Cancelar then Guardar, both on the right
-.service-form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+// Formulario de servicio: tres partes numeradas (Evento, Orden de alabanzas, Guía)
+.service-form-step {
+  padding: 4px 0 20px;
+
+  & + & {
+    padding-top: 20px;
+    border-top: 1px solid var(--app-border-soft);
+  }
 }
 
-// Formulario de servicio: nota bajo el campo cuando una alabanza ya se usó varias veces en el mes
-.service-repeat-note {
+.service-form-step-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.service-form-step-number {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--app-accent-gradient);
+  box-shadow: var(--app-accent-raised);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.service-form-step-title {
+  margin: 3px 0 0;
+  color: var(--app-ink);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.service-form-step-hint {
+  margin: 2px 0 0;
+  color: var(--app-text-muted);
+  font-size: 13px;
+}
+
+// Fecha y hora lado a lado; la hora más angosta
+.date-time-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 8px;
+
+  .ant-picker {
+    width: 100%;
+  }
+}
+
+.service-form-single {
+  display: flex;
+  gap: 8px;
+  margin: -4px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--app-accent-soft);
+  color: var(--app-accent);
+  font-size: 13px;
+}
+
+.service-form-lanes {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  margin-top: 4px;
+  gap: 12px;
+
+  .service-form-lane {
+    margin-bottom: 0;
+  }
+}
+
+// Un grupo del orden (Júbilo, Adoración, Ofrenda), con el color de las tarjetas de servicio
+.song-lane {
+  --lane-color: #{$service-jubilo};
+  --lane-text: var(--app-jubilo-text);
+  padding: 12px 14px 14px;
+  border: 1px solid var(--app-border);
+  border-left: 4px solid var(--lane-color);
+  border-radius: 12px;
+  background: var(--app-surface);
+
+  &.is-adoracion {
+    --lane-color: #{$service-adoracion};
+    --lane-text: var(--app-adoracion-text);
+  }
+
+  &.is-ofrenda {
+    --lane-color: #{$service-ofrenda};
+    --lane-text: var(--app-ofrenda-text);
+  }
+
+  .ant-form-item-has-error & {
+    border-color: var(--ant-color-error, #ff4d4f);
+    border-left-color: var(--lane-color);
+  }
+}
+
+.song-lane-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.song-lane-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--lane-color);
+}
+
+.song-lane-title {
+  color: var(--lane-text);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.song-lane-count {
+  margin-left: auto;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--app-surface-muted);
+  color: var(--app-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.song-lane-list {
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.song-lane-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px 6px 0;
+  border-radius: 8px;
+  animation: song-lane-in 0.18s ease-out;
+
+  & + & {
+    border-top: 1px dashed var(--app-border-soft);
+  }
+}
+
+@keyframes song-lane-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+
+.song-lane-position {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--lane-color) 16%, transparent);
+  color: var(--lane-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.song-lane-name {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  min-width: 0;
+  color: var(--app-ink);
+  font-weight: 600;
+}
+
+.song-lane-repeat {
+  color: var(--app-note-text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: help;
+}
+
+.song-lane-key {
+  flex: none;
+  padding: 0 7px;
+  border-radius: 6px;
+  background: var(--app-surface-muted);
+  color: var(--app-text-subtle);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.song-lane-actions {
+  display: flex;
+  flex: none;
+  color: var(--app-text-muted);
+}
+
+// Las que sobran cuando el evento lleva solo una
+.song-lane-row.is-over {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.song-lane-over {
+  margin: 0 0 8px;
   color: var(--app-note-text);
   font-size: 13px;
+}
+
+.song-lane-empty {
+  margin: 0 0 8px;
+  color: var(--app-text-faint);
+  font-size: 13px;
+}
+
+.song-lane-add {
+  width: 100%;
+
+  .ant-select-placeholder,
+  .ant-select-selection-placeholder {
+    color: var(--lane-text);
+    font-weight: 600;
+  }
+}
+
+.song-lane-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+// Pie: lo que lleva el servicio a la izquierda, Cancelar y Guardar a la derecha
+.service-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--app-border-soft);
+}
+
+.service-form-summary {
+  margin-right: auto;
+  color: var(--app-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@media (max-width: 575.98px) {
+  .song-lane {
+    padding: 10px 10px 12px;
+  }
+
+  .service-form-summary {
+    flex-basis: 100%;
+  }
 }

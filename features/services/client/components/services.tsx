@@ -131,11 +131,14 @@ const Services = () => {
     }
   })
 
+  // Los nombres que ya se han usado, para sugerirlos al escribir uno
+  const titleSuggestions = [...services, ...(pastServices ?? [])].map(service => service.title)
+
   const serviceForm = (
     <ServiceForm
       form={form} songs={songs}
       editingServiceId={editingServiceId} saving={saving}
-      onSubmit={saveService}
+      onSubmit={saveService} titleSuggestions={titleSuggestions}
       onCancel={formInModal ? closeForm : undefined} />
   )
 
@@ -178,7 +181,8 @@ const Services = () => {
           <Modal
             open={formOpen} title={editingServiceId ? "Editar servicio" : "Agregar evento"}
             onCancel={closeForm} footer={null}
-            width={760} forceRender>
+            width={820} forceRender
+            rootClassName="service-form-modal">
             {serviceForm}
           </Modal>
         )}
