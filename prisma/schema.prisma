@@ -13,6 +13,8 @@ enum UserRole {
   musico
   // Quien proyecta las letras: solo ve la lista de servicios con sus alabanzas
   proyeccion
+  // Administra la app: tiene todos los permisos, incluidos los que no tienen dirigente ni músico
+  master
 }
 
 enum SongCategory {

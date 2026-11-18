@@ -1,4 +1,4 @@
-import { AppstoreAddOutlined, HomeOutlined, PlayCircleOutlined, UnorderedListOutlined } from "@ant-design/icons"
+import { AppstoreAddOutlined, HomeOutlined, PlayCircleOutlined, TeamOutlined, UnorderedListOutlined } from "@ant-design/icons"
 import Link from "next/link"
 import { can, type Permission, type Role } from "@/shared/auth/permissions"
 
@@ -7,7 +7,8 @@ const ITEMS: { path: string, label: string, icon: React.ReactNode, permission?: 
   { path: "/dashboard", label: "Inicio", icon: <HomeOutlined /> },
   { path: "/alabanzas", label: "Alabanzas", icon: <UnorderedListOutlined />, permission: "viewSongs" },
   { path: "/servicios", label: "Servicios", icon: <AppstoreAddOutlined />, permission: "manageServices" },
-  { path: "/en-curso", label: "En curso", icon: <PlayCircleOutlined />, permission: "goLive" }
+  { path: "/en-curso", label: "En curso", icon: <PlayCircleOutlined />, permission: "goLive" },
+  { path: "/usuarios", label: "Usuarios", icon: <TeamOutlined />, permission: "manageUsers" }
 ]
 
 export const getMenuItems = (role?: Role) =>

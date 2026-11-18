@@ -261,6 +261,8 @@ export const tourPageFor = (pathname: string): TourPage | null => PAGE_BY_PATH[p
 
 // Un rol nuevo tiene que agregarse aquí (TypeScript lo pide), aunque sea con su recorrido vacío
 const STEPS_BY_ROLE: Record<Role, Partial<Record<TourPage, TourStep[]>>> = {
+  // Ve y hace lo mismo que el dirigente
+  master: LEADER_STEPS,
   leader: LEADER_STEPS,
   musico: MUSICIAN_STEPS,
   proyeccion: PROJECTION_STEPS
