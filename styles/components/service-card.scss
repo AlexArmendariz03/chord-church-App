@@ -358,16 +358,17 @@ $service-ofrenda: #f59e0b;
   }
 }
 
-// Formulario de servicio: tres partes numeradas (Evento, Orden de alabanzas, Guía)
+// Formulario de servicio: Evento, Orden de alabanzas y Guía
 .service-form-step {
-  padding: 4px 0 20px;
+  padding-bottom: 8px;
 
   & + & {
-    padding-top: 20px;
+    padding-top: 16px;
     border-top: 1px solid var(--app-border-soft);
   }
 }
 
+// Título de cada parte con su número en un círculo azul
 .service-form-step-header {
   display: flex;
   align-items: flex-start;
@@ -393,8 +394,8 @@ $service-ofrenda: #f59e0b;
 .service-form-step-title {
   margin: 3px 0 0;
   color: var(--app-ink);
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .service-form-step-hint {
@@ -403,47 +404,30 @@ $service-ofrenda: #f59e0b;
   font-size: 13px;
 }
 
-// Fecha y hora lado a lado; la hora más angosta
-.date-time-field {
-  display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-  gap: 8px;
-
-  .ant-picker {
-    width: 100%;
-  }
-}
-
-.service-form-single {
-  display: flex;
-  gap: 8px;
-  margin: -4px 0 0;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: var(--app-accent-soft);
-  color: var(--app-accent);
-  font-size: 13px;
+.service-form-step .ant-alert {
+  margin-bottom: 16px;
 }
 
 .service-form-lanes {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-bottom: 16px;
 
   .service-form-lane {
     margin-bottom: 0;
   }
 }
 
-// Un grupo del orden (Júbilo, Adoración, Ofrenda), con el color de las tarjetas de servicio
+// Un grupo del orden (Júbilo, Adoración, Ofrenda): franja, punto, título y números en el color
+// del grupo, el mismo de las tarjetas de servicio, para distinguirlos de un vistazo
 .song-lane {
   --lane-color: #{$service-jubilo};
   --lane-text: var(--app-jubilo-text);
-  padding: 12px 14px 14px;
+  padding: 10px 12px 12px;
   border: 1px solid var(--app-border);
   border-left: 4px solid var(--lane-color);
-  border-radius: 12px;
-  background: var(--app-surface);
+  border-radius: 10px;
 
   &.is-adoracion {
     --lane-color: #{$service-adoracion};
@@ -465,7 +449,7 @@ $service-ofrenda: #f59e0b;
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .song-lane-dot {
@@ -504,22 +488,14 @@ $service-ofrenda: #f59e0b;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 4px 6px 0;
-  border-radius: 8px;
-  animation: song-lane-in 0.18s ease-out;
+  padding: 4px 0;
 
   & + & {
-    border-top: 1px dashed var(--app-border-soft);
+    border-top: 1px solid var(--app-border-soft);
   }
 }
 
-@keyframes song-lane-in {
-  from {
-    opacity: 0;
-    transform: translateY(-3px);
-  }
-}
-
+// El número en un círculo del color de su grupo, como en las tarjetas de servicio
 .song-lane-position {
   display: inline-flex;
   flex: none;
@@ -542,26 +518,19 @@ $service-ofrenda: #f59e0b;
   gap: 2px 10px;
   min-width: 0;
   color: var(--app-ink);
-  font-weight: 600;
 }
 
 .song-lane-repeat {
   color: var(--app-note-text);
   font-size: 12px;
-  font-weight: 500;
   cursor: help;
 }
 
 .song-lane-key {
   flex: none;
-  padding: 0 7px;
-  border-radius: 6px;
-  background: var(--app-surface-muted);
-  color: var(--app-text-subtle);
+  color: var(--app-text-muted);
   font-family: var(--font-mono);
   font-size: 12px;
-  font-weight: 600;
-  line-height: 20px;
 }
 
 .song-lane-actions {
@@ -590,12 +559,6 @@ $service-ofrenda: #f59e0b;
 
 .song-lane-add {
   width: 100%;
-
-  .ant-select-placeholder,
-  .ant-select-selection-placeholder {
-    color: var(--lane-text);
-    font-weight: 600;
-  }
 }
 
 .song-lane-option {
@@ -603,6 +566,17 @@ $service-ofrenda: #f59e0b;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+// Fecha y hora lado a lado; la hora más angosta
+.date-time-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 8px;
+
+  .ant-picker {
+    width: 100%;
+  }
 }
 
 // Pie: lo que lleva el servicio a la izquierda, Cancelar y Guardar a la derecha
@@ -614,6 +588,23 @@ $service-ofrenda: #f59e0b;
   gap: 8px;
   padding-top: 16px;
   border-top: 1px solid var(--app-border-soft);
+}
+
+// En el panel, el pie (resumen, Cancelar y Guardar) queda fijo abajo mientras se baja por el formulario
+.service-form-drawer {
+  .ant-drawer-body {
+    padding-bottom: 0;
+  }
+
+  .service-form-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin: 0 -24px;
+    padding: 12px 24px max(12px, env(safe-area-inset-bottom));
+    background: var(--app-surface);
+    box-shadow: 0 -8px 16px -12px var(--app-shadow);
+  }
 }
 
 .service-form-summary {

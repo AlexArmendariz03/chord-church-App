@@ -118,7 +118,8 @@ export const SongLane = ({
       {!isFull && (
         <Select
           className="song-lane-add" showSearch
-          value={null} placeholder={<span><PlusOutlined /> {placeholder}</span>}
+          value={null} placeholder={placeholder}
+          prefix={<PlusOutlined />}
           optionFilterProp="label" options={options}
           notFoundContent="Ninguna alabanza con ese nombre"
           optionRender={({ data }) => (

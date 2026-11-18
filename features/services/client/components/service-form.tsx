@@ -1,7 +1,6 @@
 "use client"
 
-import { InfoCircleOutlined } from "@ant-design/icons"
-import { AutoComplete, Button, Col, Form, Input, Row, type FormInstance } from "antd"
+import { Alert, AutoComplete, Button, Col, Form, Input, Row, type FormInstance } from "antd"
 import dayjs, { type Dayjs } from "dayjs"
 import "dayjs/locale/es"
 import { useMemo } from "react"
@@ -69,7 +68,7 @@ type ServiceFormProps = {
   titleSuggestions?: string[]
 }
 
-// Cada parte del formulario con su número: 1 Evento, 2 Alabanzas, 3 Guía
+// Cada parte del formulario con su número: 1 Evento, 2 Orden de alabanzas, 3 Guía
 const Step = ({ number, title, hint, children }: { number: number; title: string; hint?: string; children: React.ReactNode }) => (
   <section className="service-form-step">
     <header className="service-form-step-header">
@@ -142,9 +141,9 @@ export const ServiceForm = ({ form, songs, editingServiceId, saving, onSubmit, o
           </Col>
         </Row>
         {singleWorship && (
-          <p className="service-form-single">
-            <InfoCircleOutlined /> Estudios, seminarios y la reunión de las 9:45 llevan solo 1 alabanza de adoración, sin júbilo, ofrenda ni guía.
-          </p>
+          <Alert
+            type="info" showIcon
+            title="Estudios, seminarios y la reunión de las 9:45 llevan solo 1 alabanza de adoración, sin júbilo, ofrenda ni guía." />
         )}
       </Step>
 

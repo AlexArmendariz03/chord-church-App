@@ -1,8 +1,8 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { PlusOutlined } from "@ant-design/icons"
-import { App, Button, Card, Col, Empty, Form, Modal, Row, Space, Tabs, Typography } from "antd"
+import { App, Button, Card, Drawer, Empty, Form, Grid, Space, Tabs, Typography } from "antd"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "@/features/auth/client/session-provider"
 import { songsApi } from "@/features/songs/client/songs-api"
@@ -16,8 +16,10 @@ import { formValuesOf, ServiceForm, songFields, type ServiceFormValues } from ".
 
 const { Title, Paragraph } = Typography
 
+const subscribeNothing = () => () => {}
+
 const Services = () => {
-  const { message } = App.useApp()
+  const { message, modal } = App.useApp()
   const confirmDelete = useConfirmDelete()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -36,9 +38,11 @@ const Services = () => {
   const [formOpen, setFormOpen] = useState(false)
   // "Editar" desde Inicio llega como ?edit=<id>; se abre una sola vez
   const urlEditApplied = useRef(false)
-  // With no services yet the form is the page; once there are some, it moves into a modal
-  // so the list stays in front
-  const formInModal = services.length > 0
+  // El formulario va en un panel desde la derecha; en el teléfono ocupa toda la pantalla
+  const isWide = Grid.useBreakpoint().md ?? true
+  // El panel se arma de una vez (forceRender) para que el formulario exista antes de abrirlo;
+  // solo en el navegador, porque en el servidor no hay dónde ponerlo y React avisa de la diferencia
+  const isClient = useSyncExternalStore(subscribeNothing, () => true, () => false)
 
   const loadData = useCallback(() =>
     Promise.all([songsApi.list(), servicesApi.upcoming()])
@@ -72,7 +76,6 @@ const Services = () => {
     form.resetFields()
     form.setFieldsValue({ title: service.title, ...songFields(service) })
     setFormOpen(true)
-    if (!formInModal) window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   const startEdit = useCallback((service: ServiceSummary) => {
@@ -91,6 +94,22 @@ const Services = () => {
     setFormOpen(false)
     setEditingServiceId(null)
     form.resetFields()
+  }
+
+  // Cerrar el panel (✕, Cancelar, Esc o tocar fuera) no tira lo que ya se escribió sin preguntar
+  const requestClose = () => {
+    if (!form.isFieldsTouched()) {
+      closeForm()
+      return
+    }
+    modal.confirm({
+      title: "¿Descartar los cambios?",
+      content: "Lo que llevas del servicio no se ha guardado.",
+      okText: "Descartar",
+      okButtonProps: { danger: true },
+      cancelText: "Seguir editando",
+      onOk: closeForm
+    })
   }
 
   // Se abre después de cargar, cuando el formulario ya está montado en el modal
@@ -139,7 +158,7 @@ const Services = () => {
       form={form} songs={songs}
       editingServiceId={editingServiceId} saving={saving}
       onSubmit={saveService} titleSuggestions={titleSuggestions}
-      onCancel={formInModal ? closeForm : undefined} />
+      onCancel={requestClose} />
   )
 
   return (
@@ -148,43 +167,31 @@ const Services = () => {
         orientation="vertical" size={20}
         style={{ width: "100%" }}>
         <Card>
-          <Row
-            align="middle" gutter={[16, 12]}
-            justify="space-between">
-            <Col flex="1 1 320px">
+          <div className="page-header">
+            <div>
               <Title level={2} style={{ margin: 0 }}>Servicios</Title>
               <Paragraph type="secondary" style={{ margin: 0 }}>
-                Las canciones se tocan en el orden en que las eliges.
-                Estudios y seminarios llevan solo 1 de adoración.
+                Arma el orden de alabanzas de cada fecha y la guía para quien dirige.
               </Paragraph>
-            </Col>
-            {canManage && formInModal && (
-              <Col>
-                <Button
-                  type="primary" size="large"
-                  icon={<PlusOutlined />} data-tour="agregar-evento"
-                  onClick={startCreate}>
-                  Agregar evento
-                </Button>
-              </Col>
+            </div>
+            {canManage && (
+              <Button
+                type="primary" icon={<PlusOutlined />}
+                data-tour="agregar-evento" onClick={startCreate}>
+                Nuevo servicio
+              </Button>
             )}
-          </Row>
+          </div>
         </Card>
 
-        {canManage && !formInModal && !loading && (
-          <Card title="Crear servicio" data-tour="agregar-evento">
+        {canManage && isClient && (
+          <Drawer
+            open={formOpen} onClose={requestClose}
+            title={editingServiceId ? "Editar servicio" : "Nuevo servicio"}
+            placement="right" size={isWide ? 760 : "100%"}
+            rootClassName="service-form-drawer" forceRender>
             {serviceForm}
-          </Card>
-        )}
-
-        {canManage && formInModal && (
-          <Modal
-            open={formOpen} title={editingServiceId ? "Editar servicio" : "Agregar evento"}
-            onCancel={closeForm} footer={null}
-            width={820} forceRender
-            rootClassName="service-form-modal">
-            {serviceForm}
-          </Modal>
+          </Drawer>
         )}
 
         <Card data-tour="lista-servicios">
@@ -195,7 +202,15 @@ const Services = () => {
                 key: "upcoming",
                 label: loading ? "Próximos" : `Próximos (${services.length})`,
                 children: loading ? <Card loading variant="borderless" /> : services.length === 0 ? (
-                  <Empty description="Aún no hay servicios programados" />
+                  <Empty description="Aún no hay servicios programados">
+                    {canManage && (
+                      <Button
+                        type="primary" icon={<PlusOutlined />}
+                        onClick={startCreate}>
+                        Crear el primero
+                      </Button>
+                    )}
+                  </Empty>
                 ) : (
                   <div className="service-list">
                     {services.map((service, index) => (
