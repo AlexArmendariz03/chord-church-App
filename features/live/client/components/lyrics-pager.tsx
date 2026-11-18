@@ -1,8 +1,10 @@
 "use client"
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type Dispatch, type MouseEvent, type TouchEvent } from "react"
-import { autoFontSize, layoutLyrics, REFERENCE_SIZE, type Fragment, type StanzaMetrics } from "@/shared/lyrics/paginate"
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type Dispatch, type MouseEvent, type TouchEvent } from "react"
+import { autoLayout, fitWidthSize, layoutLyrics, REFERENCE_SIZE, wrappingSizes, wrapsAt, type Fragment, type StanzaMetrics } from "@/shared/lyrics/paginate"
 import { parseLyrics, stanzaKind, toUnits, type SectionKind, type Unit } from "@/shared/lyrics/parse-lyrics"
+import { toWords } from "@/shared/lyrics/words"
+import type { ViewportClass } from "../hooks/use-viewport-class"
 
 // Section labels can be long ("Estrofa 2 (misma secuencia que…)"); they truncate, and only
 // this much of them counts toward the column width when the row also carries chords.
@@ -11,13 +13,32 @@ const SECTION_LABEL_MAX_EM = 5
 // Keeps an empty chord or lyric slot one line tall so every segment lines up
 const NBSP = "\u00a0"
 
+// Sangría de la continuación de un renglón partido (igual que en lyrics.scss, .is-wrapping)
+const WRAP_INDENT_EM = 0.8
+
 // Minimum horizontal drag (px) to treat a touch as "change page" instead of a tap or scroll
 const SWIPE_THRESHOLD = 60
 
+// Escritorio: como siempre, paginado y la letra se achica hasta que quepa el renglón más largo
 const VARIANT_OPTIONS = {
   light: { minSize: 12, maxSize: 44, readableSize: 20, maxColumns: 3 },
   stage: { minSize: 12, maxSize: 64, readableSize: 22, maxColumns: 3 }
 }
+
+// Tableta: para que una alabanza quepa en una página la letra baja hasta compactSize; si ni así
+// cabe, va completa en una página que se desliza. Los renglones largos se parten entre palabras.
+const TABLET_OPTIONS = { light: { compactSize: 16 }, stage: { compactSize: 18 } }
+
+// Teléfono: la letra crece con el ancho de la pantalla (base = clamp(min, vw, max)) y baja hasta
+// `fit` para que quepa el renglón más largo; la alabanza siempre se desliza
+const PHONE_SIZES = {
+  light: { min: 16, vw: 4.6, max: 20, fit: 15 },
+  stage: { min: 18, vw: 5.4, max: 24, fit: 16 }
+}
+
+// Parte del alto que se deja libre en teléfono y tableta para que los redondeos del navegador
+// (cada renglón suma unos décimos de pixel) no saquen el último renglón de la hoja
+const FIT_MARGIN = 0.02
 
 export const FONT_LIMITS = { min: 14, max: 80 }
 
@@ -31,6 +52,7 @@ type LyricsPagerProps = {
   fontOffset: number
   pageIndex: number
   variant: keyof typeof VARIANT_OPTIONS
+  viewport: ViewportClass
   onLayout: Dispatch<LyricsLayoutInfo>
   onNavigate: Dispatch<"prev" | "next">
   // Stage only: the left/right thirds of the lyrics turn the page, the middle calls this
@@ -51,10 +73,16 @@ export const StanzaView = ({ stanza, from = 0, to }: { stanza: ParsedStanza; fro
             </div>
           ) : line.type === "pair" ? (
             <div key={index} className="lyrics-pair">
-              {line.segments.map((segment, segmentIndex) => (
-                <span key={segmentIndex} className="lyrics-seg">
-                  <span className="lyrics-seg-chord">{segment.chord ?? NBSP}</span>
-                  <span className="lyrics-seg-text">{segment.text || NBSP}</span>
+              {/* Por palabras: en una pantalla angosta el renglón se parte solo entre ellas */}
+              {toWords(line.segments).map((word, wordIndex) => (
+                <span key={wordIndex} className="lyrics-word">
+                  {word.map((segment, segmentIndex) => (
+                    <span key={segmentIndex} className="lyrics-seg">
+                      {/* Sin acorde, el hueco no ocupa ancho: si no, abre la palabra ("l evanta") */}
+                      <span className={`lyrics-seg-chord ${segment.chord ? "" : "is-empty"}`}>{segment.chord ?? NBSP}</span>
+                      <span className="lyrics-seg-text">{segment.text || NBSP}</span>
+                    </span>
+                  ))}
                 </span>
               ))}
             </div>
@@ -87,7 +115,12 @@ const measureStanza = (stanza: HTMLElement): StanzaMetrics => {
     const labelExcess = Math.max(0, label.getBoundingClientRect().width - SECTION_LABEL_MAX_EM * REFERENCE_SIZE)
     return rightEdge(chords, left) - labelExcess
   })
-  return { unitHeights, width: Math.max(0, ...lineWidths, ...sectionWidths) }
+  // Lo más ancho que no se puede partir, contando dónde empieza su renglón y la sangría de la continuación
+  const wordWidths = Array.from(stanza.querySelectorAll(".lyrics-word, .lyrics-chordline > span")).map(word => {
+    const line = word.parentElement?.getBoundingClientRect().left ?? left
+    return word.getBoundingClientRect().width + line - left + WRAP_INDENT_EM * REFERENCE_SIZE
+  })
+  return { unitHeights, width: Math.max(0, ...lineWidths, ...sectionWidths), wordWidth: Math.max(0, ...wordWidths) }
 }
 
 export const LyricsPager = ({
@@ -97,6 +130,7 @@ export const LyricsPager = ({
   fontOffset,
   pageIndex,
   variant,
+  viewport,
   onLayout,
   onNavigate,
   onCenterTap
@@ -116,6 +150,9 @@ export const LyricsPager = ({
     [lyrics, showChords, semitones, key]
   )
   const metrics = useMemo(() => (measured?.source === stanzas ? measured.metrics : []), [measured, stanzas])
+  const wrapMeasureRef = useRef<HTMLDivElement | null>(null)
+  // Alturas con los renglones ya partidos, por ancho de medición (ver wrapWidthAt)
+  const [wrapped, setWrapped] = useState<{ source: ParsedStanza[]; byWidth: Map<number, StanzaMetrics[]> } | null>(null)
 
   useLayoutEffect(() => {
     const area = areaRef.current
@@ -140,10 +177,62 @@ export const LyricsPager = ({
     return () => { cancelled = true }
   }, [stanzas])
 
-  const options = VARIANT_OPTIONS[variant]
-  const autoSize = useMemo(() => autoFontSize(metrics, box, options), [metrics, box, options])
+  const options = useMemo(() => viewport === "desktop"
+    ? { ...VARIANT_OPTIONS[variant], wrap: false }
+    : { ...VARIANT_OPTIONS[variant], ...TABLET_OPTIONS[variant], scrollWhenLong: true }, [variant, viewport])
+  const fitBox = useMemo(
+    () => (viewport === "desktop" ? box : { width: box.width, height: box.height * (1 - FIT_MARGIN) }),
+    [box, viewport]
+  )
+  // El ancho de la caja a REFERENCE_SIZE: el texto crece parejo, así que se parte en los mismos
+  // lugares. Un pixel menos para que un redondeo no deje la medida más corta que lo que se ve.
+  const wrapWidthAt = useCallback((size: number) => Math.floor(((box.width - 1) * REFERENCE_SIZE) / size), [box.width])
+  const wrappedAt = useCallback(
+    (size: number) => (wrapped?.source === stanzas ? wrapped.byWidth.get(wrapWidthAt(size)) : undefined),
+    [wrapped, stanzas, wrapWidthAt]
+  )
+  // isScrolling: la alabanza completa en una sola página que se desliza (siempre en el teléfono;
+  // en tableta, si no cabe en una página)
+  const auto = useMemo(() => {
+    if (viewport !== "phone") return autoLayout(metrics, fitBox, options, wrappedAt)
+    const sizes = PHONE_SIZES[variant]
+    const base = Math.round(Math.min(sizes.max, Math.max(sizes.min, (window.innerWidth * sizes.vw) / 100)))
+    return { fontSize: fitWidthSize(metrics, fitBox, { base, min: sizes.fit }), scrolling: true }
+  }, [viewport, variant, metrics, fitBox, options, wrappedAt])
+  const autoSize = auto.fontSize
+  const isScrolling = auto.scrolling
   const fontSize = Math.min(Math.max(autoSize + fontOffset, FONT_LIMITS.min), FONT_LIMITS.max)
-  const layout = useMemo(() => layoutLyrics(metrics, box, fontSize, options.maxColumns), [metrics, box, fontSize, options.maxColumns])
+  const wraps = wrapsAt(metrics, fitBox, fontSize)
+
+  // Anchos a medir: cada tamaño que prueba autoFontSize y el que se ve (con A− / A+)
+  const wrapWidths = useMemo(() => {
+    const candidates = viewport === "tablet" ? wrappingSizes(metrics, fitBox, options) : []
+    return [...new Set([...candidates, ...(wraps ? [fontSize] : [])].map(wrapWidthAt))]
+  }, [viewport, metrics, fitBox, options, wraps, fontSize, wrapWidthAt])
+  const wrapKey = wrapWidths.join(",")
+
+  useLayoutEffect(() => {
+    if (!wrapKey) return
+    let cancelled = false
+    const measure = () => {
+      const container = wrapMeasureRef.current
+      if (!container || cancelled) return
+      const byWidth = new Map(Array.from(container.children as HTMLCollectionOf<HTMLElement>).map(copy => [
+        Number(copy.dataset.width),
+        Array.from(copy.children as HTMLCollectionOf<HTMLElement>).map(measureStanza)
+      ]))
+      setWrapped({ source: stanzas, byWidth })
+    }
+    measure()
+    document.fonts?.ready.then(measure)
+    return () => { cancelled = true }
+  }, [stanzas, wrapKey])
+
+  const layoutMetrics = (wraps && wrappedAt(fontSize)) || metrics
+  const layout = useMemo(
+    () => layoutLyrics(layoutMetrics, isScrolling ? { width: box.width, height: Infinity } : fitBox, fontSize, options.maxColumns),
+    [layoutMetrics, isScrolling, box.width, fitBox, fontSize, options.maxColumns]
+  )
   const pageCount = Math.max(1, layout.pages.length)
   const currentPage: Fragment[][] = layout.pages[Math.min(pageIndex, pageCount - 1)] ?? []
 
@@ -193,7 +282,7 @@ export const LyricsPager = ({
       <div ref={areaRef} className="lyrics-area">
         <div
           key={`${lyrics.length}-${pageIndex}-${showChords}-${semitones}`}
-          className={`lyrics-page ${layout.overflows ? "is-scrollable" : ""}`}
+          className={`lyrics-page ${layout.overflows || isScrolling ? "is-scrollable" : ""} ${wraps ? "is-wrapping" : ""}`}
           style={{ fontSize, visibility: metrics.length ? "visible" : "hidden" }}>
           {currentPage.map((column, columnIndex) => (
             <div key={columnIndex} className="lyrics-column">
@@ -211,6 +300,17 @@ export const LyricsPager = ({
         ref={measureRef} className="lyrics-measure"
         style={{ fontSize: REFERENCE_SIZE }} aria-hidden="true">
         {stanzas.map((stanza, index) => <StanzaView key={index} stanza={stanza} />)}
+      </div>
+      <div
+        ref={wrapMeasureRef} className="lyrics-measure"
+        style={{ fontSize: REFERENCE_SIZE }} aria-hidden="true">
+        {wrapWidths.map(width => (
+          <div
+            key={width} className="lyrics-measure-wrapped is-wrapping"
+            data-width={width} style={{ width }}>
+            {stanzas.map((stanza, index) => <StanzaView key={index} stanza={stanza} />)}
+          </div>
+        ))}
       </div>
     </div>
   )

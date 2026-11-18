@@ -38,6 +38,12 @@
 
   &.is-scrollable {
     overflow-y: auto;
+    // Que el último renglón no quede pegado al borde al llegar al final
+    padding-bottom: 1.5em;
+    overscroll-behavior: contain;
+    // El borde de abajo se desvanece: se nota que la letra sigue al deslizar. Al llegar al
+    // final, lo que se desvanece es el espacio de arriba (padding-bottom).
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5em), transparent);
   }
 }
 
@@ -80,6 +86,14 @@
   white-space: nowrap;
 }
 
+// Una palabra con sus acordes: nunca se parte (ver shared/lyrics/words.ts)
+.lyrics-word {
+  display: inline-block;
+  vertical-align: bottom;
+  text-indent: 0;
+  white-space: nowrap;
+}
+
 .lyrics-seg {
   display: inline-flex;
   flex-direction: column;
@@ -94,6 +108,12 @@
   line-height: 1.25;
   letter-spacing: 0.01em;
   white-space: pre;
+
+  // Solo guarda la altura del renglón de acordes; sin ancho, el texto de abajo queda pegado
+  &.is-empty {
+    width: 0;
+    padding-right: 0;
+  }
 }
 
 .lyrics-seg-text,
@@ -150,6 +170,39 @@
   white-space: pre;
 }
 
+// Pantalla angosta: los renglones que no caben se parten entre palabras en lugar de achicar la
+// letra o cortarla. La continuación lleva una sangría (WRAP_INDENT_EM en LyricsPager) para que
+// se note que sigue el mismo renglón.
+.is-wrapping {
+  .lyrics-pair {
+    padding-left: 0.8em;
+    text-indent: -0.8em;
+    white-space: normal;
+  }
+
+  .lyrics-line {
+    padding-left: 0.8em;
+    text-indent: -0.8em;
+    white-space: pre-wrap;
+  }
+
+  .lyrics-chordline {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+
+  .lyrics-section-label {
+    flex-shrink: 0;
+    // 5em de la letra (la etiqueta va a 0.5em): SECTION_LABEL_MAX_EM en LyricsPager
+    max-width: 10em;
+  }
+
+  .lyrics-section-chords {
+    flex-shrink: 1;
+    white-space: pre-wrap;
+  }
+}
+
 // Off-screen copy at a fixed size used to measure every stanza (see LyricsPager)
 .lyrics-measure {
   position: absolute;
@@ -165,6 +218,22 @@
   .lyrics-section,
   .lyrics-section-chords {
     width: max-content;
+  }
+
+  // Copias con los renglones partidos: se miden al ancho de la caja (ver LyricsPager)
+  .lyrics-measure-wrapped {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    .lyrics-stanza,
+    .lyrics-line,
+    .lyrics-pair,
+    .lyrics-chordline,
+    .lyrics-section,
+    .lyrics-section-chords {
+      width: auto;
+    }
   }
 }
 

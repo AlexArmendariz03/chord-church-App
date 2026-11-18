@@ -25,7 +25,8 @@ export const LiveNav = ({ songs, activeSongId, isGuideOpen, guideAfterIndex, pag
   <div className="current-service-nav" data-tour="navegacion">
     <Button
       size="large" icon={<LeftOutlined />}
-      disabled={!canPrev} onClick={onPrev}>
+      disabled={!canPrev} onClick={onPrev}
+      aria-label="Anterior">
       Anterior
     </Button>
     <div className="current-service-nav-center">

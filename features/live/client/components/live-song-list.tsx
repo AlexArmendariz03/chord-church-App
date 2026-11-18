@@ -18,6 +18,8 @@ type LiveSongListProps = {
   guideAfterIndex: number
   onSelectSong: (serviceSongId: string) => void
   onOpenGuide: () => void
+  // Dentro del panel de teléfono y tableta: sin tarjeta, el panel ya tiene el título
+  bare?: boolean
 }
 
 // "Alabanzas programadas": the service picker and its songs in order
@@ -29,13 +31,10 @@ export const LiveSongList = ({
   isGuideOpen,
   guideAfterIndex,
   onSelectSong,
-  onOpenGuide
-}: LiveSongListProps) => (
-  <Card
-    data-tour="lista-en-curso" title="Alabanzas programadas"
-    // With several services the picker already shows each date
-    extra={services.length > 1 ? null : <Text strong>{formatServiceDate(service.eventDate)}</Text>}
-    style={{ height: "100%" }}>
+  onOpenGuide,
+  bare = false
+}: LiveSongListProps) => {
+  const list = (
     <Space
       orientation="vertical" size={8}
       style={{ width: "100%" }}>
@@ -83,5 +82,17 @@ export const LiveSongList = ({
         </Fragment>
       ))}
     </Space>
-  </Card>
-)
+  )
+
+  if (bare) return list
+
+  return (
+    <Card
+      data-tour="lista-en-curso" title="Alabanzas programadas"
+      // With several services the picker already shows each date
+      extra={services.length > 1 ? null : <Text strong>{formatServiceDate(service.eventDate)}</Text>}
+      style={{ height: "100%" }}>
+      {list}
+    </Card>
+  )
+}

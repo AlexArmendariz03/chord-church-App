@@ -22,7 +22,8 @@ export const LivePreview = ({ lyrics, showChords = true, transpose }: LivePrevie
   )
   if (!stanzas.length) return <Text type="secondary">Todavía no hay letra para mostrar.</Text>
   return (
-    <div className="lyrics-viewer is-light song-editor-preview">
+    // Sin paginar: los renglones que no caben a lo ancho se parten entre palabras
+    <div className="lyrics-viewer is-light song-editor-preview is-wrapping">
       <div className="lyrics-column">
         {stanzas.map((stanza, index) => <StanzaView key={index} stanza={stanza} />)}
       </div>

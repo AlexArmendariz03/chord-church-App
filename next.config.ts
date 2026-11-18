@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
     includePaths: [path.join(process.cwd(), "styles")]
   },
   reactStrictMode: true,
+  // El indicador de desarrollo tapaba el avatar del encabezado en el teléfono
+  devIndicators: { position: "bottom-left" },
   // Only the version number reaches the browser, not the whole package.json (dependency list)
   env: {
     NEXT_PUBLIC_APP_VERSION: version.replace(/\.0$/, "")
