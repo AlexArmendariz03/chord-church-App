@@ -26,3 +26,10 @@ export const searchSongs = <T extends { name: string }>(songs: T[], query: strin
     .sort((a, b) => a.rank - b.rank || a.song.name.localeCompare(b.song.name, "es"))
     .map(({ song }) => song)
 }
+
+// Otra alabanza que ya se llama igual (sin contar acentos, mayúsculas ni signos), para avisar
+// antes de guardar una repetida. excludeId: la que se está editando
+export const findSameName = <T extends { id: string; name: string }>(songs: T[], name: string, excludeId: string | null) => {
+  const target = normalizeForSearch(name)
+  return target ? songs.find(song => song.id !== excludeId && normalizeForSearch(song.name) === target) : undefined
+}
