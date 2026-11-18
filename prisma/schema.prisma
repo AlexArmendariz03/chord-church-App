@@ -41,9 +41,11 @@ model User {
 model Song {
   id           String        @id @default(cuid())
   name         String
-  key          String
-  category     SongCategory
-  lyrics       String
+  // Los valores por defecto vienen de la migración que agregó estas columnas a alabanzas que ya
+  // existían; la app siempre los manda, pero la base los tiene y el esquema debe decir lo mismo
+  key          String       @default("C")
+  category     SongCategory @default(jubilo)
+  lyrics       String       @default("")
   payload      Json?
   // Part of the youth group's repertoire: shown with a "Jóvenes" tag
   isYouth      Boolean       @default(false)

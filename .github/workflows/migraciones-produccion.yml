@@ -1,0 +1,42 @@
+# Aplica las migraciones pendientes a la base de producción cuando llegan a main, para no
+# correrlas a mano. Las migraciones deben ser compatibles con el código anterior (agregar, no
+# quitar): Vercel publica el código nuevo al mismo tiempo y por unos segundos convive con la base.
+name: Migraciones en producción
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - prisma/migrations/**
+      - prisma/schema.prisma
+  # También se puede correr a mano desde la pestaña Actions
+  workflow_dispatch:
+
+# Nunca dos a la vez sobre la misma base, y una que ya empezó no se cancela
+concurrency:
+  group: migraciones-produccion
+  cancel-in-progress: false
+
+jobs:
+  migrar:
+    runs-on: ubuntu-latest
+    env:
+      # Conexión directa (sin pooling), la misma que DIRECT_URL en .env y en Vercel
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Revisar que exista el secreto
+        run: |
+          if [ -z "$DIRECT_URL" ]; then
+            echo "::error::Falta el secreto DIRECT_URL en Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+      - name: Migraciones pendientes
+        run: npx prisma migrate status || true
+      - name: Aplicar
+        run: npx prisma migrate deploy

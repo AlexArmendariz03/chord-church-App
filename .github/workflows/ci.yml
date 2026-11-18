@@ -1,10 +1,16 @@
-# Revisa cada push y cada PR: lint, tipos y pruebas. No toca la base de datos.
+# Revisa cada push y cada PR: lint, tipos y pruebas, y que las migraciones armen el esquema.
+# No toca la base de producción: las migraciones se prueban en un Postgres temporal.
 name: CI
 
 on:
   push:
     branches: [main, dev]
   pull_request:
+
+# Un push nuevo a la misma rama o PR cancela la revisión anterior, que ya no sirve
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check:
@@ -20,3 +26,38 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
+
+  # Aplica todas las migraciones a una base vacía y revisa que el resultado sea igual a
+  # prisma/schema.prisma: falla si una migración no corre o si el esquema cambió sin su migración
+  migraciones:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: chord
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/chord
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Aplicar las migraciones a la base temporal
+        run: npx prisma migrate deploy
+      - name: Comparar la base con el esquema
+        run: |
+          if ! npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code; then
+            echo "::error::prisma/schema.prisma no coincide con las migraciones. Crea la migración con: npx prisma migrate dev --name <descripcion>"
+            exit 1
+          fi
