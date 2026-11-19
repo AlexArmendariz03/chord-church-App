@@ -17,6 +17,10 @@ describe("parseNewUser", () => {
     expect(parseNewUser({ username: "pastor", password: "1234567", role: "leader" }).error).toMatch(/8 caracteres/)
     expect(parseNewUser({ username: "pastor", password: "12345678", role: "admin" }).error).toBe("Elige un rol válido")
   })
+
+  it("no deja crear otro master desde la app", () => {
+    expect(parseNewUser({ username: "pastor", password: "12345678", role: "master" }).error).toBe("Elige un rol válido")
+  })
 })
 
 describe("parseUserUpdate", () => {
@@ -29,5 +33,9 @@ describe("parseUserUpdate", () => {
     expect(parseUserUpdate({}).error).toBe("No hay nada que cambiar")
     expect(parseUserUpdate({ password: "corta" }).error).toMatch(/8 caracteres/)
     expect(parseUserUpdate({ role: "admin" }).error).toBe("Elige un rol válido")
+  })
+
+  it("no deja convertir a nadie en master desde la app", () => {
+    expect(parseUserUpdate({ role: "master" }).error).toBe("Elige un rol válido")
   })
 })

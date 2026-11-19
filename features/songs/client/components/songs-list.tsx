@@ -10,7 +10,7 @@ import { useConfirmDelete } from "@/shared/client/use-confirm-delete"
 import { CategoryTag, ServiceTag, YouthTag } from "@/features/songs/client/components/category-tag"
 import type { SongListItem } from "@/features/songs/types"
 import { searchSongs } from "../../song-search"
-import { songsApi } from "../songs-api"
+import { useSongsScope } from "../songs-scope"
 import { SongPreview } from "./song-preview"
 
 const { Paragraph, Text, Title } = Typography
@@ -24,6 +24,8 @@ const SongsList = () => {
   const router = useRouter()
   const { can } = useSession()
   const canManage = can("manageSongs")
+  // Dentro de la página de una iglesia, su cancionero; si no, el de la sesión
+  const { api: songsApi, basePath, church, onSongsChanged } = useSongsScope()
   const [songs, setSongs] = useState<SongListItem[]>([])
   const [loading, setLoading] = useState(true)
   const [tagFilter, setTagFilter] = useState<TagFilter>("all")
@@ -49,7 +51,7 @@ const SongsList = () => {
     songsApi.list()
       .then(setSongs)
       .catch(error => message.error(errorMessage(error, "Error cargando alabanzas")))
-      .finally(() => setLoading(false)), [message])
+      .finally(() => setLoading(false)), [message, songsApi])
 
   useEffect(() => {
     loadSongs()
@@ -60,7 +62,10 @@ const SongsList = () => {
     content: `¿Seguro que deseas eliminar ${song.name}? También se quitará de los servicios donde esté seleccionada.`,
     remove: () => songsApi.remove(song.id),
     success: "Alabanza eliminada",
-    onDeleted: loadSongs
+    onDeleted: () => {
+      onSongsChanged?.()
+      return loadSongs()
+    }
   })
 
   const renderSongs = (items: SongListItem[]) => {
@@ -97,7 +102,7 @@ const SongsList = () => {
                       { key: "delete", label: "Eliminar", danger: true }
                     ],
                     onClick: ({ key }) => {
-                      if (key === "edit") router.push(`/alabanzas/editar?id=${song.id}`)
+                      if (key === "edit") router.push(`${basePath}/editar?id=${song.id}`)
                       if (key === "delete") deleteSong(song)
                     }
                   }}>
@@ -142,15 +147,17 @@ const SongsList = () => {
   )
 
   return (
-    <div style={{ padding: 24 }}>
+    // Dentro de la página de una iglesia ya hay margen alrededor
+    <div style={church ? undefined : { padding: 24 }}>
       <Space
         orientation="vertical" size={20}
         style={{ width: "100%" }}>
         <Card>
           <div className="page-header">
             <div>
-              <Title level={2} style={{ margin: 0 }}>Alabanzas</Title>
+              <Title level={church ? 3 : 2} style={{ margin: 0 }}>Alabanzas</Title>
               <Paragraph type="secondary" style={{ margin: 0 }}>
+                {church ? <>Cancionero de <strong>{church.name}</strong>. </> : null}
                 {canManage
                   ? "Toca una alabanza para verla; usa el menú de cada fila para editar o eliminar."
                   : "Toca una alabanza para ver su letra con acordes y ensayarla en el tono que necesites."}
@@ -159,7 +166,7 @@ const SongsList = () => {
             {canManage && (
               <Button
                 type="primary" icon={<PlusOutlined />}
-                data-tour="nueva-alabanza" onClick={() => router.push("/alabanzas/nueva")}>
+                data-tour="nueva-alabanza" onClick={() => router.push(`${basePath}/nueva`)}>
                 Nueva alabanza
               </Button>
             )}

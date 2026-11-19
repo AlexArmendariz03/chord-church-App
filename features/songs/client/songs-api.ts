@@ -14,11 +14,20 @@ export type SongInput = {
   payload: SheetPayload
 }
 
-export const songsApi = {
-  list: () => apiRequest<SongListItem[]>("/api/songs", { fallback: "No se pudieron cargar las alabanzas" }),
-  get: (id: string) => apiRequest<SongDetail>(`/api/songs/${id}`, { fallback: "No se pudo cargar la alabanza" }),
-  // Sin id crea una nueva
-  save: (id: string | null, song: SongInput) =>
-    apiRequest(id ? `/api/songs/${id}` : "/api/songs", { method: id ? "PUT" : "POST", body: song, fallback: "Error al guardar la canción" }),
-  remove: (id: string) => apiRequest(`/api/songs/${id}`, { method: "DELETE", fallback: "Error al eliminar" })
+// Sin iglesia, el cancionero de la iglesia de la sesión; con ella, el de esa iglesia (solo el master,
+// desde la página de la iglesia)
+export const songsApiFor = (churchId?: string) => {
+  const base = churchId ? `/api/churches/${churchId}/songs` : "/api/songs"
+  return {
+    list: () => apiRequest<SongListItem[]>(base, { fallback: "No se pudieron cargar las alabanzas" }),
+    get: (id: string) => apiRequest<SongDetail>(`${base}/${id}`, { fallback: "No se pudo cargar la alabanza" }),
+    // Sin id crea una nueva
+    save: (id: string | null, song: SongInput) =>
+      apiRequest(id ? `${base}/${id}` : base, { method: id ? "PUT" : "POST", body: song, fallback: "Error al guardar la canción" }),
+    remove: (id: string) => apiRequest(`${base}/${id}`, { method: "DELETE", fallback: "Error al eliminar" })
+  }
 }
+
+export type SongsApi = ReturnType<typeof songsApiFor>
+
+export const songsApi = songsApiFor()

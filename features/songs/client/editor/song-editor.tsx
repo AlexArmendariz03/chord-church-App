@@ -10,7 +10,7 @@ import { useSession } from "@/features/auth/client/session-provider"
 import { errorMessage } from "@/shared/client/api"
 import type { SongCategory } from "@/features/songs/types"
 import { pasteIntoSheet, type PasteMode } from "../../paste-lyrics"
-import { songsApi } from "../songs-api"
+import { useSongsScope } from "../songs-scope"
 import { EditorTip, EditorTools } from "./editor-tools"
 import { LivePreview } from "./live-preview"
 import { blocksToLyrics, createId, loadBlocks, moveInOrder, nextFreeY, stackBlocks, stackInOrder, type BlockSize, type SheetBlock } from "../../sheet-layout"
@@ -57,6 +57,8 @@ const SongEditorForm = ({ editingId }: SongEditorFormProps) => {
   const router = useRouter()
   const { can } = useSession()
   const canManage = can("manageSongs")
+  // Dentro de la página de una iglesia, su cancionero; si no, el de la sesión
+  const { api: songsApi, basePath, church } = useSongsScope()
   const [initialState] = useState(createEditorState)
   const [editor, setEditor] = useState(initialState)
   const [view, setView] = useState<View>("write")
@@ -100,7 +102,7 @@ const SongEditorForm = ({ editingId }: SongEditorFormProps) => {
         setSavedSnapshot(JSON.stringify(initialState))
       })
       .finally(() => setLoadingSong(false))
-  }, [editingId, initialState, message, resetHistory])
+  }, [editingId, initialState, message, resetHistory, songsApi])
 
   const update = (patch: Partial<EditorState>) => setEditor(current => ({ ...current, ...patch }))
   // Un cambio de bloques que se puede deshacer
@@ -165,7 +167,7 @@ const SongEditorForm = ({ editingId }: SongEditorFormProps) => {
 
   const goBackToList = () => {
     if (!isDirty) {
-      router.push("/alabanzas")
+      router.push(basePath)
       return
     }
     modal.confirm({
@@ -174,7 +176,7 @@ const SongEditorForm = ({ editingId }: SongEditorFormProps) => {
       okText: "Salir sin guardar",
       okButtonProps: { danger: true },
       cancelText: "Seguir editando",
-      onOk: () => router.push("/alabanzas")
+      onOk: () => router.push(basePath)
     })
   }
 
@@ -204,7 +206,7 @@ const SongEditorForm = ({ editingId }: SongEditorFormProps) => {
     if (editingId) {
       message.success("Alabanza actualizada con éxito")
       setSavedSnapshot(snapshot)
-      router.push("/alabanzas")
+      router.push(basePath)
     } else {
       // Lista para escribir la siguiente
       message.success("Alabanza guardada con éxito")
@@ -242,7 +244,7 @@ const SongEditorForm = ({ editingId }: SongEditorFormProps) => {
         <Button
           type="text" icon={<ArrowLeftOutlined />}
           onClick={goBackToList} aria-label="Volver a alabanzas">
-          <span className="song-editor-back-label">Alabanzas</span>
+          <span className="song-editor-back-label">{church ? `Alabanzas de ${church.name}` : "Alabanzas"}</span>
         </Button>
         <Segmented<View>
           value={view} onChange={setView}
@@ -317,7 +319,8 @@ const SongEditorForm = ({ editingId }: SongEditorFormProps) => {
   )
 }
 
-// Crear (/alabanzas/nueva) y editar (/alabanzas/editar?id=…). Cambiar de alabanza monta un editor nuevo.
+// Crear (/alabanzas/nueva) y editar (/alabanzas/editar?id=…), o lo mismo bajo /iglesias/<id>/alabanzas
+// dentro de ChurchSongsScope. Cambiar de alabanza monta un editor nuevo.
 export const SongEditor = () => {
   const editingId = useSearchParams().get("id")
   return <SongEditorForm key={editingId ?? "nueva"} editingId={editingId} />

@@ -2,26 +2,28 @@
 
 import { CopyOutlined, KeyOutlined, PlusOutlined, ReloadOutlined, UserOutlined } from "@ant-design/icons"
 import { App, Avatar, Button, Card, Empty, Form, Input, Modal, Select, Space, Tooltip, Typography } from "antd"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useSession } from "@/features/auth/client/session-provider"
 import { errorMessage } from "@/shared/client/api"
-import { ROLE_LABELS, ROLES, type Role } from "@/shared/auth/permissions"
+import { ASSIGNABLE_ROLES, ROLE_LABELS, ROLES, type AssignableRole, type Role } from "@/shared/auth/permissions"
+import type { CurrentChurch } from "@/features/churches/types"
 import type { UserListItem } from "@/features/users/types"
 import { generatePassword } from "../../password"
-import { usersApi } from "../users-api"
+import { usersApiFor } from "../users-api"
 
 const { Paragraph, Text, Title } = Typography
 
 // Qué puede hacer cada rol, para elegirlo al crear un usuario
 const ROLE_DESCRIPTIONS: Record<Role, string> = {
-  master: "Todo, incluida esta página de usuarios",
+  master: "Todas las iglesias, con sus usuarios",
   leader: "Alabanzas, servicios y En curso con la vista del dirigente",
   musico: "Ver servicios y alabanzas, y seguir En curso con acordes",
   proyeccion: "Solo la lista de servicios con sus alabanzas"
 }
 
-const ROLE_OPTIONS = ROLES.map(role => ({ value: role, label: ROLE_LABELS[role] }))
-const ROLE_OPTIONS_WITH_HELP = ROLES.map(role => ({
+// El master aparece para mostrar el rol de su cuenta, pero no se puede elegir (solo con create-user)
+const ROLE_OPTIONS = ROLES.map(role => ({ value: role, label: ROLE_LABELS[role], disabled: role === "master" }))
+const ROLE_OPTIONS_WITH_HELP = ASSIGNABLE_ROLES.map(role => ({
   value: role,
   label: (
     <span className="users-role-option">
@@ -31,7 +33,7 @@ const ROLE_OPTIONS_WITH_HELP = ROLES.map(role => ({
   )
 }))
 
-type NewUserValues = { username: string; role: Role; password: string }
+type NewUserValues = { username: string; role: AssignableRole; password: string }
 type PasswordValues = { password: string }
 // Lo que se muestra una sola vez después de crear o restablecer, para pasárselo al usuario
 type Credentials = { username: string; password: string; isNew: boolean }
@@ -50,9 +52,19 @@ const PasswordField = ({ onGenerate }: { onGenerate: () => void }) => (
   </Form.Item>
 )
 
-const Users = () => {
+type UsersProps = {
+  // Con iglesia, administra los usuarios de esa iglesia dentro de su página (solo el master);
+  // sin ella, es la página Usuarios con los de la iglesia de la sesión
+  church?: CurrentChurch
+  // Después de crear un usuario, para que la página de la iglesia actualice su total
+  onUserCreated?: () => void
+}
+
+const Users = ({ church: targetChurch, onUserCreated }: UsersProps) => {
   const { message, modal } = App.useApp()
-  const { user: sessionUser } = useSession()
+  const { user: sessionUser, church: sessionChurch } = useSession()
+  const church = targetChurch ?? sessionChurch
+  const usersApi = useMemo(() => usersApiFor(targetChurch?.id), [targetChurch?.id])
   const [users, setUsers] = useState<UserListItem[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -60,6 +72,8 @@ const Users = () => {
   // El usuario al que se le restablece la contraseña
   const [resetting, setResetting] = useState<UserListItem | null>(null)
   const [credentials, setCredentials] = useState<Credentials | null>(null)
+  // Contraseña al azar con la que abren los formularios de crear y restablecer
+  const [initialPassword, setInitialPassword] = useState("")
   const [newUserForm] = Form.useForm<NewUserValues>()
   const [passwordForm] = Form.useForm<PasswordValues>()
 
@@ -67,19 +81,19 @@ const Users = () => {
     usersApi.list()
       .then(setUsers)
       .catch(error => message.error(errorMessage(error, "No se pudieron cargar los usuarios")))
-      .finally(() => setLoading(false)), [message])
+      .finally(() => setLoading(false)), [message, usersApi])
 
   useEffect(() => {
     loadUsers()
   }, [loadUsers])
 
   const openCreate = () => {
-    newUserForm.setFieldsValue({ username: "", role: "musico", password: generatePassword() })
+    setInitialPassword(generatePassword())
     setIsCreating(true)
   }
 
   const openReset = (user: UserListItem) => {
-    passwordForm.setFieldsValue({ password: generatePassword() })
+    setInitialPassword(generatePassword())
     setResetting(user)
   }
 
@@ -89,6 +103,7 @@ const Users = () => {
       const created = await usersApi.create(values)
       setIsCreating(false)
       setCredentials({ username: created.username, password: values.password, isNew: true })
+      onUserCreated?.()
       await loadUsers()
     } catch (error) {
       message.error(errorMessage(error, "Error al crear el usuario"))
@@ -111,7 +126,7 @@ const Users = () => {
     }
   }
 
-  const changeRole = (user: UserListItem, role: Role) => modal.confirm({
+  const changeRole = (user: UserListItem, role: AssignableRole) => modal.confirm({
     title: "Cambiar rol",
     content: `¿Cambiar a "${user.username}" de ${ROLE_LABELS[user.role]} a ${ROLE_LABELS[role]}? El cambio se aplica la próxima vez que inicie sesión.`,
     okText: "Cambiar rol",
@@ -138,15 +153,17 @@ const Users = () => {
   }
 
   return (
-    <div style={{ padding: 24 }}>
+    // Dentro de la página de una iglesia ya hay margen alrededor
+    <div style={targetChurch ? undefined : { padding: 24 }}>
       <Space
         orientation="vertical" size={20}
         style={{ width: "100%" }}>
         <Card>
           <div className="page-header">
             <div>
-              <Title level={2} style={{ margin: 0 }}>Usuarios</Title>
+              <Title level={targetChurch ? 3 : 2} style={{ margin: 0 }}>Usuarios</Title>
               <Paragraph type="secondary" style={{ margin: 0 }}>
+                {church ? <>Cuentas de <strong>{church.name}</strong>. </> : null}
                 Crea cuentas, cambia el rol de cada una o restablece su contraseña.
               </Paragraph>
             </div>
@@ -163,6 +180,7 @@ const Users = () => {
             <div className="list-panel">
               {users.map(user => {
                 const isMe = user.username === sessionUser?.username
+                const roleLocked = isMe || user.role === "master"
                 return (
                   <div key={user.id} className="users-row">
                     <div className="users-row-name">
@@ -171,11 +189,11 @@ const Users = () => {
                       {isMe && <Text type="secondary">(tú)</Text>}
                     </div>
                     <div className="users-row-actions">
-                      <Tooltip title={isMe ? "No puedes cambiar tu propio rol" : undefined}>
+                      <Tooltip title={isMe ? "No puedes cambiar tu propio rol" : user.role === "master" ? "El rol master no se cambia desde la app" : undefined}>
                         <Select
                           value={user.role} options={ROLE_OPTIONS}
-                          disabled={isMe} aria-label={`Rol de ${user.username}`}
-                          onChange={role => changeRole(user, role)}
+                          disabled={roleLocked} aria-label={`Rol de ${user.username}`}
+                          onChange={role => role !== "master" && changeRole(user, role)}
                           className="users-role-select" />
                       </Tooltip>
                       <Button icon={<KeyOutlined />} onClick={() => openReset(user)}>
@@ -195,9 +213,11 @@ const Users = () => {
         onCancel={() => setIsCreating(false)} okText="Crear usuario"
         cancelText="Cancelar" confirmLoading={saving}
         onOk={() => newUserForm.submit()} destroyOnHidden>
+        {/* El modal monta el formulario al abrirse: los valores iniciales van aquí, no con setFieldsValue */}
         <Form
           form={newUserForm} layout="vertical"
-          onFinish={createUser} requiredMark={false}>
+          onFinish={createUser} requiredMark={false}
+          initialValues={{ username: "", role: "musico", password: initialPassword }} preserve={false}>
           <Form.Item
             name="username" label="Usuario"
             extra="En minúsculas, sin espacios ni acentos. Así lo escribirá al iniciar sesión."
@@ -224,7 +244,8 @@ const Users = () => {
         </Paragraph>
         <Form
           form={passwordForm} layout="vertical"
-          onFinish={resetPassword} requiredMark={false}>
+          onFinish={resetPassword} requiredMark={false}
+          initialValues={{ password: initialPassword }} preserve={false}>
           <PasswordField onGenerate={() => passwordForm.setFieldsValue({ password: generatePassword() })} />
         </Form>
       </Modal>

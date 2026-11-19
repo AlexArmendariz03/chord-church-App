@@ -38,8 +38,8 @@ const isIdList = (value: unknown): value is string[] =>
   Array.isArray(value) && value.length <= MAX_SONGS && value.every(id => typeof id === "string" && id.length <= 100)
 
 // Shared by create (POST) and edit (PUT): validates the body and builds the ordered song list
-// júbilo → adoración → ofrenda
-export async function parseServiceBody(body: ServiceBody): Promise<ParsedService> {
+// júbilo → adoración → ofrenda. Solo acepta alabanzas del cancionero de la iglesia de la sesión.
+export async function parseServiceBody(churchId: string, body: ServiceBody): Promise<ParsedService> {
   const { title, eventDate, jubiloSongIds = [], adoracionSongIds = [] } = body
   const offeringSongId = body.offeringSongId || null
 
@@ -67,7 +67,7 @@ export async function parseServiceBody(body: ServiceBody): Promise<ParsedService
     return { error: "No repitas canciones en el servicio" }
   }
 
-  const songs = await prisma.song.findMany({ where: { id: { in: selectedIds } }, select: { id: true, category: true } })
+  const songs = await prisma.song.findMany({ where: { id: { in: selectedIds }, churchId }, select: { id: true, category: true } })
   const categoryOf = new Map(songs.map(song => [song.id, song.category]))
   const matches = (ids: string[], category: SongCategory) => ids.every(id => categoryOf.get(id) === category)
 

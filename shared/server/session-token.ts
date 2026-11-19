@@ -9,6 +9,9 @@ import { isRole, type Role } from "@/shared/auth/permissions"
 export type SessionUser = {
   username: string
   role: Role
+  // La iglesia con la que trabaja: la suya, o la que eligió el master en la página Iglesias.
+  // Todas las consultas filtran por ella.
+  churchId: string
 }
 
 type SessionPayload = SessionUser & { exp: number }
@@ -55,9 +58,10 @@ export async function verifySession(token: string | undefined): Promise<SessionU
 
     const payload = JSON.parse(decoder.decode(fromBase64Url(body))) as Partial<SessionPayload>
     if (!payload.exp || payload.exp < Date.now()) return null
-    if (!payload.username || !isRole(payload.role)) return null
+    // Las sesiones de antes de las iglesias no traen churchId: piden iniciar sesión otra vez
+    if (!payload.username || !isRole(payload.role) || typeof payload.churchId !== "string" || !payload.churchId) return null
 
-    return { username: payload.username, role: payload.role }
+    return { username: payload.username, role: payload.role, churchId: payload.churchId }
   } catch {
     return null
   }
