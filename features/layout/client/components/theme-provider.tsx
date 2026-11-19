@@ -6,9 +6,24 @@ import esES from "antd/locale/es_ES"
 import dayjs from "dayjs"
 import "dayjs/locale/es"
 import { createContext, useContext, useEffect, useState, useSyncExternalStore, type PropsWithChildren } from "react"
+import { flushSync } from "react-dom"
 import { resolveTheme, SYSTEM_THEME_COOKIE, THEME_COOKIE, themeCookie, type ResolvedTheme, type ThemePreference } from "../../theme"
 
 dayjs.locale("es")
+
+// Dónde se tocó por última vez: el tema nuevo se abre en un círculo desde ahí (motion.scss)
+let lastPointer = { x: 0, y: 0 }
+if (typeof window !== "undefined") {
+  window.addEventListener("pointerdown", event => {
+    lastPointer = { x: event.clientX, y: event.clientY }
+  }, { capture: true, passive: true })
+}
+
+const applyThemeToDocument = (resolved: ResolvedTheme) => {
+  const root = document.documentElement
+  root.dataset.theme = resolved
+  root.style.colorScheme = resolved
+}
 
 const BASE_TOKENS: ThemeConfig["token"] = {
   colorPrimary: "#2b53d6",
@@ -69,15 +84,27 @@ const ThemeProvider = ({ initialPreference, initialTheme, children }: ThemeProvi
   const resolved = resolveTheme(preference, systemIsDark)
 
   useEffect(() => {
-    const root = document.documentElement
-    root.dataset.theme = resolved
-    root.style.colorScheme = resolved
+    applyThemeToDocument(resolved)
     document.cookie = themeCookie(SYSTEM_THEME_COOKIE, systemIsDark ? "dark" : "light")
   }, [resolved, systemIsDark])
 
   const setPreference = (next: ThemePreference) => {
-    setPreferenceState(next)
     document.cookie = themeCookie(THEME_COOKIE, next)
+    const nextResolved = resolveTheme(next, systemIsDark)
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    if (nextResolved === resolved || reduceMotion || !document.startViewTransition) {
+      setPreferenceState(next)
+      return
+    }
+    // La foto "después" se toma al terminar el callback: los colores (data-theme) y antd ya
+    // tienen que estar en el tema nuevo, por eso se aplican aquí mismo y con flushSync
+    const root = document.documentElement
+    root.style.setProperty("--vt-x", `${lastPointer.x}px`)
+    root.style.setProperty("--vt-y", `${lastPointer.y}px`)
+    document.startViewTransition(() => {
+      flushSync(() => setPreferenceState(next))
+      applyThemeToDocument(nextResolved)
+    })
   }
 
   return (

@@ -10,6 +10,7 @@ import type { SongListItem } from "@/features/songs/types"
 import type { ServiceInput } from "../services-api"
 import { useMonthUsage } from "../use-month-usage"
 import { DateTimeField } from "./date-time-field"
+import { ServiceOrderSummary, type OrderItem } from "./service-order-summary"
 import { SongLane } from "./song-lane"
 
 export type ServiceFormValues = {
@@ -109,11 +110,16 @@ export const ServiceForm = ({ form, songs, editingServiceId, saving, onSubmit, o
   // Lo que lleva el servicio, al pie junto a Guardar
   const jubiloCount = singleWorship ? 0 : pickedJubilo.length
   const adoracionCount = singleWorship ? Math.min(1, pickedAdoracion.length) : pickedAdoracion.length
-  const summary = [
-    jubiloCount > 0 && `${jubiloCount} júbilo`,
-    adoracionCount > 0 && `${adoracionCount} adoración`,
-    !singleWorship && pickedOffering && "ofrenda"
-  ].filter(Boolean).join(" · ")
+  // El orden completo como se guardará: júbilo, adoración y al final la ofrenda
+  const songById = useMemo(() => new Map(songs.map(song => [song.id, song])), [songs])
+  const orderItems: OrderItem[] = [
+    ...(singleWorship ? [] : pickedJubilo).map(id => ({ id, kind: "jubilo" as const })),
+    ...pickedAdoracion.slice(0, adoracionCount).map(id => ({ id, kind: "adoracion" as const })),
+    ...(!singleWorship && pickedOffering ? [{ id: pickedOffering, kind: "ofrenda" as const }] : [])
+  ].flatMap(({ id, kind }) => {
+    const song = songById.get(id)
+    return song ? [{ song, kind }] : []
+  })
   const laneProps = { datesBySong, monthName }
 
   return (
@@ -209,7 +215,7 @@ export const ServiceForm = ({ form, songs, editingServiceId, saving, onSubmit, o
       )}
 
       <footer className="service-form-actions">
-        <span className="service-form-summary">{summary || "Sin alabanzas todavía"}</span>
+        <ServiceOrderSummary items={orderItems} />
         {onCancel && <Button onClick={onCancel}>Cancelar</Button>}
         <Button
           type="primary" htmlType="submit"
