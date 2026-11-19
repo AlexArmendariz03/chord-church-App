@@ -30,13 +30,13 @@ export async function POST(request: Request) {
 
     const response = await loginUser({ username, password })
 
-    if (response.status !== 200 || !response.role) {
+    if (response.status !== 200 || !response.role || !response.churchId) {
       recordFailure(normalizedUsername, ip)
       return NextResponse.json({ message: response.message }, { status: response.status })
     }
 
     clearFailures(normalizedUsername, ip)
-    const user = { username: normalizedUsername, role: response.role }
+    const user = { username: normalizedUsername, role: response.role, churchId: response.churchId }
     if (request.headers.get(APP_CLIENT_HEADER) === "app") {
       const token = await signSession(user, APP_SESSION_MAX_AGE)
       return NextResponse.json({ message: response.message, role: response.role, username: user.username, token })

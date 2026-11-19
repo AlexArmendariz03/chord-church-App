@@ -9,7 +9,7 @@ import { useSession } from "@/features/auth/client/session-provider"
 import { errorMessage } from "@/shared/client/api"
 import type { SongDetail, SongListItem } from "@/features/songs/types"
 import { LivePreview } from "../editor/live-preview"
-import { songsApi } from "../songs-api"
+import { useSongsScope } from "../songs-scope"
 
 type SongPreviewProps = {
   // La alabanza abierta; null cierra el panel
@@ -35,6 +35,7 @@ export const SongPreview = ({ song, onClose }: SongPreviewProps) => {
 
 const SongPreviewBody = ({ song }: { song: SongListItem }) => {
   const router = useRouter()
+  const { api: songsApi, basePath } = useSongsScope()
   const { can } = useSession()
   const [detail, setDetail] = useState<SongDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -47,7 +48,7 @@ const SongPreviewBody = ({ song }: { song: SongListItem }) => {
     songsApi.get(song.id)
       .then(setDetail)
       .catch(loadError => setError(errorMessage(loadError, "No se pudo cargar la alabanza")))
-  }, [song.id])
+  }, [song.id, songsApi])
 
   return (
     <div className="song-preview">
@@ -72,7 +73,7 @@ const SongPreviewBody = ({ song }: { song: SongListItem }) => {
         {can("manageSongs") && (
           <Button
             icon={<EditOutlined />} className="song-preview-edit"
-            onClick={() => router.push(`/alabanzas/editar?id=${song.id}`)}>
+            onClick={() => router.push(`${basePath}/editar?id=${song.id}`)}>
             Editar
           </Button>
         )}

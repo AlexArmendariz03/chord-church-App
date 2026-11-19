@@ -29,13 +29,32 @@ enum ThemePreference {
   system
 }
 
+// Cada iglesia tiene sus usuarios, su cancionero y sus servicios. Solo el master las crea.
+model Church {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  users     User[]
+  songs     Song[]
+  services  Service[]
+}
+
+// El valor por defecto de churchId es la iglesia que crea la migración add_churches con todo lo que
+// ya existía: mientras se publica, el código anterior sigue guardando sin churchId y cae ahí.
+// La app siempre lo manda; el valor por defecto se quita en un PR aparte.
+
 model User {
   id       Int             @id @default(autoincrement())
+  // Único en toda la app, no solo en su iglesia: el login no pide la iglesia
   username String          @unique
   password String
   role     UserRole        @default(musico)
   // Se guarda en la cuenta para que el tema sea el mismo en todos los dispositivos
   theme    ThemePreference @default(system)
+  churchId String          @default("el-palomar")
+  church   Church          @relation(fields: [churchId], references: [id], onDelete: Restrict)
+
+  @@index([churchId])
 }
 
 model Song {
@@ -43,9 +62,9 @@ model Song {
   name         String
   // Los valores por defecto vienen de la migración que agregó estas columnas a alabanzas que ya
   // existían; la app siempre los manda, pero la base los tiene y el esquema debe decir lo mismo
-  key          String       @default("C")
-  category     SongCategory @default(jubilo)
-  lyrics       String       @default("")
+  key          String        @default("C")
+  category     SongCategory  @default(jubilo)
+  lyrics       String        @default("")
   payload      Json?
   // Part of the youth group's repertoire: shown with a "Jóvenes" tag
   isYouth      Boolean       @default(false)
@@ -54,6 +73,12 @@ model Song {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   serviceSongs ServiceSong[]
+  churchId     String        @default("el-palomar")
+  church       Church        @relation(fields: [churchId], references: [id], onDelete: Restrict)
+
+  // Para que ServiceSong pueda exigir que la alabanza sea de la misma iglesia que el servicio
+  @@unique([id, churchId])
+  @@index([churchId])
 }
 
 model Service {
@@ -66,6 +91,12 @@ model Service {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   songs         ServiceSong[]
+  churchId      String        @default("el-palomar")
+  church        Church        @relation(fields: [churchId], references: [id], onDelete: Restrict)
+
+  // Para que ServiceSong pueda exigir que el servicio sea de la misma iglesia que la alabanza
+  @@unique([id, churchId])
+  @@index([churchId, eventDate])
 }
 
 model ServiceSong {
@@ -76,8 +107,11 @@ model ServiceSong {
   position   Int
   // The song played during the offering, after the worship set (always a júbilo song)
   isOffering Boolean      @default(false)
-  service    Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  song       Song         @relation(fields: [songId], references: [id], onDelete: Cascade)
+  // La iglesia del servicio y de la alabanza: las dos relaciones la incluyen, así la base no deja
+  // poner en un servicio una alabanza del cancionero de otra iglesia
+  churchId   String       @default("el-palomar")
+  service    Service      @relation(fields: [serviceId, churchId], references: [id, churchId], onDelete: Cascade)
+  song       Song         @relation(fields: [songId, churchId], references: [id, churchId], onDelete: Cascade)
 
   @@unique([serviceId, songId])
   @@index([serviceId, category])

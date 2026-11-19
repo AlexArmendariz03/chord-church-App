@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest"
-import { can, isRole, ROLES } from "./permissions"
+import { can, isAssignableRole, isRole, ROLES } from "./permissions"
 
 describe("can", () => {
   it("el master tiene todos los permisos", () => {
-    const permissions = ["viewSongs", "manageSongs", "manageServices", "goLive", "leadService", "seeKeys", "manageUsers"] as const
+    const permissions = ["viewSongs", "manageSongs", "manageServices", "goLive", "leadService", "seeKeys", "manageUsers", "manageChurches"] as const
     permissions.forEach(permission => expect(can("master", permission)).toBe(true))
   })
 
@@ -34,6 +34,13 @@ describe("can", () => {
     expect(can("proyeccion", "manageUsers")).toBe(false)
   })
 
+  it("solo el master administra iglesias", () => {
+    expect(can("master", "manageChurches")).toBe(true)
+    expect(can("leader", "manageChurches")).toBe(false)
+    expect(can("musico", "manageChurches")).toBe(false)
+    expect(can("proyeccion", "manageChurches")).toBe(false)
+  })
+
   it("sin rol no puede nada", () => {
     expect(can(null, "goLive")).toBe(false)
     expect(can(undefined, "seeKeys")).toBe(false)
@@ -45,5 +52,15 @@ describe("isRole", () => {
     ROLES.forEach(role => expect(isRole(role)).toBe(true))
     expect(isRole("admin")).toBe(false)
     expect(isRole(undefined)).toBe(false)
+  })
+})
+
+describe("isAssignableRole", () => {
+  it("el master no se asigna desde la app", () => {
+    expect(isAssignableRole("master")).toBe(false)
+    expect(isAssignableRole("leader")).toBe(true)
+    expect(isAssignableRole("musico")).toBe(true)
+    expect(isAssignableRole("proyeccion")).toBe(true)
+    expect(isAssignableRole("admin")).toBe(false)
   })
 })

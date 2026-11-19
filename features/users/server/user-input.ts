@@ -1,6 +1,7 @@
-import { isRole, type Role } from "@/shared/auth/permissions"
+import { isAssignableRole, type AssignableRole } from "@/shared/auth/permissions"
 
-// Valida el cuerpo para crear (POST) y editar (PUT) un usuario, como song-input.ts con las alabanzas
+// Valida el cuerpo para crear (POST) y editar (PUT) un usuario, como song-input.ts con las alabanzas.
+// El rol master no se acepta: ve todas las iglesias y solo se da con el script create-user.
 
 export type NewUserBody = { username?: unknown; password?: unknown; role?: unknown }
 export type UserUpdateBody = { password?: unknown; role?: unknown }
@@ -19,29 +20,29 @@ const passwordError = (password: unknown) => {
 
 export function parseNewUser({ username, password, role }: NewUserBody):
   | { error: string }
-  | { error?: undefined; data: { username: string; password: string; role: Role } } {
+  | { error?: undefined; data: { username: string; password: string; role: AssignableRole } } {
   const normalized = typeof username === "string" ? username.trim().toLowerCase() : ""
   if (!USERNAME.test(normalized)) return { error: "El usuario debe tener de 3 a 40 letras sin acentos, números, punto o guion, sin espacios" }
   const badPassword = passwordError(password)
   if (badPassword) return { error: badPassword }
-  if (!isRole(role)) return { error: "Elige un rol válido" }
+  if (!isAssignableRole(role)) return { error: "Elige un rol válido" }
   return { data: { username: normalized, password: password as string, role } }
 }
 
 // Se cambia lo que venga: el rol, la contraseña o los dos
 export function parseUserUpdate({ password, role }: UserUpdateBody):
   | { error: string }
-  | { error?: undefined; data: { password?: string; role?: Role } } {
+  | { error?: undefined; data: { password?: string; role?: AssignableRole } } {
   if (password === undefined && role === undefined) return { error: "No hay nada que cambiar" }
   if (password !== undefined) {
     const badPassword = passwordError(password)
     if (badPassword) return { error: badPassword }
   }
-  if (role !== undefined && !isRole(role)) return { error: "Elige un rol válido" }
+  if (role !== undefined && !isAssignableRole(role)) return { error: "Elige un rol válido" }
   return {
     data: {
       ...(password === undefined ? {} : { password: password as string }),
-      ...(role === undefined ? {} : { role: role as Role })
+      ...(role === undefined ? {} : { role: role as AssignableRole })
     }
   }
 }

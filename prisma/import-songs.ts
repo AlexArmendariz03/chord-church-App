@@ -1,9 +1,10 @@
 // Imports songs from a JSON file (array). Shows what it would do; pass --apply to save.
-// Usage: npm run import-songs -- <archivo.json> [--apply]
+// Usage: npm run import-songs -- <archivo.json> [--apply] [--iglesia=<id o nombre>]
+// Sin --iglesia van al cancionero de El Palomar.
 //
 // Each item: { cancion, tono, letra_acordes, categoria: "jubilo" | "adoracion" }
 // (also accepts name / key / lyrics / category, and seccion: "Júbilo" | "Adoración").
-// Songs whose name already exists, or that come without lyrics, are skipped.
+// Songs whose name already exists in that church, or that come without lyrics, are skipped.
 import fs from "node:fs"
 import type { SongCategory } from "../generated/prisma/enums"
 import { prisma } from "../shared/server/prisma"
@@ -36,9 +37,10 @@ const normalizeName = (name: string) => name.normalize("NFD").replace(/[̀-ͯ]/g
 
 const [file, ...flags] = process.argv.slice(2)
 const apply = flags.includes("--apply")
+const churchArg = flags.find(flag => flag.startsWith("--iglesia="))?.slice("--iglesia=".length) || "el-palomar"
 
 if (!file) {
-  console.error("Uso: npm run import-songs -- <archivo.json> [--apply]")
+  console.error("Uso: npm run import-songs -- <archivo.json> [--apply] [--iglesia=<id o nombre>]")
   process.exit(1)
 }
 
@@ -79,7 +81,14 @@ const importable = songs.filter(song => song.lyrics)
 // Se corre con tsx como CommonJS, que no admite await fuera de una función
 const main = async () => {
   try {
-    const existing = new Set((await prisma.song.findMany({ select: { name: true } })).map(song => normalizeName(song.name)))
+    const church = await prisma.church.findFirst({ where: { OR: [{ id: churchArg }, { name: churchArg }] }, select: { id: true, name: true } })
+    if (!church) {
+      console.error(`No existe la iglesia "${churchArg}"`)
+      process.exitCode = 1
+      return
+    }
+    console.log(`Cancionero de ${church.name}\n`)
+    const existing = new Set((await prisma.song.findMany({ where: { churchId: church.id }, select: { name: true } })).map(song => normalizeName(song.name)))
     const toCreate = importable.filter(song => !existing.has(normalizeName(song.name)))
 
     for (const song of withoutLyrics) console.log(`- ${song.name} | sin letra, se omite`)
@@ -91,7 +100,7 @@ const main = async () => {
     if (!apply) {
       console.log("\nVista previa: no se guardó nada. Agrega --apply para importar.")
     } else if (toCreate.length) {
-      const { count } = await prisma.song.createMany({ data: toCreate })
+      const { count } = await prisma.song.createMany({ data: toCreate.map(song => ({ ...song, churchId: church.id })) })
       console.log(`\nImportadas ${count} alabanzas.`)
     } else {
       console.log("\nNada que importar.")

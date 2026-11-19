@@ -11,20 +11,22 @@ type RouteContext = {
 const NOT_FOUND = "Servicio no encontrado"
 
 export async function PUT(req: Request, context: RouteContext) {
-  if (!(await requirePermission("manageServices"))) return forbidden("Solo el líder puede editar servicios")
+  const user = await requirePermission("manageServices")
+  if (!user) return forbidden("Solo el líder puede editar servicios")
 
   return handle(async () => {
-    const parsed = await parseServiceBody((await req.json()) as ServiceBody)
+    const parsed = await parseServiceBody(user.churchId, (await req.json()) as ServiceBody)
     if (parsed.error !== undefined) return errorResponse(parsed.error, 400)
-    return NextResponse.json(await updateService((await context.params).id, parsed.data))
+    return NextResponse.json(await updateService(user.churchId, (await context.params).id, parsed.data))
   }, { notFound: NOT_FOUND, failed: "Error al actualizar el servicio" })
 }
 
 export async function DELETE(_req: Request, context: RouteContext) {
-  if (!(await requirePermission("manageServices"))) return forbidden("Solo el líder puede eliminar servicios")
+  const user = await requirePermission("manageServices")
+  if (!user) return forbidden("Solo el líder puede eliminar servicios")
 
   return handle(async () => {
-    await deleteService((await context.params).id)
+    await deleteService(user.churchId, (await context.params).id)
     return NextResponse.json({ message: "Servicio eliminado correctamente" })
   }, { notFound: NOT_FOUND, failed: "Error al eliminar el servicio" })
 }

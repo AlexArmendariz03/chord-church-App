@@ -9,7 +9,8 @@ const MAX_RANGE_MS = 45 * 24 * 60 * 60 * 1000
 // Qué alabanzas usó cada servicio entre `desde` y `hasta`, para que el formulario avise
 // cuando una alabanza se repite mucho en el mismo mes
 export async function GET(req: Request) {
-  if (!(await requirePermission("manageServices"))) return forbidden("Solo el líder puede ver el uso de las alabanzas")
+  const user = await requirePermission("manageServices")
+  if (!user) return forbidden("Solo el líder puede ver el uso de las alabanzas")
 
   const params = new URL(req.url).searchParams
   const from = new Date(params.get("desde") ?? "")
@@ -18,5 +19,5 @@ export async function GET(req: Request) {
     return errorResponse("Rango de fechas inválido", 400)
   }
 
-  return handle(async () => NextResponse.json(await songUsage(from, to)), { failed: "Error al revisar el uso de las alabanzas" })
+  return handle(async () => NextResponse.json(await songUsage(user.churchId, from, to)), { failed: "Error al revisar el uso de las alabanzas" })
 }

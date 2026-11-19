@@ -1,5 +1,29 @@
-import { describe, expect, it } from "vitest"
-import { bearerToken, sessionTokenFrom } from "./session-token"
+import { beforeAll, describe, expect, it } from "vitest"
+import { bearerToken, sessionTokenFrom, signSession, verifySession } from "./session-token"
+
+beforeAll(() => {
+  process.env.SESSION_SECRET ??= "secreto-de-prueba-con-al-menos-32-caracteres"
+})
+
+describe("signSession y verifySession", () => {
+  it("la sesión lleva la iglesia", async () => {
+    const user = { username: "ana", role: "leader", churchId: "iglesia-b" } as const
+    expect(await verifySession(await signSession(user))).toEqual(user)
+  })
+
+  it("una sesión de antes de las iglesias, sin churchId, ya no vale", async () => {
+    const token = await signSession({ username: "ana", role: "leader" } as never)
+    expect(await verifySession(token)).toBeNull()
+  })
+
+  it("rechaza un token modificado", async () => {
+    const token = await signSession({ username: "ana", role: "musico", churchId: "iglesia-b" })
+    const [body, signature] = token.split(".")
+    const forged = Buffer.from(JSON.stringify({ username: "ana", role: "master", churchId: "iglesia-b", exp: Date.now() + 60_000 })).toString("base64url")
+    expect(await verifySession(`${forged}.${signature}`)).toBeNull()
+    expect(body).not.toBe(forged)
+  })
+})
 
 describe("bearerToken", () => {
   it("saca el token del encabezado Authorization", () => {
