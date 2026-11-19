@@ -290,6 +290,13 @@
   font-weight: 600;
 }
 
+// Nombre de la iglesia bajo el del usuario
+.mobile-nav-church {
+  display: block;
+  font-size: 13px;
+  color: $primary-typography;
+}
+
 // Role colors: leader in cobalt, musician in teal → emerald
 $leader-gradient: linear-gradient(180deg, #3a66f0 0%, #1e43b8 100%);
 $musician-gradient: linear-gradient(135deg, #14b8a6 0%, #059669 100%);
@@ -371,6 +378,20 @@ $master-gradient: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%);
 
   .user-menu-version {
     font-size: 12px;
+  }
+
+  // La iglesia de la sesión, arriba del menú; para el master, con "Cambiar de iglesia" debajo
+  .user-menu-church {
+    display: flex;
+    flex-direction: column;
+    font-weight: 600;
+    color: $ink-dark;
+
+    span {
+      font-size: 12px;
+      font-weight: 400;
+      color: $primary-typography;
+    }
   }
 }
 

@@ -29,8 +29,8 @@ Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 | `npm run lint` | Revisa el código con ESLint (`npm run lint:fix` corrige lo automático) |
 | `npm run typecheck` | Revisa los tipos de TypeScript |
 | `npm test` | Corre las pruebas (Vitest); `npm run test:watch` las repite al guardar |
-| `npm run create-user -- <usuario> <contraseña> [rol]` | Crea o actualiza un usuario |
-| `npm run import-songs -- <archivo.json> [--apply]` | Importa alabanzas desde un JSON; sin `--apply` solo muestra qué haría |
+| `npm run create-user -- <usuario> <contraseña> [rol] [iglesia]` | Crea o actualiza un usuario |
+| `npm run import-songs -- <archivo.json> [--apply] [--iglesia=<id o nombre>]` | Importa alabanzas al cancionero de una iglesia; sin `--apply` solo muestra qué haría |
 
 Las pruebas van junto al archivo que prueban (`transpose.ts` → `transpose.test.ts`) y cubren la lógica
 pura: transposición, letras, paginación, reglas de servicios, permisos y validación de la API.
@@ -38,17 +38,32 @@ En GitHub, cada push a `main` o `dev` y cada PR corre lint, tipos, pruebas y la 
 (`.github/workflows/ci.yml`). `main` y `dev` están protegidas: solo cambian por PR y con esos checks y
 el de Vercel en verde.
 
-## Usuarios y roles
+## Iglesias, usuarios y roles
 
-Crea o actualiza usuarios en la base de datos con:
+Cada iglesia tiene sus propios usuarios, su cancionero y sus servicios; una iglesia nunca ve los de otra.
+Cada usuario pertenece a una sola iglesia y los roles son los mismos en todas. La sesión lleva la
+iglesia (`churchId`) y cada consulta de `server/` la recibe para filtrar por ella. La base también lo
+cuida: `ServiceSong` guarda la iglesia y sus llaves van a `(id, churchId)` del servicio y de la
+alabanza, así que no acepta en un servicio una alabanza del cancionero de otra iglesia.
+
+El master crea iglesias en la página **Iglesias**. Cada una tiene su página (`/iglesias/<id>`) con dos
+pestañas, **Usuarios** y **Alabanzas**, para administrar a sus usuarios y su cancionero (con el mismo
+editor) sin cambiar la iglesia de su sesión. Para trabajar en sus servicios o en En curso, entra a ella.
+Las rutas `/api/churches/[id]/users` y `/api/churches/[id]/songs` responden igual que `/api/users` y
+`/api/songs` (comparten `user-responses.ts` y `song-responses.ts`), pero para esa iglesia. El rol master no se asigna desde la
+app, solo con el script:
 
 ```bash
-npm run create-user -- <usuario> <contraseña> leader   # o master, musico, proyeccion
+npm run create-user -- <usuario> <contraseña> leader "Iglesia Centro"   # rol: master, leader, musico, proyeccion
 ```
+
+La iglesia es su id o su nombre exacto. Sin ella, un usuario nuevo va a El Palomar (la que
+creó la migración `add_churches` con todo lo que ya existía) y uno que ya existe se queda en la suya.
+El nombre de usuario es único en toda la app, no solo en su iglesia.
 
 | Rol | Qué puede hacer |
 |---|---|
-| `master` (Master) | Todos los permisos, incluidos los que se agreguen solo para administrar la app |
+| `master` (Master) | Todas las iglesias: las crea, entra a cualquiera y administra a sus usuarios |
 | `leader` (Dirigente) | Todo: alabanzas, servicios y En curso con la vista del dirigente |
 | `musico` (Músico) | Ver los servicios y seguir En curso con letras, acordes y tono |
 | `proyeccion` (Proyección) | Solo ver la lista de servicios con sus alabanzas, sin tonos |
@@ -83,6 +98,7 @@ app/            Páginas y rutas de la API (App Router), sin lógica: solo llama
 features/       Cada funcionalidad: client/ (interfaz), server/ (base de datos) y, en la raíz, sus
                 tipos y su lógica pura (sin React ni Prisma), que puede usar cualquiera de las dos
   auth/         Inicio de sesión y la sesión en la interfaz (session-provider)
+  churches/     Iglesias (solo el master): lista, crear, renombrar y entrar a una
   dashboard/    Inicio
   layout/       Encabezado, menú y tema
   live/         En curso: paginación en pantalla, controles y modo escenario

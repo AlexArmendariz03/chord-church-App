@@ -189,7 +189,8 @@ const Services = () => {
             open={formOpen} onClose={requestClose}
             title={editingServiceId ? "Editar servicio" : "Nuevo servicio"}
             placement="right" size={isWide ? 760 : "100%"}
-            rootClassName="service-form-drawer" forceRender>
+            rootClassName="service-form-drawer" forceRender
+            styles={{ body: { paddingBottom: 0 } }}>
             {serviceForm}
           </Drawer>
         )}

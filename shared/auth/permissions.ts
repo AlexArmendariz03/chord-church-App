@@ -13,6 +13,12 @@ export const ROLES_MATCH_SCHEMA: [Role] extends [UserRole] ? ([UserRole] extends
 
 export const isRole = (value: unknown): value is Role => ROLES.includes(value as Role)
 
+// Los roles que se dan dentro de una iglesia desde la página Usuarios. El master ve todas las
+// iglesias, así que no se asigna desde la app: solo con el script create-user.
+export type AssignableRole = Exclude<Role, "master">
+export const ASSIGNABLE_ROLES = ROLES.filter((role): role is AssignableRole => role !== "master")
+export const isAssignableRole = (value: unknown): value is AssignableRole => ASSIGNABLE_ROLES.includes(value as AssignableRole)
+
 export type Permission =
   // Ver el cancionero (página Alabanzas) y abrir la vista previa de cada alabanza para ensayarla
   | "viewSongs"
@@ -26,19 +32,21 @@ export type Permission =
   | "leadService"
   // Ver el tono de cada alabanza
   | "seeKeys"
-  // Crear usuarios, cambiarles el rol y restablecer su contraseña (página Usuarios)
+  // Crear usuarios, cambiarles el rol y restablecer su contraseña (página Usuarios), en su iglesia
   | "manageUsers"
+  // Crear y renombrar iglesias, y entrar a cualquiera de ellas (página Iglesias)
+  | "manageChurches"
 
 // Todos los permisos encendidos: el master los tiene siempre, también los que se agreguen después
 const ALL_PERMISSIONS: Record<Permission, true> = {
-  viewSongs: true, manageSongs: true, manageServices: true, goLive: true, leadService: true, seeKeys: true, manageUsers: true
+  viewSongs: true, manageSongs: true, manageServices: true, goLive: true, leadService: true, seeKeys: true, manageUsers: true, manageChurches: true
 }
 
 const PERMISSIONS: Record<Role, Record<Permission, boolean>> = {
   master: ALL_PERMISSIONS,
-  leader: { viewSongs: true, manageSongs: true, manageServices: true, goLive: true, leadService: true, seeKeys: true, manageUsers: false },
-  musico: { viewSongs: true, manageSongs: false, manageServices: false, goLive: true, leadService: false, seeKeys: true, manageUsers: false },
-  proyeccion: { viewSongs: false, manageSongs: false, manageServices: false, goLive: false, leadService: false, seeKeys: false, manageUsers: false }
+  leader: { viewSongs: true, manageSongs: true, manageServices: true, goLive: true, leadService: true, seeKeys: true, manageUsers: false, manageChurches: false },
+  musico: { viewSongs: true, manageSongs: false, manageServices: false, goLive: true, leadService: false, seeKeys: true, manageUsers: false, manageChurches: false },
+  proyeccion: { viewSongs: false, manageSongs: false, manageServices: false, goLive: false, leadService: false, seeKeys: false, manageUsers: false, manageChurches: false }
 }
 
 export const can = (role: Role | null | undefined, permission: Permission) => Boolean(role && PERMISSIONS[role][permission])

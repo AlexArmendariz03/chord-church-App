@@ -76,3 +76,38 @@
     }
   }
 }
+
+// Página Iglesias: usa las filas de Usuarios, con lo que tiene cada iglesia bajo su nombre
+.church-row-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.church-row-stats.ant-typography {
+  font-size: 13px;
+}
+
+// El nombre de la iglesia abre su página
+.church-row-link {
+  color: inherit;
+  flex: 1;
+
+  &:hover .ant-typography strong {
+    color: var(--app-accent);
+  }
+}
+
+.church-current-tag {
+  vertical-align: middle;
+}
+
+// Pestañas Usuarios y Alabanzas al pie del encabezado de la iglesia
+.church-detail-header .church-detail-tabs {
+  margin-top: 12px;
+  margin-bottom: -24px;
+
+  .ant-tabs-nav {
+    margin-bottom: 0;
+  }
+}

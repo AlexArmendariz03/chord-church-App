@@ -1,6 +1,6 @@
 "use client"
 
-import { CloseOutlined, CompassOutlined, DownOutlined, LogoutOutlined, MenuOutlined, UserOutlined } from "@ant-design/icons"
+import { BankOutlined, CloseOutlined, CompassOutlined, DownOutlined, LogoutOutlined, MenuOutlined, UserOutlined } from "@ant-design/icons"
 import { Avatar, Button, Drawer, Dropdown, Layout as ALayout, Menu, type MenuProps } from "antd"
 import Image from "next/image"
 import Link from "next/link"
@@ -24,7 +24,7 @@ const ROLE_CLASSES: Record<Role, string> = { master: "is-master", leader: "is-le
 const HeaderBar = () => {
   const router = useRouter()
   const pathname = usePathname()
-  const { user, role } = useSession()
+  const { user, role, church, can } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const hasTour = useHasTour()
   const themeMenuItem = useThemeMenuItem()
@@ -61,7 +61,13 @@ const HeaderBar = () => {
     setTimeout(openTour, 300)
   }
 
+  // La iglesia con la que se trabaja; el master la cambia desde la página Iglesias
+  const churchMenuItem = church ? (can("manageChurches")
+    ? { key: "church", icon: <BankOutlined />, label: <Link href="/iglesias" className="user-menu-church">{church.name}<span>Cambiar de iglesia</span></Link> }
+    : { key: "church", icon: <BankOutlined />, label: <span className="user-menu-church">{church.name}</span>, disabled: true }) : null
+
   const userMenuItems: MenuProps["items"] = [
+    ...(churchMenuItem ? [churchMenuItem, { type: "divider" as const }] : []),
     ...(hasTour ? [{ key: "tour", icon: <CompassOutlined />, label: "Tour guiado", onClick: openTour }] : []),
     themeMenuItem,
     { key: "terms", label: <Link href="/terminos">Términos y condiciones</Link> },
@@ -147,6 +153,7 @@ const HeaderBar = () => {
             {userAvatar(40)}
             <span>
               <span className="mobile-nav-user-name">{nameIsRole ? name : `Hola, ${name}`}</span>
+              {church && <span className="mobile-nav-church">{church.name}</span>}
               {roleBadge}
             </span>
           </div>

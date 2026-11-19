@@ -3,7 +3,7 @@
 import { App } from "antd"
 import { useCallback } from "react"
 import { findSameName } from "../../song-search"
-import { songsApi } from "../songs-api"
+import { useSongsScope } from "../songs-scope"
 
 type SongToSave = { name: string; key: string; lyrics: string }
 
@@ -12,6 +12,8 @@ type SongToSave = { name: string; key: string; lyrics: string }
 // Si no se puede cargar la lista para comparar, no se detiene el guardado.
 export const useSaveChecks = () => {
   const { message, modal } = App.useApp()
+  // El nombre repetido se busca en el cancionero que se está editando
+  const { api: songsApi } = useSongsScope()
 
   return useCallback(async ({ name, key, lyrics }: SongToSave, editingId: string | null) => {
     if (!name.trim() || !key.trim()) {
@@ -31,5 +33,5 @@ export const useSaveChecks = () => {
       okText: "Guardar de todos modos",
       cancelText: "Revisar"
     })
-  }, [message, modal])
+  }, [message, modal, songsApi])
 }
