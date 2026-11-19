@@ -1,0 +1,181 @@
+// Movimiento de todo el sitio, en un solo lugar para ajustarlo o quitarlo fácil.
+// Todo es corto (≤ 0.5 s) y se apaga con "reducir movimiento" del dispositivo (al final).
+// En curso no lleva entrada de página: en pleno servicio la letra tiene que salir al instante.
+
+$ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+$ease-spring: cubic-bezier(0.3, 1.5, 0.5, 1);
+
+@keyframes motion-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes motion-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes motion-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(6px);
+  }
+}
+
+// Un brillo que cruza despacio el fondo del saludo de Inicio
+@keyframes motion-glow {
+  0%,
+  100% {
+    background-position: 0% 0%;
+  }
+
+  50% {
+    background-position: 100% 100%;
+  }
+}
+
+// Entrada de cada página: la página nueva se monta y sube un poco mientras aparece.
+// `backwards` no deja transform al terminar, así nada queda movido ni crea capas de más.
+.layout .content > * {
+  animation: motion-rise 0.4s $ease-out backwards;
+}
+
+.layout .content:has(.current-service-card, .live-compact) > * {
+  animation: none;
+}
+
+// Listas: entran una tras otra, solo las primeras para no hacer esperar
+.dashboard .ant-row > .ant-col,
+.service-list > .service-card,
+.list-panel .song-row,
+.list-panel .users-row {
+  animation: motion-rise 0.42s $ease-out backwards;
+
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 45}ms;
+    }
+  }
+}
+
+.next-service-card {
+  animation: motion-rise 0.45s $ease-out 0.12s backwards;
+}
+
+// Encabezado de vidrio: lo que pasa por debajo al bajar se ve difuminado
+@supports (backdrop-filter: blur(1px)) {
+  .layout .header {
+    background-color: color-mix(in srgb, var(--app-surface) 78%, transparent);
+    backdrop-filter: saturate(1.6) blur(14px);
+  }
+}
+
+// Tarjetas que se elevan y filas que se iluminan
+.service-card:hover {
+  transform: translateY(-2px);
+}
+
+.song-row,
+.users-row {
+  transition: background-color 0.18s ease;
+
+  &:hover {
+    background-color: var(--app-accent-tint);
+  }
+}
+
+.song-row .song-row-name {
+  transition: color 0.18s ease;
+}
+
+.song-row-main:hover .song-row-name {
+  color: var(--app-accent);
+}
+
+// Botones: se hunden un poco al presionarlos
+.ant-btn {
+  transition-property: color, background, border-color, box-shadow, transform, opacity;
+
+  &:not(:disabled):active {
+    transform: scale(0.97);
+  }
+}
+
+// Inicio: el saludo entra con su brillo y el emblema del encabezado responde al pasar
+.dashboard .dashboard-hero {
+  background-size: 200% 200%;
+  animation: motion-glow 14s ease-in-out infinite;
+}
+
+.brand-emblem {
+  transition: transform 0.25s $ease-spring;
+
+  .brand:hover & {
+    transform: rotate(-6deg) scale(1.06);
+  }
+}
+
+// Login: el emblema entra con rebote y luego la tarjeta
+.login-container {
+  .login-emblem {
+    animation: motion-pop 0.55s $ease-spring backwards;
+  }
+
+  .login-title,
+  .login-subtitle {
+    animation: motion-rise 0.45s $ease-out 0.1s backwards;
+  }
+
+  .login-card {
+    animation: motion-rise 0.5s $ease-out 0.18s backwards;
+  }
+
+  .login-terms {
+    animation: motion-fade 0.5s ease 0.3s backwards;
+  }
+}
+
+// Cambio de tema: el nuevo se abre en un círculo desde donde se tocó (--vt-x, --vt-y los pone
+// theme-provider). Sin View Transitions, el navegador cambia de golpe como siempre.
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  animation: motion-theme-reveal 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes motion-theme-reveal {
+  from {
+    clip-path: circle(0 at var(--vt-x, 100%) var(--vt-y, 0));
+  }
+
+  to {
+    clip-path: circle(150vmax at var(--vt-x, 100%) var(--vt-y, 0));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layout .content > *,
+  .dashboard .ant-row > .ant-col,
+  .service-list > .service-card,
+  .list-panel .song-row,
+  .list-panel .users-row,
+  .next-service-card,
+  .dashboard .dashboard-hero,
+  .login-container *,
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+
+  .service-card:hover,
+  .ant-btn:not(:disabled):active,
+  .brand:hover .brand-emblem {
+    transform: none;
+  }
+}

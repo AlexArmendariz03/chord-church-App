@@ -539,6 +539,30 @@ $service-ofrenda: #f59e0b;
   color: var(--app-text-muted);
 }
 
+// Una alabanza recién agregada entra con un pequeño desliz
+.song-lane-row {
+  animation: order-row-in 0.25s ease-out;
+}
+
+@keyframes order-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .order-summary,
+  .order-summary-total,
+  .order-summary-bar span,
+  .order-summary-row,
+  .song-lane-row,
+  .order-summary-link .anticon {
+    animation: none;
+    transition: none;
+  }
+}
+
 // Las que sobran cuando el evento lleva solo una
 .song-lane-row.is-over {
   opacity: 0.5;
@@ -592,10 +616,6 @@ $service-ofrenda: #f59e0b;
 
 // En el panel, el pie (resumen, Cancelar y Guardar) queda fijo abajo mientras se baja por el formulario
 .service-form-drawer {
-  .ant-drawer-body {
-    padding-bottom: 0;
-  }
-
   .service-form-actions {
     position: sticky;
     bottom: 0;
@@ -607,11 +627,210 @@ $service-ofrenda: #f59e0b;
   }
 }
 
-.service-form-summary {
+// Resumen del pie: total, barra de colores como en las tarjetas y "Ver orden"
+.order-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  max-width: 320px;
   margin-right: auto;
-  color: var(--app-text-muted);
-  font-size: 13px;
+  padding: 8px 12px;
+  border: 1px solid var(--app-border-soft);
+  border-radius: 12px;
+  background: var(--app-surface);
+  box-shadow: 0 1px 2px var(--app-shadow), 0 8px 18px -10px var(--app-shadow);
+  color: var(--app-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+
+  &:hover,
+  &.is-open {
+    border-color: var(--app-border);
+    box-shadow: 0 2px 4px var(--app-shadow), 0 14px 28px -12px rgba(15, 23, 42, 0.35);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &.is-empty {
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    color: var(--app-text-muted);
+    font-size: 13px;
+    cursor: default;
+    transform: none;
+  }
+}
+
+.order-summary-total {
+  display: inline-block;
+  animation: order-total-pop 0.32s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+@keyframes order-total-pop {
+  from {
+    transform: scale(0.85);
+    opacity: 0.4;
+  }
+}
+
+.order-summary-top {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.order-summary-link {
+  color: var(--app-accent);
+  font-size: 12px;
   font-weight: 600;
+
+  .anticon {
+    transition: transform 0.22s ease;
+
+    .is-open & {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.order-summary-bar {
+  display: flex;
+  gap: 3px;
+  width: 200px;
+  max-width: 100%;
+  height: 6px;
+
+  // Se llena al aparecer y cada tramo crece o se encoge al agregar o quitar alabanzas
+  span {
+    border-radius: 999px;
+    transform-origin: left;
+    transition: flex-grow 0.35s ease;
+    animation: order-bar-in 0.45s ease-out both;
+  }
+}
+
+@keyframes order-bar-in {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.order-summary-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.order-summary-bar,
+.order-summary-counts,
+.order-summary-list {
+  .is-jubilo {
+    --order-color: #{$service-jubilo};
+    --order-text: var(--app-jubilo-text);
+  }
+
+  .is-adoracion {
+    --order-color: #{$service-adoracion};
+    --order-text: var(--app-adoracion-text);
+  }
+
+  .is-ofrenda {
+    --order-color: #{$service-ofrenda};
+    --order-text: var(--app-ofrenda-text);
+  }
+}
+
+.order-summary-bar span {
+  background: var(--order-color);
+}
+
+.order-summary-counts span {
+  color: var(--order-text);
+}
+
+// La lista de "Ver orden": tarjeta flotante con sombra marcada
+.order-summary-popover .ant-popover-inner {
+  min-width: 300px;
+  max-width: min(420px, calc(100vw - 32px));
+  border: 1px solid var(--app-border);
+  border-radius: 14px;
+  box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.45), 0 6px 16px -6px rgba(0, 0, 0, 0.25);
+}
+
+.order-summary-list {
+  max-height: 50vh;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.order-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  // Entran una tras otra
+  animation: order-row-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+
+  & + & {
+    border-top: 1px solid var(--app-border-soft);
+  }
+
+  // La ofrenda cierra la lista, apartada como en las tarjetas
+  &.is-ofrenda {
+    margin-top: 4px;
+    border-top: 1px dashed var(--app-border);
+  }
+}
+
+.order-summary-position {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--order-color) 16%, transparent);
+  color: var(--order-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.order-summary-name {
+  flex: 1;
+  min-width: 0;
+  color: var(--app-ink);
+}
+
+.order-summary-badge {
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--app-ofrenda-soft);
+  color: var(--app-ofrenda-text);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.order-summary-key {
+  flex: none;
+  color: var(--app-text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
 }
 
 @media (max-width: 575.98px) {
@@ -619,7 +838,8 @@ $service-ofrenda: #f59e0b;
     padding: 10px 10px 12px;
   }
 
-  .service-form-summary {
+  .order-summary {
     flex-basis: 100%;
+    max-width: none;
   }
 }
