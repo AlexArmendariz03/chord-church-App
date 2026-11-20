@@ -8,8 +8,9 @@ type LoginParams = {
   password: string
 }
 
-// Compared when the user doesn't exist, so the answer takes as long as a wrong password
-const DUMMY_HASH = bcrypt.hashSync("chord-church-dummy-password", 10)
+// Compared when the user doesn't exist, so the answer takes as long as a wrong password.
+// Ya calculado (costo 10, igual que las contraseñas reales) para no gastar tiempo al arrancar la función
+const DUMMY_HASH = "$2b$10$fbdj1MkzkzBoRiQtY0NHvuqyM5k4WfHks2YV1g/3Vo8HoUJHOtX.6"
 
 export async function loginUser({ username, password }: LoginParams): Promise<{ message: string; role?: Role; churchId?: string; status: number }> {
   const normalizedUsername = username.trim().toLowerCase()
