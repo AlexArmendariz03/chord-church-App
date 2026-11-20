@@ -6,21 +6,25 @@ import { App, Button, Card, Col, Form, Input, Row } from "antd"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 import { errorMessage } from "@/shared/client/api"
 import { authApi } from "../auth-api"
 
 const LoginForm = () => {
   const router = useRouter()
   const { message } = App.useApp()
+  const [submitting, setSubmitting] = useState(false)
 
   const onFinish = async (values: LoginFormData) => {
+    setSubmitting(true)
     try {
       const { message: welcome } = await authApi.login({ username: values.username, password: values.password })
       message.success(welcome)
-      router.push("/dashboard")
-      router.refresh()
+      // El botón sigue cargando hasta que se abre el dashboard; replace para que "atrás" no regrese al login
+      router.replace("/dashboard")
     } catch (error) {
       message.error(errorMessage(error, "Error al intentar iniciar sesión"))
+      setSubmitting(false)
     }
   }
 
@@ -58,7 +62,7 @@ const LoginForm = () => {
             <Form.Item style={{ marginBottom: 0 }}>
               <Button
                 type="primary" htmlType="submit"
-                block>
+                block loading={submitting}>
                 Entrar
               </Button>
             </Form.Item>
