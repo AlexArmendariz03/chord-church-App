@@ -8,6 +8,7 @@ import { useSession } from "@/features/auth/client/session-provider"
 import { songsApi } from "@/features/songs/client/songs-api"
 import { errorMessage } from "@/shared/client/api"
 import { useConfirmDelete } from "@/shared/client/use-confirm-delete"
+import type { ChurchPrayers } from "@/features/churches/types"
 import type { ServiceSummary } from "@/features/services/types"
 import type { SongListItem } from "@/features/songs/types"
 import { servicesApi, type ServiceInput } from "../services-api"
@@ -17,6 +18,8 @@ import { formValuesOf, ServiceForm, songFields, type ServiceFormValues } from ".
 const { Title, Paragraph } = Typography
 
 const subscribeNothing = () => () => {}
+
+const NO_PRAYERS: ChurchPrayers = { prayerGuide: null }
 
 const Services = () => {
   const { message, modal } = App.useApp()
@@ -36,6 +39,8 @@ const Services = () => {
   const [saving, setSaving] = useState(false)
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null)
   const [formOpen, setFormOpen] = useState(false)
+  // Las peticiones de la iglesia, que salen en el momento de oración de cada servicio
+  const [churchPrayers, setChurchPrayers] = useState<ChurchPrayers>(NO_PRAYERS)
   // "Editar" desde Inicio llega como ?edit=<id>; se abre una sola vez
   const urlEditApplied = useRef(false)
   // El formulario va en un panel desde la derecha; en el teléfono ocupa toda la pantalla
@@ -56,6 +61,24 @@ const Services = () => {
   useEffect(() => {
     loadData()
   }, [loadData])
+
+  // Si no cargan, el formulario solo no las muestra; En curso las recibe con cada servicio
+  useEffect(() => {
+    if (!canManage) return
+    servicesApi.prayers().then(setChurchPrayers).catch(() => {})
+  }, [canManage])
+
+  // Devuelve si se guardaron, para que el editor se cierre solo entonces
+  const saveChurchPrayers = async (prayers: ChurchPrayers) => {
+    try {
+      setChurchPrayers(await servicesApi.savePrayers(prayers))
+      message.success("Peticiones guardadas: salen en el momento de oración de cada servicio")
+      return true
+    } catch (error) {
+      message.error(errorMessage(error, "No se pudieron guardar las peticiones"))
+      return false
+    }
+  }
 
   const loadPast = () => {
     setLoadingPast(true)
@@ -158,7 +181,8 @@ const Services = () => {
       form={form} songs={songs}
       editingServiceId={editingServiceId} saving={saving}
       onSubmit={saveService} titleSuggestions={titleSuggestions}
-      onCancel={requestClose} />
+      onCancel={requestClose} churchPrayers={churchPrayers.prayerGuide}
+      onSaveChurchPrayers={saveChurchPrayers} />
   )
 
   return (

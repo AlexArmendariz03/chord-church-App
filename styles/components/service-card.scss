@@ -404,6 +404,44 @@ $service-ofrenda: #f59e0b;
   font-size: 13px;
 }
 
+// Debajo de Oración y Anuncios: guardar lo escrito como plantilla o volver a ella
+.service-form-template {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 12px 14px;
+  border: 1px dashed var(--app-border, rgba(127, 127, 127, 0.35));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--app-text-muted) 6%, transparent);
+}
+
+.service-form-template-text {
+  display: flex;
+  flex: 1 1 260px;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.service-form-template-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.service-form-template-note {
+  color: var(--app-text-muted);
+  font-size: 13px;
+}
+
+.service-form-template-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .service-form-step .ant-alert {
   margin-bottom: 16px;
 }

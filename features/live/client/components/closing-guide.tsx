@@ -1,6 +1,7 @@
 "use client"
 
 import { NotificationOutlined } from "@ant-design/icons"
+import { toGuideLines, type GuideLine } from "@/features/live/closing-guide-lines"
 
 type ClosingGuideProps = {
   prayerGuide?: string | null
@@ -10,28 +11,26 @@ type ClosingGuideProps = {
   onCenterTap?: () => void
 }
 
-type GuideLine = { type: "heading" | "item"; text: string }
-
-// One item per line; a line ending in ":" ("Vamos a orar por:") introduces the items below it
-const toLines = (text?: string | null): GuideLine[] =>
-  (text ?? "")
-    .split("\n")
-    .map(line => line.trim())
-    .filter(Boolean)
-    .map(line => (line.endsWith(":") ? { type: "heading", text: line } : { type: "item", text: line }))
-
 const GuideLines = ({ lines, numbered }: { lines: GuideLine[]; numbered: boolean }) => {
   let itemNumber = 0
   return (
     <div className="closing-guide-lines">
       {lines.map((line, index) => {
         if (line.type === "heading") return <p key={index} className="closing-guide-lead">{line.text}</p>
+        if (line.type === "quote") return <p key={index} className="closing-guide-quote">{line.text}</p>
         itemNumber++
         return (
-          <p key={index} className="closing-guide-item">
-            <span className="closing-guide-marker" aria-hidden="true">{numbered ? itemNumber : "•"}</span>
-            {line.text}
-          </p>
+          <div key={index} className="closing-guide-point">
+            <p className="closing-guide-item">
+              <span className="closing-guide-marker" aria-hidden="true">{numbered ? itemNumber : "•"}</span>
+              {line.text}
+            </p>
+            {line.subItems.length > 0 && (
+              <ul className="closing-guide-subitems">
+                {line.subItems.map((subItem, subIndex) => <li key={subIndex}>{subItem}</li>)}
+              </ul>
+            )}
+          </div>
         )
       })}
     </div>
@@ -40,8 +39,8 @@ const GuideLines = ({ lines, numbered }: { lines: GuideLine[]; numbered: boolean
 
 // What the leader says once the songs are over: prayer points, then the announcements
 export const ClosingGuide = ({ prayerGuide, announcements, variant, onCenterTap }: ClosingGuideProps) => {
-  const prayerLines = toLines(prayerGuide)
-  const announcementLines = toLines(announcements)
+  const prayerLines = toGuideLines(prayerGuide)
+  const announcementLines = toGuideLines(announcements)
 
   return (
     <section

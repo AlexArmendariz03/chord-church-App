@@ -13,3 +13,8 @@ export type CurrentChurch = {
   id: string
   name: string
 }
+
+// Las peticiones de la iglesia: salen en el momento de oración de cada servicio que no traiga las suyas
+export type ChurchPrayers = {
+  prayerGuide: string | null
+}

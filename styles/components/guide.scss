@@ -101,6 +101,38 @@
   font-weight: 600;
 }
 
+// Los sub-puntos van bajo su punto, alineados con el texto (después del número)
+.closing-guide-subitems {
+  margin: 0.25em 0 0 2.2em;
+  padding: 0;
+  color: var(--guide-muted);
+  font-size: 0.88em;
+  font-weight: 500;
+  list-style: none;
+
+  li {
+    position: relative;
+    padding-left: 0.9em;
+
+    &::before {
+      position: absolute;
+      left: 0;
+      content: "–";
+      color: var(--guide-accent);
+    }
+  }
+}
+
+// La frase final entre comillas ("Si tiene una petición…")
+.closing-guide-quote {
+  margin: 0.4em 0 0;
+  padding-left: 0.8em;
+  border-left: 3px solid color-mix(in srgb, var(--guide-accent) 45%, transparent);
+  color: var(--guide-muted);
+  font-style: italic;
+  font-weight: 500;
+}
+
 .closing-guide-marker {
   display: inline-flex;
   flex-shrink: 0;
