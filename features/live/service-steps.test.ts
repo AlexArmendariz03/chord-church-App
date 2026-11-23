@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { guideAfterIndexOf, guideStepsOf, nextPosition, prevPosition, tapZone, type LivePosition, type StepsContext } from "./service-steps"
+import { guideAfterIndexOf, guideStepsOf, nextPosition, prevPosition, tapZone, upNextOf, type LivePosition, type StepsContext } from "./service-steps"
 
 // Cuatro alabanzas: 0 y 1 de júbilo, 2 de adoración y 3 la ofrenda. La guía va después de la 2.
 const CONTEXT: StepsContext = { songCount: 4, pageCount: 1, guideAfterIndex: 2, guideSteps: ["prayer", "announcements"] }
@@ -99,5 +99,29 @@ describe("tapZone", () => {
 
   it("sin ancho medido no cambia nada", () => {
     expect(tapZone(10, 0)).toBe("center")
+  })
+})
+
+describe("upNextOf", () => {
+  const songs = [
+    { id: "a", isOffering: false, song: { name: "Alza tus ojos y mira", key: "Gm" } },
+    { id: "b", isOffering: false, song: { name: "Algo está cayendo aquí", key: "G" } },
+    { id: "c", isOffering: true, song: { name: "Alzaré mis ojos", key: "C" } }
+  ]
+  const context = { songs, pageCount: 1, guideSteps: ["prayer" as const], keyOf: (song: (typeof songs)[number]) => song.song.key }
+  const at = (songIndex: number, pageIndex = 0, guideStep: number | null = null): LivePosition => ({ songIndex, pageIndex, guideStep })
+
+  it("con más páginas en la alabanza, dice en qué página va", () => {
+    expect(upNextOf(at(0), at(0, 1), { ...context, pageCount: 2 })).toEqual({ label: "Página", detail: "1 de 2" })
+  })
+
+  it("en la última página dice la alabanza que sigue con el tono en que va a salir", () => {
+    expect(upNextOf(at(0, 1), at(1), { ...context, pageCount: 2, keyOf: () => "A" })).toEqual({ label: "Sigue:", detail: "Algo está cayendo aquí · A" })
+  })
+
+  it("avisa cuando sigue la ofrenda, un paso de la guía o el fin del servicio", () => {
+    expect(upNextOf(at(1), at(2), context)).toEqual({ label: "Sigue · Ofrenda:", detail: "Alzaré mis ojos · C" })
+    expect(upNextOf(at(1), at(1, 0, 0), context)).toEqual({ label: "Sigue:", detail: "Oración" })
+    expect(upNextOf(at(2), null, context)).toEqual({ label: "Sigue:", detail: "Fin del servicio" })
   })
 })

@@ -54,7 +54,10 @@ export const LiveSongList = ({
             }))} />
         </div>
       ) : (
-        <Title level={4} style={{ marginTop: 0 }}>{service.title}</Title>
+        <div>
+          <Title level={4} style={{ margin: 0 }}>{service.title}</Title>
+          {!bare && <Text type="secondary">{formatServiceDate(service.eventDate)}</Text>}
+        </div>
       )}
       {service.songs.map(({ id, song, category, position, isOffering }, index) => (
         <Fragment key={id}>
@@ -94,8 +97,6 @@ export const LiveSongList = ({
   return (
     <Card
       data-tour="lista-en-curso" title="Alabanzas programadas"
-      // With several services the picker already shows each date
-      extra={services.length > 1 ? null : <Text strong>{formatServiceDate(service.eventDate)}</Text>}
       style={{ height: "100%" }}>
       {list}
     </Card>

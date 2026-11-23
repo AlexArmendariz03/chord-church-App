@@ -1,6 +1,6 @@
 "use client"
 
-import { ClockCircleOutlined, CustomerServiceOutlined, DownOutlined, MoreOutlined, PlayCircleOutlined } from "@ant-design/icons"
+import { ClockCircleOutlined, CustomerServiceOutlined, DownOutlined, MoreOutlined, PlayCircleOutlined, RightOutlined } from "@ant-design/icons"
 import { Button, Dropdown } from "antd"
 import dayjs from "dayjs"
 import "dayjs/locale/es"
@@ -20,6 +20,8 @@ type ServiceCardProps = {
   // Past services: start a new one with the same songs
   onReuse?: () => void
   onDelete?: () => void
+  // Tocar una alabanza la abre para ensayarla (quien puede ver el cancionero)
+  onOpenSong?: (song: ServiceSummary["songs"][number]["song"]) => void
 }
 
 // "Hoy", "Mañana", "En 5 días"; "En curso" once it has started; "Ayer", "Hace 3 días" once it's over
@@ -38,7 +40,7 @@ const relativeLabel = (eventDate: string) => {
   return `En ${days} días`
 }
 
-export const ServiceCard = ({ service, isNext = false, onOpen, onEdit, onReuse, onDelete }: ServiceCardProps) => {
+export const ServiceCard = ({ service, isNext = false, onOpen, onEdit, onReuse, onDelete, onOpenSong }: ServiceCardProps) => {
   const { can } = useSession()
   // Sin En curso, esta lista es lo único que ve el usuario: todas las tarjetas van abiertas
   const [expanded, setExpanded] = useState(isNext || !can("goLive"))
@@ -110,14 +112,28 @@ export const ServiceCard = ({ service, isNext = false, onOpen, onEdit, onReuse, 
 
       {expanded && songs.length > 0 && (
         <ol className="service-card-songs">
-          {songs.map(({ id, song, category, position, isOffering }) => (
-            <li key={id} className={`service-card-song is-${isOffering ? "ofrenda" : category}`}>
-              <span className="service-card-song-number">{position}</span>
-              <span className="service-card-song-name">{song.name}</span>
-              {isOffering && <span className="service-card-song-badge">Ofrenda</span>}
-              {can("seeKeys") && <span className="service-card-song-key">{song.key}</span>}
-            </li>
-          ))}
+          {songs.map(({ id, song, category, position, isOffering }) => {
+            const content = (
+              <>
+                <span className="service-card-song-number">{position}</span>
+                <span className="service-card-song-name">{song.name}</span>
+                {isOffering && <span className="service-card-song-badge">Ofrenda</span>}
+                {can("seeKeys") && <span className="service-card-song-key">{song.key}</span>}
+                {onOpenSong && <RightOutlined className="service-card-song-chevron" />}
+              </>
+            )
+            return (
+              <li key={id} className={`service-card-song is-${isOffering ? "ofrenda" : category} ${onOpenSong ? "is-clickable" : ""}`}>
+                {onOpenSong ? (
+                  <button
+                    type="button" className="service-card-song-button"
+                    aria-label={`Ensayar ${song.name}`} onClick={() => onOpenSong(song)}>
+                    {content}
+                  </button>
+                ) : content}
+              </li>
+            )
+          })}
         </ol>
       )}
 

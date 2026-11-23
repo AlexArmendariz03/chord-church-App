@@ -4,7 +4,7 @@ import { Fragment } from "react"
 import { LeftOutlined, RightOutlined } from "@ant-design/icons"
 import { Button, Typography } from "antd"
 import type { ServiceWithSongs } from "@/features/services/types"
-import type { GuideStep } from "../../service-steps"
+import type { GuideStep, UpNext } from "../../service-steps"
 
 const { Text } = Typography
 
@@ -20,10 +20,13 @@ type LiveNavProps = {
   canNext: boolean
   onPrev: () => void
   onNext: () => void
+  // La página que sigue o lo que sigue en el servicio, para prepararse
+  // Sin él (el dirigente en teléfono ya lo ve en su tarjeta) solo quedan los puntos
+  upNext?: UpNext
 }
 
 // Anterior / Siguiente under the lyrics, with a dot per song (and one per step of the leader's guide)
-export const LiveNav = ({ songs, activeSongId, guideSteps, guideStepIndex, guideAfterIndex, pageIndex, pageCount, canPrev, canNext, onPrev, onNext }: LiveNavProps) => {
+export const LiveNav = ({ songs, activeSongId, guideSteps, guideStepIndex, guideAfterIndex, pageIndex, pageCount, canPrev, canNext, onPrev, onNext, upNext }: LiveNavProps) => {
   const isGuideOpen = guideStepIndex !== null
   return (
     <div className="current-service-nav" data-tour="navegacion">
@@ -44,8 +47,14 @@ export const LiveNav = ({ songs, activeSongId, guideSteps, guideStepIndex, guide
             </Fragment>
         ))}
         </div>
-        {pageCount > 1 && !isGuideOpen && <Text type="secondary" className="current-service-page">Página {pageIndex + 1} de {pageCount}</Text>}
       </div>
+      {upNext && (
+        <Text
+          type="secondary" className="current-service-up-next"
+          title={`${upNext.label} ${upNext.detail}`}>
+          {upNext.label} <strong>{upNext.detail}</strong>
+        </Text>
+      )}
       <Button
         size="large" type="primary"
         disabled={!canNext} onClick={onNext}>

@@ -15,10 +15,10 @@ import { useStageMode } from "../hooks/use-stage-mode"
 import { useViewportClass } from "../hooks/use-viewport-class"
 import { useWakeLock } from "../hooks/use-wake-lock"
 import { FONT_LIMITS, LyricsPager, type LyricsLayoutInfo } from "./lyrics-pager"
-import { displaySemitones } from "@/shared/lyrics/transpose"
+import { displaySemitones, transposeKey } from "@/shared/lyrics/transpose"
 import { pickCurrentService } from "../../pick-current-service"
 import { formatServiceDate } from "@/shared/utils/dates"
-import { GUIDE_STEP_LABELS, guideStepsOf, type GuideStep } from "../../service-steps"
+import { GUIDE_STEP_LABELS, guideStepsOf, upNextOf, type GuideStep } from "../../service-steps"
 import { ClosingGuide } from "./closing-guide"
 import { LeaderSlide } from "./leader-slide"
 import { LiveNav } from "./live-nav"
@@ -93,6 +93,12 @@ const LiveService = () => {
   // Lo que sigue después de lo que se ve, para la vista del dirigente
   const nextGuideStep = next?.guideStep != null ? guideSteps[next.guideStep] : null
   const nextLabel = nextGuideStep ? GUIDE_STEP_LABELS[nextGuideStep] : next && songs[next.songIndex]?.song.name
+  // Abajo de la letra: la página o lo que sigue, en el tono en que cada quien la va a tocar
+  const upNext = upNextOf(
+    { songIndex: activeIndex, pageIndex, guideStep: guideStepIndex },
+    next,
+    { songs, pageCount, guideSteps, keyOf: song => transposeKey(song.song.key, transposeBySong[song.id] ?? 0) }
+  )
   // Tableta y pantalla completa: tocar un lado de la pantalla cambia de página o de paso
   const sideTaps = (variant: "light" | "stage") => variant === "stage" || viewport === "tablet"
 
@@ -243,7 +249,8 @@ const LiveService = () => {
         guideAfterIndex={guideAfterIndex}
         pageIndex={pageIndex} pageCount={pageCount}
         canPrev={canPrev} canNext={canNext}
-        onPrev={goPrev} onNext={goNext} />
+        onPrev={goPrev} onNext={goNext}
+        upNext={isLeaderView && isCompact ? undefined : upNext} />
     </Card>
   ) : (
     <Empty description="Este servicio no tiene alabanzas" />
