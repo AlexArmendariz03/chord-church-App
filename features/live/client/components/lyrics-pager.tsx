@@ -5,6 +5,7 @@ import { autoLayout, fitWidthSize, layoutLyrics, REFERENCE_SIZE, wrappingSizes, 
 import { parseLyrics, stanzaKind, toUnits, type SectionKind, type Unit } from "@/shared/lyrics/parse-lyrics"
 import { toWords } from "@/shared/lyrics/words"
 import type { ViewportClass } from "../hooks/use-viewport-class"
+import { handleSideTap } from "../side-tap"
 
 // Section labels can be long ("Estrofa 2 (misma secuencia que…)"); they truncate, and only
 // this much of them counts toward the column width when the row also carries chords.
@@ -55,7 +56,9 @@ type LyricsPagerProps = {
   viewport: ViewportClass
   onLayout: Dispatch<LyricsLayoutInfo>
   onNavigate: Dispatch<"prev" | "next">
-  // Stage only: the left/right thirds of the lyrics turn the page, the middle calls this
+  // Tableta y pantalla completa: tocar el lado izquierdo o derecho de la letra cambia de página
+  sideTaps: boolean
+  // Stage only: tapping the middle of the lyrics calls this
   onCenterTap?: () => void
 }
 
@@ -133,6 +136,7 @@ export const LyricsPager = ({
   viewport,
   onLayout,
   onNavigate,
+  sideTaps,
   onCenterTap
 }: LyricsPagerProps) => {
   const areaRef = useRef<HTMLDivElement | null>(null)
@@ -246,12 +250,7 @@ export const LyricsPager = ({
       swipedRef.current = false
       return
     }
-    if (!onCenterTap || window.getSelection()?.toString()) return
-    const rect = event.currentTarget.getBoundingClientRect()
-    const x = (event.clientX - rect.left) / rect.width
-    if (x < 0.3) onNavigate("prev")
-    else if (x > 0.7) onNavigate("next")
-    else onCenterTap()
+    handleSideTap(event, { sideTaps, onNavigate, onCenterTap })
   }
 
   const handleTouchStart = (event: TouchEvent) => {
