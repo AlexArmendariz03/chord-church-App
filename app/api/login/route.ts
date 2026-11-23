@@ -11,13 +11,14 @@ const APP_CLIENT_HEADER = "x-chord-client"
 
 export async function POST(request: Request) {
   try {
-    const { username, password } = (await request.json()) as { username?: unknown; password?: unknown }
+    const { username, password, churchId } = (await request.json()) as { username?: unknown; password?: unknown; churchId?: unknown }
 
     if (typeof username !== "string" || typeof password !== "string" || !username.trim() || !password) {
       return errorResponse("Faltan campos obligatorios", 400)
     }
 
-    if (username.length > MAX_FIELD_LENGTH || password.length > MAX_FIELD_LENGTH) {
+    const badChurch = churchId !== undefined && (typeof churchId !== "string" || churchId.length > MAX_FIELD_LENGTH)
+    if (username.length > MAX_FIELD_LENGTH || password.length > MAX_FIELD_LENGTH || badChurch) {
       return errorResponse("Usuario o contraseña incorrectos", 401)
     }
 
@@ -28,21 +29,25 @@ export async function POST(request: Request) {
       return errorResponse(`Demasiados intentos. Vuelve a intentarlo en ${minutes} min.`, 429, { headers: { "Retry-After": String(minutes * 60) } })
     }
 
-    const response = await loginUser({ username, password })
+    const response = await loginUser({ username, password, churchId: typeof churchId === "string" && churchId ? churchId : undefined })
 
-    if (response.status !== 200 || !response.role || !response.churchId) {
+    if (response.status === 409) {
+      // La contraseña sí era correcta: no cuenta como intento fallido
+      return NextResponse.json({ message: response.message, churches: response.churches }, { status: 409 })
+    }
+    if (response.status !== 200) {
       recordFailure(normalizedUsername, ip)
       return NextResponse.json({ message: response.message }, { status: response.status })
     }
 
     clearFailures(normalizedUsername, ip)
-    const user = { username: normalizedUsername, role: response.role, churchId: response.churchId }
+    const { user } = response
     if (request.headers.get(APP_CLIENT_HEADER) === "app") {
       const token = await signSession(user, APP_SESSION_MAX_AGE)
-      return NextResponse.json({ message: response.message, role: response.role, username: user.username, token })
+      return NextResponse.json({ message: response.message, role: user.role, username: user.username, token })
     }
     await setSessionCookie(user)
-    return NextResponse.json({ message: response.message, role: response.role })
+    return NextResponse.json({ message: response.message, role: user.role })
   } catch (error) {
     console.error(error)
     return errorResponse("Error del servidor", 500)

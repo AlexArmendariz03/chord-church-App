@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import { Prisma } from "@/generated/prisma/client"
 import { errorResponse, handle } from "@/shared/server/http"
 import type { SessionUser } from "@/shared/server/session"
+import { isSessionAccount } from "@/features/auth/server/session-account"
 import { parseNewUser, parseUserUpdate, type NewUserBody, type UserUpdateBody } from "./user-input"
 import { createUser, findUser, listUsers, updateUser } from "./user-queries"
 
@@ -22,9 +23,9 @@ export const createUserResponse = (churchId: string, req: Request) =>
     try {
       return NextResponse.json(await createUser(churchId, parsed.data), { status: 201 })
     } catch (error) {
-      // El nombre de usuario es único en toda la app, también entre iglesias
+      // El nombre de usuario es único dentro de la iglesia (en otra iglesia sí puede repetirse)
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-        return errorResponse(`Ya existe el usuario "${parsed.data.username}", aquí o en otra iglesia`, 409)
+        return errorResponse(`Ya existe el usuario "${parsed.data.username}" en esta iglesia`, 409)
       }
       throw error
     }
@@ -41,7 +42,7 @@ export const updateUserResponse = (churchId: string, sessionUser: SessionUser, r
     const target = await findUser(churchId, id)
     if (!target) return errorResponse(NOT_FOUND, 404)
     // Quitarse el rol a uno mismo dejaría la app sin quien administre usuarios
-    if (target.username === sessionUser.username && parsed.data.role && parsed.data.role !== target.role) {
+    if (isSessionAccount(sessionUser, { ...target, churchId }) && parsed.data.role && parsed.data.role !== target.role) {
       return errorResponse("No puedes cambiar tu propio rol", 400)
     }
     // Un master solo cambia de rol con el script create-user
