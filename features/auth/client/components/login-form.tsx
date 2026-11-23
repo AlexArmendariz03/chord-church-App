@@ -1,29 +1,42 @@
 "use client"
 
-import { LockOutlined, UserOutlined } from "@ant-design/icons"
-import type { LoginFormData } from "@/features/auth/types"
-import { App, Button, Card, Col, Form, Input, Row } from "antd"
+import { BankOutlined, LockOutlined, UserOutlined } from "@ant-design/icons"
+import type { LoginChurchChoice, LoginFormData } from "@/features/auth/types"
+import { Alert, App, Button, Card, Col, Form, Input, Row, Select } from "antd"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { errorMessage } from "@/shared/client/api"
-import { authApi } from "../auth-api"
+import { authApi, churchChoicesOf } from "../auth-api"
 
 const LoginForm = () => {
   const router = useRouter()
   const { message } = App.useApp()
+  const [form] = Form.useForm<LoginFormData>()
   const [submitting, setSubmitting] = useState(false)
+  // Solo si esa cuenta existe en más de una iglesia: se elige con cuál entrar
+  const [churchChoices, setChurchChoices] = useState<LoginChurchChoice[] | null>(null)
+
+  // Si cambia el usuario o la contraseña, la elección de iglesia ya no aplica
+  const onValuesChange = (changed: Partial<LoginFormData>) => {
+    if (churchChoices && ("username" in changed || "password" in changed)) {
+      setChurchChoices(null)
+      form.setFieldValue("churchId", undefined)
+    }
+  }
 
   const onFinish = async (values: LoginFormData) => {
     setSubmitting(true)
     try {
-      const { message: welcome } = await authApi.login({ username: values.username, password: values.password })
+      const { message: welcome } = await authApi.login({ username: values.username, password: values.password, churchId: values.churchId })
       message.success(welcome)
       // El botón sigue cargando hasta que se abre el dashboard; replace para que "atrás" no regrese al login
       router.replace("/dashboard")
     } catch (error) {
-      message.error(errorMessage(error, "Error al intentar iniciar sesión"))
+      const choices = churchChoicesOf(error)
+      if (choices) setChurchChoices(choices)
+      else message.error(errorMessage(error, "Error al intentar iniciar sesión"))
       setSubmitting(false)
     }
   }
@@ -47,8 +60,9 @@ const LoginForm = () => {
         </div>
         <Card className="login-card">
           <Form
-            layout="vertical" size="large"
-            onFinish={onFinish}>
+            form={form} layout="vertical"
+            size="large" onFinish={onFinish}
+            onValuesChange={onValuesChange}>
             <Form.Item name="username" rules={[{ required: true, message: "Escribe tu usuario" }]}>
               <Input
                 prefix={<UserOutlined />} placeholder="Usuario"
@@ -59,6 +73,20 @@ const LoginForm = () => {
                 prefix={<LockOutlined />} placeholder="Contraseña"
                 autoComplete="current-password" />
             </Form.Item>
+            {churchChoices && (
+              <>
+                <Alert
+                  type="info" showIcon
+                  className="login-church-alert" title="Tienes cuenta en más de una iglesia" />
+                <Form.Item
+                  name="churchId" label="¿Con qué iglesia entras?"
+                  rules={[{ required: true, message: "Elige tu iglesia" }]}>
+                  <Select
+                    prefix={<BankOutlined />} placeholder="Elige tu iglesia"
+                    options={churchChoices.map(church => ({ value: church.id, label: church.name }))} />
+                </Form.Item>
+              </>
+            )}
             <Form.Item style={{ marginBottom: 0 }}>
               <Button
                 type="primary" htmlType="submit"

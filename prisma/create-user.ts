@@ -1,7 +1,7 @@
 // Creates or updates a user in the database.
 // Usage: npm run create-user -- <usuario> <contraseña> [leader|musico|proyeccion|master] [iglesia]
-// La iglesia es su id o su nombre exacto. Sin ella, un usuario nuevo va a El Palomar y uno
-// que ya existe se queda en la suya. El master solo se crea aquí: la app no deja asignar ese rol.
+// La iglesia es su id o su nombre exacto; sin ella, El Palomar. El usuario es único dentro de su
+// iglesia: si ya existe ahí, se le cambia la contraseña y el rol. El master solo se crea aquí.
 import bcrypt from "bcryptjs"
 import { UserRole } from "../generated/prisma/enums"
 import { prisma } from "../shared/server/prisma"
@@ -39,8 +39,9 @@ const main = async (userRole: UserRole) => {
       return
     }
     const saved = await prisma.user.upsert({
-      where: { username: normalizedUsername },
-      update: { password: hashedPassword, role: userRole, ...(churchArg ? { churchId: church.id } : {}) },
+      // El usuario es único dentro de su iglesia: si ya existe ahí, se le cambia la contraseña y el rol
+      where: { churchId_username: { churchId: church.id, username: normalizedUsername } },
+      update: { password: hashedPassword, role: userRole },
       create: { username: normalizedUsername, password: hashedPassword, role: userRole, churchId: church.id },
       select: { church: { select: { name: true } } }
     })

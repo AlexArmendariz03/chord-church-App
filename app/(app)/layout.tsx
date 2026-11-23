@@ -13,7 +13,7 @@ import { getSessionUser } from "@/shared/server/session"
 export default async function AppLayout({ children }: PropsWithChildren) {
   const user = await getSessionUser()
   const [accountTheme, church] = user
-    ? await Promise.all([findAccountTheme(user.username), findChurchSafely(user.churchId)])
+    ? await Promise.all([findAccountTheme(user), findChurchSafely(user.churchId)])
     : [null, null]
 
   return (
