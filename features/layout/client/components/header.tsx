@@ -131,7 +131,9 @@ const HeaderBar = () => {
       <Drawer
         open={isMenuOpen} onClose={() => setIsMenuOpen(false)}
         placement="left" size={300}
-        closable={false} rootClassName="mobile-nav-drawer">
+        closable={false} rootClassName="mobile-nav-drawer"
+        // Se vuelve a montar al abrirlo, para que sus partes entren de nuevo
+        destroyOnHidden>
         <div className="mobile-nav">
           <div className="mobile-nav-top">
             <span className="brand-emblem is-small">

@@ -47,11 +47,11 @@ $ease-spring: cubic-bezier(0.3, 1.5, 0.5, 1);
   animation: none;
 }
 
-// Listas: entran una tras otra, solo las primeras para no hacer esperar
+// Listas: entran una tras otra, solo las primeras para no hacer esperar. En Alabanzas y Usuarios
+// cada fila va sola dentro de su .ant-listy-item: el orden se cuenta en esa envoltura
 .dashboard .ant-row > .ant-col,
 .service-list > .service-card,
-.list-panel .song-row,
-.list-panel .users-row {
+.list-panel .ant-listy-item {
   animation: motion-rise 0.42s $ease-out backwards;
 
   @for $i from 1 through 10 {
@@ -160,13 +160,317 @@ $ease-spring: cubic-bezier(0.3, 1.5, 0.5, 1);
   }
 }
 
+// ——— Segunda capa: detalles que se mueven al usarlos ———
+
+// El ángulo del borde de luz se anima solo si el navegador sabe que es un ángulo
+@property --motion-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes motion-spin {
+  to {
+    --motion-angle: 360deg;
+  }
+}
+
+@keyframes motion-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes motion-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+}
+
+@keyframes motion-sheen {
+  from {
+    transform: translateX(-140%) skewX(-20deg);
+  }
+
+  to {
+    transform: translateX(260%) skewX(-20deg);
+  }
+}
+
+@keyframes motion-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(6%, -4%) scale(1.12);
+  }
+}
+
+@keyframes motion-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+}
+
+// Menú de arriba: la línea de la página activa crece desde el centro y el ícono sube un poco
+.nav-menu.ant-menu-horizontal > .ant-menu-item {
+  &::after {
+    transform: scaleX(0);
+    transition: transform 0.35s $ease-out, border-color 0.2s ease !important;
+  }
+
+  &:hover::after,
+  &.ant-menu-item-selected::after {
+    transform: scaleX(1);
+  }
+
+  .anticon {
+    transition: transform 0.25s $ease-spring;
+  }
+
+  &:hover .anticon {
+    transform: translateY(-2px);
+  }
+}
+
+// Avatar del usuario: responde con un pequeño rebote
+.user .user-avatar,
+.mobile-avatar .user-avatar {
+  transition: transform 0.3s $ease-spring;
+}
+
+.user:hover .user-avatar,
+.mobile-avatar:active .user-avatar {
+  transform: scale(1.08);
+}
+
+// Menú del teléfono: cada parte entra deslizándose desde la orilla, una tras otra
+.mobile-nav-drawer .mobile-nav > *,
+.mobile-nav-drawer .mobile-nav-menu .ant-menu-item {
+  animation: motion-slide-in 0.4s $ease-out backwards;
+}
+
+.mobile-nav-drawer .mobile-nav > * {
+  @for $i from 1 through 8 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{40 + $i * 40}ms;
+    }
+  }
+}
+
+.mobile-nav-drawer .mobile-nav-menu .ant-menu-item {
+  @for $i from 1 through 8 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{140 + $i * 45}ms;
+    }
+  }
+}
+
+// Inicio: el ícono de cada atajo se vuelve azul y gira un poco al pasar
+.dashboard .dashboard-card {
+  .dashboard-card-icon-wrap {
+    transition: transform 0.35s $ease-spring, background 0.25s ease;
+  }
+
+  .dashboard-card-icon {
+    transition: color 0.25s ease;
+  }
+
+  &:hover .dashboard-card-icon-wrap {
+    background: var(--app-accent-gradient);
+    transform: rotate(-8deg) scale(1.08);
+  }
+
+  &:hover .dashboard-card-icon {
+    color: #fff;
+  }
+}
+
+// El próximo servicio: una luz recorre su borde despacio
+.service-card.is-next::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--motion-angle),
+    transparent 0deg,
+    rgba(var(--app-accent-rgb), 0.85) 50deg,
+    transparent 110deg,
+    transparent 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: motion-spin 7s linear infinite;
+}
+
+// Al abrir las canciones de una tarjeta, aparecen una tras otra
+.service-card-songs > li {
+  animation: motion-rise 0.32s $ease-out backwards;
+
+  @for $i from 1 through 12 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 30}ms;
+    }
+  }
+}
+
+// El tono de cada alabanza resalta al pasar por la fila
+.service-card-song-key,
+.song-row-key {
+  transition: transform 0.25s $ease-spring;
+}
+
+.service-card-song-button:hover .service-card-song-key,
+.song-row:hover .song-row-key {
+  transform: scale(1.1);
+}
+
+.service-card-song-chevron {
+  transition: transform 0.25s $ease-out;
+}
+
+.service-card-song-button:hover .service-card-song-chevron {
+  transform: translateX(3px);
+}
+
+// Botones principales: un destello cruza al pasar el mouse
+.login-card .ant-btn-primary,
+.service-card-footer .ant-btn-primary,
+.page-header .ant-btn-primary {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+    transform: translateX(-140%) skewX(-20deg);
+    pointer-events: none;
+  }
+
+  &:not(:disabled):hover::after {
+    animation: motion-sheen 0.75s ease;
+  }
+}
+
+// Pestañas (Júbilo / Adoración): la lista nueva aparece suave
+.ant-tabs-tabpane-active {
+  animation: motion-fade 0.3s ease;
+}
+
+// Sin resultados: el dibujo flota
+.ant-empty-image {
+  animation: motion-float 4s ease-in-out infinite;
+}
+
+// Vista para ensayar: las estrofas entran una tras otra al abrir la alabanza
+.song-preview .lyrics-stanza {
+  animation: motion-rise 0.4s $ease-out backwards;
+
+  @for $i from 1 through 8 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{60 + $i * 55}ms;
+    }
+  }
+}
+
+// En curso: el punto de la alabanza actual se estira en una píldora (sin tocar la letra)
+.current-service-progress-dot {
+  transition: width 0.3s $ease-out, background 0.2s ease;
+
+  &.is-active {
+    width: 22px;
+    border-radius: 999px;
+    transform: none;
+  }
+}
+
+// Lista de En curso: la fila se recorre un poco al pasar
+.current-service-song-row {
+  transition: transform 0.2s $ease-out, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover:not(.is-active) {
+    transform: translateX(4px);
+  }
+}
+
+// Login: dos manchas de luz se mueven lento detrás de la tarjeta
+.login-container {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    width: 60vmax;
+    height: 60vmax;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.55;
+    pointer-events: none;
+    animation: motion-drift 18s ease-in-out infinite;
+  }
+
+  &::before {
+    top: -25vmax;
+    left: -20vmax;
+    background: radial-gradient(circle, rgba(var(--app-accent-rgb), 0.35), transparent 65%);
+  }
+
+  &::after {
+    right: -22vmax;
+    bottom: -28vmax;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.3), transparent 65%);
+    animation-delay: -9s;
+    animation-direction: reverse;
+  }
+}
+
+// Listas largas: lo que pasa de las primeras filas aparece al llegar a la pantalla al bajar
+@supports (animation-timeline: view()) {
+  .list-panel .ant-listy-item:nth-child(n + 11),
+  .service-list > .service-card:nth-child(n + 11) {
+    animation: motion-reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 70%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .layout .content > *,
   .dashboard .ant-row > .ant-col,
   .service-list > .service-card,
-  .list-panel .song-row,
-  .list-panel .users-row,
+  .list-panel .ant-listy-item,
   .next-service-card,
+  .mobile-nav-drawer *,
+  .service-card.is-next::after,
+  .service-card-songs > li,
+  .ant-tabs-tabpane-active,
+  .ant-empty-image,
+  .song-preview .lyrics-stanza,
+  .login-container::before,
+  .login-container::after,
+  .ant-btn-primary::after,
   .dashboard .dashboard-hero,
   .login-container *,
   ::view-transition-new(root) {
@@ -175,7 +479,14 @@ $ease-spring: cubic-bezier(0.3, 1.5, 0.5, 1);
 
   .service-card:hover,
   .ant-btn:not(:disabled):active,
-  .brand:hover .brand-emblem {
-    transform: none;
+  .brand:hover .brand-emblem,
+  .nav-menu .ant-menu-item:hover .anticon,
+  .user:hover .user-avatar,
+  .dashboard .dashboard-card:hover .dashboard-card-icon-wrap,
+  .service-card-song-button:hover .service-card-song-key,
+  .service-card-song-button:hover .service-card-song-chevron,
+  .song-row:hover .song-row-key,
+  .current-service-song-row:hover {
+    transform: none !important;
   }
 }
