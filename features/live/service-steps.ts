@@ -67,3 +67,22 @@ export const tapZone = (x: number, width: number): TapZone => {
   const fraction = x / width
   return fraction < 0.3 ? "prev" : fraction > 0.7 ? "next" : "center"
 }
+
+// Lo que se ve abajo de la letra en la navegación: la página que sigue si la alabanza tiene más,
+// y si no, qué sigue en el servicio ("Algo está cayendo aquí · G", "Oración", "Fin del servicio").
+// keyOf da el tono en que va a salir cada alabanza (con lo que el músico la haya transportado).
+export type UpNext = { label: string; detail: string }
+
+export const upNextOf = <Song extends { id: string; isOffering: boolean; song: { name: string; key: string } }>(
+  position: LivePosition,
+  next: LivePosition | null,
+  context: { songs: Song[]; pageCount: number; guideSteps: GuideStep[]; keyOf: (song: Song) => string }
+): UpNext => {
+  if (position.guideStep === null && position.pageIndex < context.pageCount - 1) {
+    return { label: "Página", detail: `${position.pageIndex + 1} de ${context.pageCount}` }
+  }
+  if (!next) return { label: "Sigue:", detail: "Fin del servicio" }
+  if (next.guideStep !== null) return { label: "Sigue:", detail: GUIDE_STEP_LABELS[context.guideSteps[next.guideStep]] }
+  const song = context.songs[next.songIndex]
+  return { label: song.isOffering ? "Sigue · Ofrenda:" : "Sigue:", detail: `${song.song.name} · ${context.keyOf(song)}` }
+}

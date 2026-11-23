@@ -197,12 +197,34 @@
   box-shadow: 0 18px 45px var(--app-shadow);
 }
 
+// Anterior y Siguiente a los lados; en medio los puntos y, abajo de ellos, lo que sigue
 .current-service-nav {
-  display: flex;
+  display: grid;
+  grid-template-areas:
+    "prev center next"
+    "prev up next";
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  column-gap: 12px;
+  row-gap: 4px;
   margin-top: 16px;
+
+  > .ant-btn:first-child {
+    grid-area: prev;
+  }
+
+  > .ant-btn:last-child {
+    grid-area: next;
+  }
+
+  > .current-service-nav-center {
+    grid-area: center;
+  }
+
+  > .current-service-up-next {
+    grid-area: up;
+    justify-self: center;
+  }
 }
 
 .current-service-nav-center {
@@ -212,9 +234,23 @@
   gap: 6px;
 }
 
-.current-service-page {
+.current-service-nav-center {
+  min-width: 0;
+}
+
+// "Sigue: Algo está cayendo aquí · G": una línea, se corta con … si no cabe
+.current-service-up-next {
+  max-width: 100%;
+  overflow: hidden;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  strong {
+    color: var(--app-ink);
+    font-weight: 600;
+  }
 }
 
 // Teléfono y tableta (< 1024px, ver use-viewport-class): LiveService envuelve la vista en
@@ -285,11 +321,15 @@
     overscroll-behavior: contain;
   }
 
-  // Siempre a la vista, por encima de la barra de inicio del iPhone
+  // Siempre a la vista, por encima de la barra de inicio del iPhone. Lo que sigue va en su
+  // propia línea arriba de los botones: entre ellos no cabe el nombre completo
   .current-service-nav {
     flex: none;
-    flex-wrap: nowrap;
-    gap: 8px;
+    grid-template-areas:
+      "up up up"
+      "prev center next";
+    column-gap: 8px;
+    row-gap: 6px;
     margin-top: 10px;
     padding-bottom: max(12px, env(safe-area-inset-bottom));
 

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 import { useSession } from "@/features/auth/client/session-provider"
 import { ServiceCard } from "@/features/services/client/components/service-card"
+import { SongPreview } from "@/features/songs/client/components/song-preview"
 import { servicesApi } from "@/features/services/client/services-api"
 import { ROLE_LABELS, type Role } from "@/shared/auth/permissions"
 import { useConfirmDelete } from "@/shared/client/use-confirm-delete"
@@ -19,7 +20,7 @@ const { Title, Paragraph } = Typography
 const SUBTITLES: Record<Role, string> = {
   master: "Administra alabanzas, servicios y todo lo de la app.",
   leader: "Administra alabanzas y arma los próximos servicios.",
-  musico: "Abre el servicio en curso para seguir las letras en vivo.",
+  musico: "Toca una alabanza para ensayarla en su tono y abre el servicio en vivo el día que toque.",
   proyeccion: "Aquí están las alabanzas de cada servicio, en el orden en que se proyectan."
 }
 
@@ -50,6 +51,9 @@ const Dashboard = () => {
   const { user, role, can } = useSession()
   const canManage = can("manageServices")
   const canGoLive = can("goLive")
+  // Las alabanzas de cada servicio se abren para ensayarlas
+  const canViewSongs = can("viewSongs")
+  const [previewSong, setPreviewSong] = useState<ServiceSummary["songs"][number]["song"] | null>(null)
   const [services, setServices] = useState<ServiceSummary[]>([])
   const [loadingService, setLoadingService] = useState(true)
   const [loadError, setLoadError] = useState(false)
@@ -115,14 +119,7 @@ const Dashboard = () => {
               </Col>
             ))}
           </Row>
-        ) : canGoLive && (
-          <Button
-            type="primary" size="large"
-            icon={<PlayCircleOutlined />} data-tour="abrir-en-curso"
-            onClick={() => navigateTo("/en-curso")}>
-            Abrir servicio en curso
-          </Button>
-        )}
+        ) : null}
       </div>
 
       <Card
@@ -146,7 +143,8 @@ const Dashboard = () => {
                 isNext={index === 0}
                 onOpen={!canGoLive ? undefined : () => navigateTo(`/en-curso?servicio=${service.id}`)}
                 onEdit={canManage ? () => navigateTo(`/servicios?edit=${service.id}`) : undefined}
-                onDelete={canManage ? () => deleteService(service) : undefined} />
+                onDelete={canManage ? () => deleteService(service) : undefined}
+                onOpenSong={canViewSongs ? setPreviewSong : undefined} />
             ))}
           </div>
         ) : (
@@ -162,6 +160,8 @@ const Dashboard = () => {
           </Empty>
         )}
       </Card>
+
+      <SongPreview song={previewSong} onClose={() => setPreviewSong(null)} />
     </div>
   )
 }

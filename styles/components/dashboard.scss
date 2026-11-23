@@ -24,6 +24,11 @@
     color: $primary-typography;
     max-width: 480px;
     margin: 0 auto 24px !important;
+
+    // Sin atajos abajo (músico y proyección) no hace falta el espacio
+    &:last-child {
+      margin-bottom: 0 !important;
+    }
   }
 
   .dashboard-card {

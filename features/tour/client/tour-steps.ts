@@ -175,14 +175,14 @@ const MUSICIAN_STEPS: Partial<Record<TourPage, TourStep[]>> = {
     },
     MENU_STEP,
     {
-      target: "abrir-en-curso",
-      title: "Servicio en curso",
-      description: "Abre el servicio de hoy para seguir las letras y los acordes."
-    },
-    {
       target: "proximos",
       title: "Próximos servicios",
-      description: "Las alabanzas de cada servicio en orden, con su tono, para ensayar con tiempo."
+      description: "Las alabanzas de cada servicio en orden, con su tono. Toca una para ensayarla con su letra y acordes."
+    },
+    {
+      target: "abrir-en-vivo",
+      title: "En vivo",
+      description: "El día del servicio, ábrelo aquí para seguir las letras y los acordes."
     },
     HELP_STEP
   ],

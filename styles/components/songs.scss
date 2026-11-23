@@ -25,8 +25,11 @@
     cursor: pointer;
     transition: background 0.15s ease;
 
-    &:hover {
-      background: rgba(var(--app-accent-rgb), 0.06);
+    // Solo con mouse: en el teléfono el resaltado se quedaba pegado después de tocar
+    @media (hover: hover) {
+      &:hover {
+        background: rgba(var(--app-accent-rgb), 0.06);
+      }
     }
 
     &:focus-visible {
@@ -58,23 +61,45 @@
     }
   }
 
-  @media (max-width: 576px) {
-    flex-wrap: wrap;
+  // Teléfono: una línea por alabanza con el nombre a la izquierda y el tono a la derecha
+  @media (max-width: 575px) {
+    gap: 10px;
+    padding: 4px 0;
 
-    // Name and preview take the whole first line; tone, tag and menu go below
     .song-row-main {
-      flex-basis: 100%;
+      padding: 12px 8px;
+      margin: 0 -8px;
+    }
+
+    .song-row-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    // Los acordes de la primera línea no se leen en tan poco espacio
+    .song-row-preview {
+      display: none;
     }
 
     .song-row-meta {
-      flex-wrap: wrap;
-      gap: 8px;
-      width: 100%;
+      gap: 6px;
+    }
 
-      // The ⋮ menu stays at the right edge
-      > .ant-btn {
-        margin-left: auto;
-      }
+    .song-row-key-label {
+      display: none;
+    }
+
+    // El tono como en las tarjetas de servicio
+    .song-row-key {
+      min-width: 38px;
+      padding: 3px 8px;
+      border-radius: 8px;
+      background: var(--app-surface-muted);
+      color: var(--app-text);
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
     }
   }
 }
@@ -88,6 +113,26 @@
   border-radius: 12px;
   overflow: hidden;
   padding: 0 16px;
+
+  // Teléfono: sin el recuadro dentro de la tarjeta, la lista usa todo el ancho
+  @media (max-width: 575px) {
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+  }
+}
+
+.songs-page {
+  padding: 24px;
+
+  // Teléfono: el contenido ya trae margen a los lados
+  @media (max-width: 575px) {
+    padding: 4px 0 0;
+
+    > .ant-space > .ant-space-item > .ant-card > .ant-card-body {
+      padding: 16px;
+    }
+  }
 }
 
 .song-preview-toolbar {
