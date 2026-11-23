@@ -1,4 +1,5 @@
 import { apiRequest } from "@/shared/client/api"
+import type { ChurchPrayers } from "@/features/churches/types"
 import type { ServiceSummary, ServiceWithSongs } from "@/features/services/types"
 
 // Lo que el formulario envía al guardar (lo valida features/services/server/service-input.ts)
@@ -25,6 +26,10 @@ export const servicesApi = {
   save: (id: string | null, service: ServiceInput) =>
     apiRequest(id ? `/api/services/${id}` : "/api/services", { method: id ? "PUT" : "POST", body: service, fallback: "Error al guardar el servicio" }),
   remove: (id: string) => apiRequest(`/api/services/${id}`, { method: "DELETE", fallback: "Error al eliminar" }),
+  // Las peticiones de la iglesia: el momento de oración de cada servicio que no traiga las suyas
+  prayers: () => apiRequest<ChurchPrayers>("/api/services/prayers", { fallback: "No se pudieron cargar las peticiones" }),
+  savePrayers: (prayers: ChurchPrayers) =>
+    apiRequest<ChurchPrayers>("/api/services/prayers", { method: "PUT", body: prayers, fallback: "No se pudieron guardar las peticiones" }),
   usage: (from: Date, to: Date) =>
     apiRequest<SongUsage>(`/api/services/usage?${new URLSearchParams({ desde: from.toISOString(), hasta: to.toISOString() })}`)
 }

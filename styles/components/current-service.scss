@@ -197,12 +197,6 @@
   box-shadow: 0 18px 45px var(--app-shadow);
 }
 
-// The guide is short text: the card grows to show it whole instead of scrolling inside
-.current-service-sheet:has(.closing-guide) {
-  height: auto;
-  min-height: clamp(360px, calc(100vh - 330px), 900px);
-}
-
 .current-service-nav {
   display: flex;
   align-items: center;

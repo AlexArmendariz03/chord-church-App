@@ -1,7 +1,8 @@
 import "server-only"
 import { prisma } from "@/shared/server/prisma"
-import { pastServiceCutoff } from "@/features/services/service-rules"
+import { isSingleWorshipEvent, pastServiceCutoff } from "@/features/services/service-rules"
 import { SERVICE_SUMMARY, SERVICE_WITH_LYRICS } from "@/features/services/server/service-selects"
+import { findChurchPrayers } from "@/features/churches/server/church-queries"
 import type { ServiceInput } from "./service-input"
 
 // Consultas de servicios; las rutas de la API solo validan y llaman a estas funciones.
@@ -26,9 +27,18 @@ const periodQuery = (churchId: string, period: ServicePeriod) => {
 export const listServiceSummaries = (churchId: string, period: ServicePeriod) =>
   prisma.service.findMany({ ...periodQuery(churchId, period), include: SERVICE_SUMMARY })
 
-// Para En curso: con la letra de cada alabanza
-export const listServicesWithLyrics = (churchId: string, period: ServicePeriod) =>
-  prisma.service.findMany({ ...periodQuery(churchId, period), include: SERVICE_WITH_LYRICS })
+// Para En curso: con la letra de cada alabanza. Un servicio sin oración propia lleva las
+// peticiones de la iglesia, así el momento de oración siempre sale (también en la app móvil).
+// Estudios, seminarios y la reunión de las 9:45 no llevan guía
+export const listServicesWithLyrics = async (churchId: string, period: ServicePeriod) => {
+  const [services, { prayerGuide: churchPrayers }] = await Promise.all([
+    prisma.service.findMany({ ...periodQuery(churchId, period), include: SERVICE_WITH_LYRICS }),
+    findChurchPrayers(churchId)
+  ])
+  return services.map(service => isSingleWorshipEvent(service.title, service.eventDate)
+    ? service
+    : { ...service, prayerGuide: service.prayerGuide ?? churchPrayers })
+}
 
 export const createService = (churchId: string, { songs, ...fields }: ServiceInput) =>
   prisma.service.create({

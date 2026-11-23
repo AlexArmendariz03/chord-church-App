@@ -5,6 +5,7 @@ import { BgColorsOutlined, CloseOutlined, DownOutlined, EyeInvisibleOutlined, Le
 import { ConfigProvider, theme } from "antd"
 import type { ServiceWithSongs } from "@/features/services/types"
 import { displaySemitones, formatSemitones, transposeKey } from "@/shared/lyrics/transpose"
+import { GUIDE_STEP_LABELS, type GuideStep } from "../../service-steps"
 import { STAGE_THEMES, type StageTheme } from "../stage-themes"
 import { StageBubble as Bubble } from "./stage-bubble"
 import { StageSongDrawer } from "./stage-song-drawer"
@@ -37,11 +38,14 @@ type StageViewProps = {
   onPrev: () => void
   onNext: () => void
   onSelectSong: Dispatch<string>
-  // Leader only: the prayer and announcements guide, shown after the song at guideAfterIndex
+  // Leader only: the guide's steps (oración, anuncios), shown after the song at guideAfterIndex
   // (the end of the worship set, before the offering); -1 when there's no guide
-  isGuideOpen: boolean
+  guideSteps: GuideStep[]
+  guideStepIndex: number | null
   guideAfterIndex: number
-  onOpenGuide: () => void
+  // El paso de la guía que sigue, si lo que sigue es la guía
+  nextGuideStep: GuideStep | null
+  onOpenGuide: (step: number) => void
   onExit: () => void
   stageTheme: StageTheme
   onStageThemeChange: Dispatch<StageTheme>
@@ -74,8 +78,10 @@ const StageView = ({
   onPrev,
   onNext,
   onSelectSong,
-  isGuideOpen,
+  guideSteps,
+  guideStepIndex,
   guideAfterIndex,
+  nextGuideStep,
   onOpenGuide,
   onExit,
   stageTheme,
@@ -133,9 +139,13 @@ const StageView = ({
   const playedKey = transposeKey(current.song.key, semitones)
   const isTransposed = displaySemitones(semitones) !== 0
   const themeLabel = STAGE_THEMES.find(option => option.value === stageTheme)?.label
-  const guideIsNext = !isGuideOpen && !hasNextPage && activeIndex === guideAfterIndex
+  const isGuideOpen = guideStepIndex !== null
+  const nextLabel = hasNextPage && !isGuideOpen ? "Siguiente página"
+    : nextGuideStep ? GUIDE_STEP_LABELS[nextGuideStep]
+    : next ? "Siguiente canción" : "Fin del servicio"
+  const guideLabel = guideStepIndex !== null ? GUIDE_STEP_LABELS[guideSteps[guideStepIndex]] : null
   const upNext = hasNextPage && !isGuideOpen ? { label: "Página", detail: `${pageIndex + 2} de ${pageCount}` }
-    : guideIsNext ? { label: "Sigue", detail: "Oración y anuncios" }
+    : nextGuideStep ? { label: "Sigue", detail: GUIDE_STEP_LABELS[nextGuideStep] }
     : next ? { label: next.isOffering ? "Sigue · Ofrenda" : "Sigue", detail: `${next.song.name} · ${next.song.key}` }
     : null
 
@@ -144,7 +154,7 @@ const StageView = ({
       <div
         className={`stage ${controlsVisible ? "has-controls" : ""}`} role="dialog"
         data-theme={stageTheme} data-category={current.category}
-        aria-label={`Modo escenario: ${isGuideOpen ? "Oración y anuncios" : current.song.name}`}
+        aria-label={`Modo escenario: ${guideLabel ?? current.song.name}`}
         onMouseMove={event => {
           // Taps also fire mousemove, but without movement
           const moved = event.movementX || event.movementY
@@ -172,8 +182,8 @@ const StageView = ({
 
         {/* Always visible, even with the controls hidden: where we are and in which key */}
         <div className="stage-hud">
-          {isGuideOpen ? (
-            <span className="stage-hud-name">Oración y anuncios</span>
+          {guideLabel ? (
+            <span className="stage-hud-name">{guideLabel}</span>
           ) : (
             <>
               <span className="stage-hud-position">{activeIndex + 1}/{service.songs.length}</span>
@@ -291,7 +301,7 @@ const StageView = ({
             </span>
           )}
           <Bubble
-            label={hasNextPage && !isGuideOpen ? "Siguiente página" : guideIsNext ? "Oración y anuncios" : next ? "Siguiente canción" : "Fin del servicio"} variant="primary"
+            label={nextLabel} variant="primary"
             disabled={!canNext} onClick={onNext}>
             <RightOutlined />
           </Bubble>
@@ -301,7 +311,8 @@ const StageView = ({
           open={isListOpen} onClose={() => setIsListOpen(false)}
           afterClose={showControls}
           service={service} activeIndex={activeIndex}
-          isGuideOpen={isGuideOpen} guideAfterIndex={guideAfterIndex}
+          guideSteps={guideSteps} guideStepIndex={guideStepIndex}
+          guideAfterIndex={guideAfterIndex}
           onSelectSong={onSelectSong} onOpenGuide={onOpenGuide}
           stageTheme={stageTheme} onStageThemeChange={onStageThemeChange} />
       </div>

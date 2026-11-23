@@ -31,12 +31,14 @@ enum ThemePreference {
 
 // Cada iglesia tiene sus usuarios, su cancionero y sus servicios. Solo el master las crea.
 model Church {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  createdAt DateTime  @default(now())
-  users     User[]
-  songs     Song[]
-  services  Service[]
+  id            String    @id @default(cuid())
+  name          String    @unique
+  createdAt     DateTime  @default(now())
+  // Las peticiones de la iglesia: salen en el momento de oración de cada servicio que no traiga las suyas
+  prayerGuide   String?
+  users         User[]
+  songs         Song[]
+  services      Service[]
 }
 
 // El valor por defecto de churchId es la iglesia que crea la migración add_churches con todo lo que

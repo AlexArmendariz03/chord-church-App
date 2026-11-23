@@ -1,62 +1,60 @@
 import { useState } from "react"
 import type { ServiceWithSongs } from "@/features/services/types"
+import { guideAfterIndexOf, nextPosition, prevPosition, type GuideStep, type LivePosition } from "../../service-steps"
 
 type NavigationOptions = {
-  // Leader only: the prayer and announcements guide that follows the worship set
-  withGuide: boolean
+  // Solo el dirigente: los pasos de la guía (oración y anuncios) que siguen a la adoración
+  guideSteps: GuideStep[]
   // Pages of the song on screen
   pageCount: number
 }
 
-// Where the service is: which song, which page of it, and whether the leader's guide is up.
-// "Siguiente" and "Anterior" walk pages, then songs, stopping at the guide on the way.
-export const useServiceNavigation = (songs: ServiceWithSongs["songs"], { withGuide, pageCount }: NavigationOptions) => {
+// Where the service is: which song, which page of it, and which step of the leader's guide is up.
+// "Siguiente" and "Anterior" walk pages, then songs, stopping at each guide step on the way
+// (el camino está en service-steps.ts).
+export const useServiceNavigation = (songs: ServiceWithSongs["songs"], { guideSteps, pageCount }: NavigationOptions) => {
   const [activeServiceSongId, setActiveServiceSongId] = useState<string | null>(null)
   const [pageIndex, setPageIndex] = useState(0)
-  const [isGuideOpen, setIsGuideOpen] = useState(false)
+  // Índice en guideSteps; null con la guía cerrada
+  const [guideStepIndex, setGuideStepIndex] = useState<number | null>(null)
 
   const activeIndex = Math.max(0, songs.findIndex(serviceSong => serviceSong.id === activeServiceSongId))
   const activeSong = songs[activeIndex] ?? null
-  // The guide follows the worship set: before the offering song, or at the end when there's none
-  const offeringIndex = songs.findIndex(serviceSong => serviceSong.isOffering)
-  const guideAfterIndex = !withGuide ? -1 : offeringIndex > 0 ? offeringIndex - 1 : songs.length - 1
-  const isAtGuide = withGuide && activeIndex === guideAfterIndex
+  const guideAfterIndex = guideAfterIndexOf(songs, guideSteps.length > 0)
+  // Si el servicio cambia y su guía tiene menos pasos, la guía se cierra
+  const openStep = guideStepIndex !== null && guideStepIndex < guideSteps.length ? guideStepIndex : null
+  const guideStep = openStep === null ? null : guideSteps[openStep]
+
+  const context = { songCount: songs.length, pageCount, guideAfterIndex, guideSteps }
+  const position: LivePosition = { songIndex: activeIndex, pageIndex, guideStep: openStep }
+  const next = nextPosition(position, context)
+  const prev = prevPosition(position, context)
+
+  const moveTo = (target: LivePosition | null) => {
+    if (!target) return
+    setActiveServiceSongId(songs[target.songIndex]?.id ?? null)
+    setPageIndex(target.pageIndex)
+    setGuideStepIndex(target.guideStep)
+  }
 
   const selectSong = (serviceSongId: string | null) => {
     setActiveServiceSongId(serviceSongId)
     setPageIndex(0)
-    setIsGuideOpen(false)
+    setGuideStepIndex(null)
   }
 
-  const openGuide = () => {
-    // While the guide is up, the active song is the one before it: "Anterior" goes back there
+  // Desde la lista: abre un paso de la guía. La alabanza activa queda en la de antes de la guía,
+  // para que "Anterior" vuelva ahí
+  const openGuide = (step: number = 0) => {
     if (activeIndex !== guideAfterIndex) {
       setActiveServiceSongId(songs[guideAfterIndex]?.id ?? null)
       setPageIndex(0)
     }
-    setIsGuideOpen(true)
+    setGuideStepIndex(step)
   }
 
-  const canPrev = isGuideOpen || pageIndex > 0 || activeIndex > 0
-  const canNext = isGuideOpen
-    ? Boolean(songs[activeIndex + 1])
-    : pageIndex < pageCount - 1 || activeIndex < songs.length - 1 || isAtGuide
-
-  const goNext = () => {
-    if (isGuideOpen) {
-      if (songs[activeIndex + 1]) selectSong(songs[activeIndex + 1].id)
-    } else if (pageIndex < pageCount - 1) setPageIndex(pageIndex + 1)
-    else if (isAtGuide) setIsGuideOpen(true)
-    else if (songs[activeIndex + 1]) selectSong(songs[activeIndex + 1].id)
-  }
-
-  const goPrev = () => {
-    if (isGuideOpen) setIsGuideOpen(false)
-    else if (pageIndex > 0) setPageIndex(pageIndex - 1)
-    else if (withGuide && activeIndex === guideAfterIndex + 1) openGuide()
-    else if (songs[activeIndex - 1]) selectSong(songs[activeIndex - 1].id)
-  }
-
+  const goNext = () => moveTo(next)
+  const goPrev = () => moveTo(prev)
   const navigate = (direction: "prev" | "next") => (direction === "next" ? goNext() : goPrev())
 
   return {
@@ -64,10 +62,15 @@ export const useServiceNavigation = (songs: ServiceWithSongs["songs"], { withGui
     activeSong,
     pageIndex,
     setPageIndex,
-    isGuideOpen,
+    isGuideOpen: guideStep !== null,
+    guideStep,
+    guideStepIndex: openStep,
+    guideSteps,
     guideAfterIndex,
-    canPrev,
-    canNext,
+    // Lo que sigue y lo que hay antes, para las etiquetas de los botones
+    next,
+    canPrev: prev !== null,
+    canNext: next !== null,
     goNext,
     goPrev,
     navigate,

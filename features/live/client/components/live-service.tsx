@@ -18,7 +18,8 @@ import { FONT_LIMITS, LyricsPager, type LyricsLayoutInfo } from "./lyrics-pager"
 import { displaySemitones } from "@/shared/lyrics/transpose"
 import { pickCurrentService } from "../../pick-current-service"
 import { formatServiceDate } from "@/shared/utils/dates"
-import { ClosingGuide, hasClosingGuide } from "./closing-guide"
+import { GUIDE_STEP_LABELS, guideStepsOf, type GuideStep } from "../../service-steps"
+import { ClosingGuide } from "./closing-guide"
 import { LeaderSlide } from "./leader-slide"
 import { LiveNav } from "./live-nav"
 import { LiveSongList } from "./live-song-list"
@@ -30,6 +31,8 @@ const FONT_STEP = 4
 const TOUCH_THEME = { token: { controlHeight: 44, controlHeightLG: 48 } }
 // Query param that opens a specific service ("Abrir en vivo" on any service card)
 const SERVICE_QUERY_PARAM = "servicio"
+// Quien no dirige no ve la guía (fuera del componente, para que no cambie en cada render)
+const NO_GUIDE: GuideStep[] = []
 
 const LiveService = () => {
   const { message } = App.useApp()
@@ -65,9 +68,9 @@ const LiveService = () => {
   // The leader's slide is a single page per song
   const { pageCount, fontSize, autoSize } = isLeaderView ? { ...layout, pageCount: 1 } : layout
   const {
-    activeIndex, activeSong, pageIndex, setPageIndex, isGuideOpen, guideAfterIndex,
-    canPrev, canNext, goNext, goPrev, navigate, selectSong, openGuide
-  } = useServiceNavigation(songs, { withGuide: leadsService && hasClosingGuide(currentService), pageCount })
+    activeIndex, activeSong, pageIndex, setPageIndex, isGuideOpen, guideStep, guideStepIndex, guideSteps, guideAfterIndex,
+    next, canPrev, canNext, goNext, goPrev, navigate, selectSong, openGuide
+  } = useServiceNavigation(songs, { guideSteps: leadsService ? guideStepsOf(currentService) : NO_GUIDE, pageCount })
   const { isStageMode, enterStage, exitStage } = useStageMode(navigate)
 
   useWakeLock(Boolean(currentService))
@@ -88,9 +91,10 @@ const LiveService = () => {
   }
 
   // Lo que sigue después de lo que se ve, para la vista del dirigente
-  const nextLabel = isGuideOpen
-    ? songs[guideAfterIndex + 1]?.song.name
-    : activeIndex === guideAfterIndex ? "Oración y anuncios" : songs[activeIndex + 1]?.song.name
+  const nextGuideStep = next?.guideStep != null ? guideSteps[next.guideStep] : null
+  const nextLabel = nextGuideStep ? GUIDE_STEP_LABELS[nextGuideStep] : next && songs[next.songIndex]?.song.name
+  // Tableta y pantalla completa: tocar un lado de la pantalla cambia de página o de paso
+  const sideTaps = (variant: "light" | "stage") => variant === "stage" || viewport === "tablet"
 
   const increaseFont = () => setFontOffset(Math.min(fontSize + FONT_STEP, FONT_LIMITS.max) - autoSize)
   const decreaseFont = () => setFontOffset(Math.max(fontSize - FONT_STEP, FONT_LIMITS.min) - autoSize)
@@ -100,16 +104,20 @@ const LiveService = () => {
     if (activeSong) setTransposeBySong(current => ({ ...current, [activeSong.id]: displaySemitones(value) }))
   }
 
-  const renderPager = (song: NonNullable<typeof activeSong>, variant: "light" | "stage") => isGuideOpen ? (
+  const renderPager = (song: NonNullable<typeof activeSong>, variant: "light" | "stage") => guideStep ? (
     <ClosingGuide
-      prayerGuide={currentService?.prayerGuide}
-      announcements={currentService?.announcements}
-      variant={variant} />
+      step={guideStep}
+      text={guideStep === "prayer" ? currentService?.prayerGuide : currentService?.announcements}
+      variant={variant}
+      sideTaps={sideTaps(variant)}
+      onNavigate={navigate} />
   ) : isLeaderView ? (
     <LeaderSlide
       song={song} number={activeIndex + 1}
       total={songs.length}
       variant={variant}
+      sideTaps={sideTaps(variant)}
+      onNavigate={navigate}
       // Solo en teléfono y tableta: en escritorio la tarjeta se queda como siempre
       details={isCompact && variant === "light" ? { next: nextLabel ?? "Fin del servicio" } : undefined} />
   ) : (
@@ -122,7 +130,8 @@ const LiveService = () => {
       variant={variant}
       viewport={viewport}
       onLayout={handleLayout}
-      onNavigate={navigate} />
+      onNavigate={navigate}
+      sideTaps={sideTaps(variant)} />
   )
 
   if (isStageMode && currentService && activeSong) {
@@ -146,8 +155,10 @@ const LiveService = () => {
         onPrev={goPrev}
         onNext={goNext}
         onSelectSong={selectSong}
-        isGuideOpen={isGuideOpen}
+        guideSteps={guideSteps}
+        guideStepIndex={guideStepIndex}
         guideAfterIndex={guideAfterIndex}
+        nextGuideStep={nextGuideStep}
         onOpenGuide={openGuide}
         onExit={exitStage}
         stageTheme={stageTheme}
@@ -172,20 +183,21 @@ const LiveService = () => {
       services={services} service={currentService}
       onChangeService={changeService}
       activeSongId={activeSong?.id}
-      isGuideOpen={isGuideOpen}
+      guideSteps={guideSteps}
+      guideStepIndex={guideStepIndex}
       guideAfterIndex={guideAfterIndex}
       bare={inPanel}
       onSelectSong={serviceSongId => {
         selectSong(serviceSongId)
         setIsSetlistOpen(false)
       }}
-      onOpenGuide={() => {
-        openGuide()
+      onOpenGuide={step => {
+        openGuide(step)
         setIsSetlistOpen(false)
       }} />
   )
 
-  const titleText = activeSong && (isGuideOpen ? "Oración y anuncios" : `${activeSong.position}. ${activeSong.song.name}`)
+  const titleText = activeSong && (guideStep ? GUIDE_STEP_LABELS[guideStep] : `${activeSong.position}. ${activeSong.song.name}`)
 
   const card = activeSong ? (
     <Card
@@ -227,7 +239,8 @@ const LiveService = () => {
 
       <LiveNav
         songs={songs} activeSongId={activeSong.id}
-        isGuideOpen={isGuideOpen} guideAfterIndex={guideAfterIndex}
+        guideSteps={guideSteps} guideStepIndex={guideStepIndex}
+        guideAfterIndex={guideAfterIndex}
         pageIndex={pageIndex} pageCount={pageCount}
         canPrev={canPrev} canNext={canNext}
         onPrev={goPrev} onNext={goNext} />

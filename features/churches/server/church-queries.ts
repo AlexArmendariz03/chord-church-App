@@ -1,9 +1,9 @@
 import "server-only"
 import { prisma } from "@/shared/server/prisma"
-import type { ChurchListItem, CurrentChurch } from "@/features/churches/types"
+import type { ChurchListItem, CurrentChurch, ChurchPrayers } from "@/features/churches/types"
 
 // Consultas de iglesias; solo las usa el master (permiso manageChurches), salvo findChurch,
-// que da el nombre de la iglesia de la sesión para el encabezado
+// que da el nombre de la iglesia de la sesión para el encabezado, y las peticiones de la iglesia
 
 const CHURCH_SELECT = { id: true, name: true } as const
 
@@ -38,3 +38,12 @@ export const createChurch = (name: string) => prisma.church.create({ data: { nam
 
 export const renameChurch = (id: string, name: string) =>
   prisma.church.update({ where: { id }, data: { name }, select: CHURCH_SELECT })
+
+// Las peticiones de la iglesia (momento de oración de todos sus servicios)
+const PRAYERS_SELECT = { prayerGuide: true } as const
+
+export const findChurchPrayers = async (churchId: string): Promise<ChurchPrayers> =>
+  (await prisma.church.findUnique({ where: { id: churchId }, select: PRAYERS_SELECT })) ?? { prayerGuide: null }
+
+export const saveChurchPrayers = (churchId: string, prayers: ChurchPrayers): Promise<ChurchPrayers> =>
+  prisma.church.update({ where: { id: churchId }, data: prayers, select: PRAYERS_SELECT })
