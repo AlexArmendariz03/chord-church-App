@@ -118,10 +118,47 @@ $ease-spring: cubic-bezier(0.3, 1.5, 0.5, 1);
   }
 }
 
+// Salto del logo del login: sube, se aplasta al caer y rebota un poco.
+// Usa translate y scale (no transform) para no chocar con la entrada motion-pop
+@keyframes motion-hop {
+  0%,
+  100% {
+    translate: 0 0;
+    scale: 1 1;
+  }
+
+  15% {
+    translate: 0 0;
+    scale: 1.08 0.92;
+  }
+
+  40% {
+    translate: 0 -22px;
+    scale: 0.94 1.06;
+  }
+
+  65% {
+    translate: 0 0;
+    scale: 1.06 0.94;
+  }
+
+  80% {
+    translate: 0 -6px;
+    scale: 1 1;
+  }
+}
+
 // Login: el emblema entra con rebote y luego la tarjeta
 .login-container {
   .login-emblem {
     animation: motion-pop 0.55s $ease-spring backwards;
+  }
+
+  // Brinca al pasar el mouse (o al tocarlo). motion-pop sigue en la lista con su mismo nombre
+  // para que no se repita la entrada al quitar el mouse
+  .login-emblem:hover,
+  .login-emblem:active {
+    animation: motion-pop 0.55s $ease-spring backwards, motion-hop 0.7s $ease-out;
   }
 
   .login-title,
