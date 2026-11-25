@@ -1,9 +1,12 @@
 "use client"
 
-import { Alert, AutoComplete, Button, Col, Form, Input, Row, type FormInstance } from "antd"
+import { EditOutlined, PushpinOutlined } from "@ant-design/icons"
+import { Alert, AutoComplete, Button, Col, Form, Input, Modal, Row, type FormInstance } from "antd"
 import dayjs, { type Dayjs } from "dayjs"
 import "dayjs/locale/es"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
+import type { ChurchPrayers } from "@/features/churches/types"
+import { toGuideLines } from "@/features/live/closing-guide-lines"
 import { isSingleWorshipEvent } from "@/features/services/service-rules"
 import type { ServiceSummary } from "@/features/services/types"
 import type { SongListItem } from "@/features/songs/types"
@@ -23,7 +26,10 @@ export type ServiceFormValues = {
   announcements?: string
 }
 
-const PRAYER_PLACEHOLDER = "Vamos a orar por:\nLa iglesia local\nNuestro pastor\nNuestros obreros y misioneros"
+const PRAYER_PLACEHOLDER = "Vacío: se usan las peticiones de la iglesia.\nEscribe aquí solo si este servicio lleva otra oración."
+const CHURCH_PRAYERS_PLACEHOLDER = "Vamos a orar…\n1) Por esta iglesia\n- Nuestros nuevos conversos\n2) Por nuestro pastor\n“Si tiene una petición, levante la mano”"
+const GUIDE_HINT = "Opcional. Un punto por línea (se numeran solos); \"-\" al inicio lo vuelve sub-punto, " +
+  "una línea que termina en \":\" o \"…\" es título y una frase entre comillas queda como nota."
 const ANNOUNCEMENTS_PLACEHOLDER = "Dar los anuncios del día de mañana:\nSeminarios a las 9:00 a. m."
 
 // Las alabanzas de un servicio guardado, separadas como las pide el formulario
@@ -67,6 +73,9 @@ type ServiceFormProps = {
   onCancel?: () => void
   // Nombres de otros servicios, para sugerirlos al escribir
   titleSuggestions?: string[]
+  // Las peticiones de la iglesia: salen en el momento de oración si el servicio no trae las suyas
+  churchPrayers?: string | null
+  onSaveChurchPrayers?: (prayers: ChurchPrayers) => Promise<boolean>
 }
 
 // Cada parte del formulario con su número: 1 Evento, 2 Orden de alabanzas, 3 Guía
@@ -87,7 +96,7 @@ const Step = ({ number, title, hint, children }: { number: number; title: string
 const asList = (value?: string | null) => ({ value: value ? [value] : [] })
 const firstOf = (value?: string[]) => value?.[0]
 
-export const ServiceForm = ({ form, songs, editingServiceId, saving, onSubmit, onCancel, titleSuggestions = [] }: ServiceFormProps) => {
+export const ServiceForm = ({ form, songs, editingServiceId, saving, onSubmit, onCancel, titleSuggestions = [], churchPrayers, onSaveChurchPrayers }: ServiceFormProps) => {
   const jubiloSongs = useMemo(() => songs.filter(song => song.category === "jubilo"), [songs])
   const adoracionSongs = useMemo(() => songs.filter(song => song.category === "adoracion"), [songs])
   const pickedJubilo = Form.useWatch("jubiloSongIds", form) ?? []
@@ -121,6 +130,21 @@ export const ServiceForm = ({ form, songs, editingServiceId, saving, onSubmit, o
     return song ? [{ song, kind }] : []
   })
   const laneProps = { datesBySong, monthName }
+
+  // Las peticiones de la iglesia y su editor
+  const prayerGuide = Form.useWatch("prayerGuide", form)
+  const ownPrayer = Boolean(prayerGuide?.trim())
+  const prayerCount = toGuideLines(churchPrayers).filter(line => line.type === "item").length
+  const [prayersDraft, setPrayersDraft] = useState<string | null>(null)
+  const [savingPrayers, setSavingPrayers] = useState(false)
+
+  const saveChurchPrayers = async () => {
+    if (!onSaveChurchPrayers || prayersDraft === null) return
+    setSavingPrayers(true)
+    const saved = await onSaveChurchPrayers({ prayerGuide: prayersDraft })
+    setSavingPrayers(false)
+    if (saved) setPrayersDraft(null)
+  }
 
   return (
     <Form
@@ -198,19 +222,51 @@ export const ServiceForm = ({ form, songs, editingServiceId, saving, onSubmit, o
       {!singleWorship && (
         <Step
           number={3} title="Guía para el dirigente"
-          hint='Opcional. Un punto por línea; una línea que termina en ":" sirve de título.'>
+          hint={GUIDE_HINT}>
           <Row gutter={16}>
             <Col xs={24} md={12}>
-              <Form.Item name="prayerGuide" label="Oración">
+              <Form.Item name="prayerGuide" label="Oración de este servicio">
                 <Input.TextArea autoSize={{ minRows: 4, maxRows: 10 }} placeholder={PRAYER_PLACEHOLDER} />
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
-              <Form.Item name="announcements" label="Anuncios">
+              <Form.Item name="announcements" label="Anuncios del mes">
                 <Input.TextArea autoSize={{ minRows: 4, maxRows: 10 }} placeholder={ANNOUNCEMENTS_PLACEHOLDER} />
               </Form.Item>
             </Col>
           </Row>
+          {onSaveChurchPrayers && (
+            <div className="service-form-template">
+              <div className="service-form-template-text">
+                <span className="service-form-template-title"><PushpinOutlined /> Peticiones de la iglesia</span>
+                <span className="service-form-template-note">
+                  {!prayerCount
+                    ? "Todavía no hay peticiones. Agrégalas una vez y saldrán en el momento de oración de cada servicio."
+                    : ownPrayer
+                      ? `Este servicio usa su propia oración en lugar de las ${prayerCount} peticiones de la iglesia.`
+                      : `Este servicio usa las ${prayerCount} peticiones de la iglesia en el momento de oración.`}
+                </span>
+              </div>
+              <Button
+                size="small" icon={<EditOutlined />}
+                onClick={() => setPrayersDraft(churchPrayers ?? "")}>
+                {prayerCount ? "Ver y editar" : "Agregar peticiones"}
+              </Button>
+            </div>
+          )}
+          <Modal
+            open={prayersDraft !== null} title="Peticiones de la iglesia"
+            okText="Guardar peticiones" cancelText="Cancelar"
+            confirmLoading={savingPrayers} onOk={saveChurchPrayers}
+            onCancel={() => setPrayersDraft(null)} destroyOnHidden>
+            <p className="service-form-step-hint">
+              Salen en el momento de oración de todos los servicios, también los que ya están creados.
+              Un servicio con su propia oración usa esa en su lugar.
+            </p>
+            <Input.TextArea
+              value={prayersDraft ?? ""} onChange={event => setPrayersDraft(event.target.value)}
+              autoSize={{ minRows: 10, maxRows: 22 }} placeholder={CHURCH_PRAYERS_PLACEHOLDER} />
+          </Modal>
         </Step>
       )}
 

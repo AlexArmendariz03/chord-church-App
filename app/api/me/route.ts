@@ -13,6 +13,6 @@ export async function GET() {
     return errorResponse("No hay sesión activa", 401)
   }
 
-  const [theme, church] = await Promise.all([findAccountTheme(user.username), findChurchSafely(user.churchId)])
+  const [theme, church] = await Promise.all([findAccountTheme(user), findChurchSafely(user.churchId)])
   return NextResponse.json({ ...user, theme, church })
 }

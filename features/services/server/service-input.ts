@@ -30,8 +30,8 @@ const MAX_TITLE_LENGTH = 200
 const MAX_GUIDE_LENGTH = 5000
 const MAX_SONGS = 50
 
-// Empty or whitespace-only text is stored as null
-const optionalText = (value: unknown) =>
+// Empty or whitespace-only text is stored as null. También lo usan las peticiones de la iglesia
+export const optionalText = (value: unknown) =>
   typeof value === "string" && value.trim() ? value.trim().slice(0, MAX_GUIDE_LENGTH) : null
 
 const isIdList = (value: unknown): value is string[] =>

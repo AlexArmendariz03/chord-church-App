@@ -66,6 +66,11 @@
     color: var(--app-text-faint);
   }
 
+  // Aviso arriba de "¿Con qué iglesia entras?" cuando la cuenta existe en más de una
+  .login-church-alert {
+    margin-bottom: 16px;
+  }
+
   .login-card {
     border-radius: 16px;
     border: 1px solid $header-border;

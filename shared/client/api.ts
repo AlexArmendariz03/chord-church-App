@@ -2,7 +2,8 @@
 // que hay que mostrar (shared/server/http.ts); aquí ese mensaje se convierte en un Error.
 
 export class ApiError extends Error {
-  constructor(message: string, readonly status: number) {
+  // `data`: la respuesta completa, para los errores que traen algo más que el mensaje
+  constructor(message: string, readonly status: number, readonly data: unknown = null) {
     super(message)
     this.name = "ApiError"
   }
@@ -28,7 +29,7 @@ export async function apiRequest<T>(url: string, { method = "GET", body, fallbac
     throw new ApiError("Sin conexión. Revisa tu internet e intenta de nuevo.", 0)
   }
   const data = await response.json().catch(() => null)
-  if (!response.ok) throw new ApiError(typeof data?.message === "string" ? data.message : fallback, response.status)
+  if (!response.ok) throw new ApiError(typeof data?.message === "string" ? data.message : fallback, response.status, data)
   return data as T
 }
 

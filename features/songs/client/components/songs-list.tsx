@@ -90,10 +90,14 @@ const SongsList = () => {
                 </Paragraph>
               </button>
               <div className="song-row-meta">
-                <Text type="secondary">Tono: {song.key}</Text>
-                {song.isYouth && <YouthTag />}
-                {song.isService && <ServiceTag />}
-                <CategoryTag category={song.category} />
+                <Text type="secondary" className="song-row-key">
+                  <span className="song-row-key-label">Tono: </span>{song.key}
+                </Text>
+                {/* En el teléfono solo el tono: Jóvenes y Servicios ya están en el filtro, y la
+                    categoría en las pestañas (al buscar se juntan las dos, ahí sí va) */}
+                {isWide && song.isYouth && <YouthTag />}
+                {isWide && song.isService && <ServiceTag />}
+                {(isWide || isSearching) && <CategoryTag category={song.category} />}
                 {canManage && <Dropdown
                   trigger={["click"]}
                   menu={{
@@ -148,7 +152,7 @@ const SongsList = () => {
 
   return (
     // Dentro de la página de una iglesia ya hay margen alrededor
-    <div style={church ? undefined : { padding: 24 }}>
+    <div className={church ? undefined : "songs-page"}>
       <Space
         orientation="vertical" size={20}
         style={{ width: "100%" }}>

@@ -7,6 +7,9 @@ import "server-only"
 import { isRole, type Role } from "@/shared/auth/permissions"
 
 export type SessionUser = {
+  // Quién es, aunque el master cambie de iglesia. Las sesiones de antes de los usuarios por iglesia
+  // no lo traen: siguen sirviendo y se busca a la persona por usuario e iglesia (session-account.ts)
+  userId?: number
   username: string
   role: Role
   // La iglesia con la que trabaja: la suya, o la que eligió el master en la página Iglesias.
@@ -61,7 +64,8 @@ export async function verifySession(token: string | undefined): Promise<SessionU
     // Las sesiones de antes de las iglesias no traen churchId: piden iniciar sesión otra vez
     if (!payload.username || !isRole(payload.role) || typeof payload.churchId !== "string" || !payload.churchId) return null
 
-    return { username: payload.username, role: payload.role, churchId: payload.churchId }
+    const userId = Number.isInteger(payload.userId) ? payload.userId : undefined
+    return { ...(userId !== undefined ? { userId } : {}), username: payload.username, role: payload.role, churchId: payload.churchId }
   } catch {
     return null
   }

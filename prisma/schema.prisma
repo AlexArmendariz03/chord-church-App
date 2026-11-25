@@ -31,12 +31,14 @@ enum ThemePreference {
 
 // Cada iglesia tiene sus usuarios, su cancionero y sus servicios. Solo el master las crea.
 model Church {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  createdAt DateTime  @default(now())
-  users     User[]
-  songs     Song[]
-  services  Service[]
+  id            String    @id @default(cuid())
+  name          String    @unique
+  createdAt     DateTime  @default(now())
+  // Las peticiones de la iglesia: salen en el momento de oración de cada servicio que no traiga las suyas
+  prayerGuide   String?
+  users         User[]
+  songs         Song[]
+  services      Service[]
 }
 
 // El valor por defecto de churchId es la iglesia que crea la migración add_churches con todo lo que
@@ -45,8 +47,9 @@ model Church {
 
 model User {
   id       Int             @id @default(autoincrement())
-  // Único en toda la app, no solo en su iglesia: el login no pide la iglesia
-  username String          @unique
+  // Único dentro de su iglesia: puede haber un "juan" en cada una. El login busca a todos los
+  // que se llaman así y entra con el que tenga esa contraseña (features/auth/server/login.ts)
+  username String
   password String
   role     UserRole        @default(musico)
   // Se guarda en la cuenta para que el tema sea el mismo en todos los dispositivos
@@ -54,7 +57,8 @@ model User {
   churchId String          @default("el-palomar")
   church   Church          @relation(fields: [churchId], references: [id], onDelete: Restrict)
 
-  @@index([churchId])
+  @@unique([churchId, username])
+  @@index([username])
 }
 
 model Song {

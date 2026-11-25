@@ -11,9 +11,12 @@ import type { SongDetail, SongListItem } from "@/features/songs/types"
 import { LivePreview } from "../editor/live-preview"
 import { useSongsScope } from "../songs-scope"
 
+// Solo hace falta saber cuál es, cómo se llama y su tono original (sirve la de un servicio)
+type PreviewSong = Pick<SongListItem, "id" | "name" | "key">
+
 type SongPreviewProps = {
   // La alabanza abierta; null cierra el panel
-  song: SongListItem | null
+  song: PreviewSong | null
   onClose: () => void
 }
 
@@ -33,7 +36,7 @@ export const SongPreview = ({ song, onClose }: SongPreviewProps) => {
   )
 }
 
-const SongPreviewBody = ({ song }: { song: SongListItem }) => {
+const SongPreviewBody = ({ song }: { song: PreviewSong }) => {
   const router = useRouter()
   const { api: songsApi, basePath } = useSongsScope()
   const { can } = useSession()

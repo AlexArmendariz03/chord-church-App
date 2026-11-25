@@ -12,6 +12,6 @@ export async function PUT(req: Request) {
   return handle(async () => {
     const { theme } = (await req.json().catch(() => ({}))) as { theme?: unknown }
     if (!isThemePreference(theme)) return errorResponse("Tema inválido", 400)
-    return NextResponse.json(await saveAccountTheme(user.username, theme))
+    return NextResponse.json(await saveAccountTheme(user, theme))
   }, { notFound: "Usuario no encontrado", failed: "No se pudo guardar el tema" })
 }

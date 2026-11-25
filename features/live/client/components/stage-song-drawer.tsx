@@ -4,6 +4,7 @@ import { Fragment } from "react"
 import { Drawer, Segmented } from "antd"
 import { formatServiceDate } from "@/shared/utils/dates"
 import type { ServiceWithSongs } from "@/features/services/types"
+import { GUIDE_STEP_LABELS, type GuideStep } from "../../service-steps"
 import { STAGE_THEMES, type StageTheme } from "../stage-themes"
 
 type StageSongDrawerProps = {
@@ -13,10 +14,11 @@ type StageSongDrawerProps = {
   afterClose: () => void
   service: ServiceWithSongs
   activeIndex: number
-  isGuideOpen: boolean
+  guideSteps: GuideStep[]
+  guideStepIndex: number | null
   guideAfterIndex: number
   onSelectSong: (serviceSongId: string) => void
-  onOpenGuide: () => void
+  onOpenGuide: (step: number) => void
   stageTheme: StageTheme
   onStageThemeChange: (theme: StageTheme) => void
 }
@@ -28,7 +30,8 @@ export const StageSongDrawer = ({
   afterClose,
   service,
   activeIndex,
-  isGuideOpen,
+  guideSteps,
+  guideStepIndex,
   guideAfterIndex,
   onSelectSong,
   onOpenGuide,
@@ -47,7 +50,7 @@ export const StageSongDrawer = ({
           <li>
             <button
               type="button"
-              className={`stage-drawer-song is-${serviceSong.category} ${index === activeIndex && !isGuideOpen ? "is-active" : ""}`}
+              className={`stage-drawer-song is-${serviceSong.category} ${index === activeIndex && guideStepIndex === null ? "is-active" : ""}`}
               onClick={() => {
                 onSelectSong(serviceSong.id)
                 onClose()
@@ -56,19 +59,19 @@ export const StageSongDrawer = ({
               <span className="stage-drawer-song-key">{serviceSong.song.key}</span>
             </button>
           </li>
-          {index === guideAfterIndex && (
-            <li>
+          {index === guideAfterIndex && guideSteps.map((step, stepIndex) => (
+            <li key={step}>
               <button
                 type="button"
-                className={`stage-drawer-song is-guide ${isGuideOpen ? "is-active" : ""}`}
+                className={`stage-drawer-song is-guide ${guideStepIndex === stepIndex ? "is-active" : ""}`}
                 onClick={() => {
-                  onOpenGuide()
+                  onOpenGuide(stepIndex)
                   onClose()
                 }}>
-                <span className="stage-drawer-song-name">Oración y anuncios</span>
+                <span className="stage-drawer-song-name">{GUIDE_STEP_LABELS[step]}</span>
               </button>
             </li>
-          )}
+          ))}
         </Fragment>
       ))}
     </ol>

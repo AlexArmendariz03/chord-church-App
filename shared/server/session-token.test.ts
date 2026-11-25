@@ -11,6 +11,18 @@ describe("signSession y verifySession", () => {
     expect(await verifySession(await signSession(user))).toEqual(user)
   })
 
+  it("la sesión lleva el id de la persona; las de antes, sin él, siguen valiendo", async () => {
+    const user = { userId: 7, username: "juan", role: "musico", churchId: "iglesia-b" } as const
+    expect(await verifySession(await signSession(user))).toEqual(user)
+    const { userId: _, ...legacy } = user
+    expect(await verifySession(await signSession(legacy))).toEqual(legacy)
+  })
+
+  it("un id que no es número entero se ignora", async () => {
+    const token = await signSession({ userId: "7", username: "juan", role: "musico", churchId: "iglesia-b" } as never)
+    expect(await verifySession(token)).toEqual({ username: "juan", role: "musico", churchId: "iglesia-b" })
+  })
+
   it("una sesión de antes de las iglesias, sin churchId, ya no vale", async () => {
     const token = await signSession({ username: "ana", role: "leader" } as never)
     expect(await verifySession(token)).toBeNull()

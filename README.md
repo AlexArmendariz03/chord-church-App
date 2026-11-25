@@ -57,9 +57,10 @@ app, solo con el script:
 npm run create-user -- <usuario> <contraseña> leader "Iglesia Centro"   # rol: master, leader, musico, proyeccion
 ```
 
-La iglesia es su id o su nombre exacto. Sin ella, un usuario nuevo va a El Palomar (la que
-creó la migración `add_churches` con todo lo que ya existía) y uno que ya existe se queda en la suya.
-El nombre de usuario es único en toda la app, no solo en su iglesia.
+La iglesia es su id o su nombre exacto. Sin ella va a El Palomar (la que creó la migración
+`add_churches` con todo lo que ya existía). Si el usuario ya existe en esa iglesia, se le cambia la
+contraseña y el rol.
+El nombre de usuario es único dentro de su iglesia: puede haber un `juan` en cada una. El login no pide la iglesia: busca a todos los que se llaman así y entra con el que tenga esa contraseña; solo si coincide en más de una iglesia, pide elegir con cuál entrar.
 
 | Rol | Qué puede hacer |
 |---|---|
